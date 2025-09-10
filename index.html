@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zeriah Labs — Learning tools that feel like play</title>
+  <meta name="description" content="Zeriah Labs builds MOE-aligned learning apps that feel like play." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='12' width='64' height='64' fill='%2300d0ff'/%3E%3Cpath d='M18 44l14-24 14 24h-6l-8-14-8 14z' fill='white'/%3E%3C/svg%3E">
+  <style>
+    :root{
+      --bg:#081218; --panel:#0e1b24; --soft:#122231;
+      --text:#e9f3fb; --muted:#a8c1d6;
+      --brand:#00d0ff; --brand2:#22e3b1;
+      --border:rgba(255,255,255,.08); --shadow:0 10px 30px rgba(0,0,0,.35);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font:16px/1.6 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 85% -10%, #0a2740 0, transparent 60%),
+        linear-gradient(180deg,#061018 0%, #081218 100%);
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+    header{position:sticky;top:0;backdrop-filter:saturate(140%) blur(6px);background:rgba(8,18,24,.5);border-bottom:1px solid var(--border);z-index:5}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:var(--shadow)}
+    .brand span{font-size:1.15rem;letter-spacing:.2px}
+    .links{display:flex;gap:14px;flex-wrap:wrap}
+    .links a{padding:8px 12px;border:1px solid var(--border);border-radius:10px;color:var(--muted)}
+    .links a.primary{background:linear-gradient(90deg,var(--brand),var(--brand2));color:#001016;font-weight:700;border-color:transparent}
+    .hero{padding:56px 0 30px}
+    h1{margin:0;font-size:clamp(30px,6vw,48px);line-height:1.05}
+    .lead{color:var(--muted);max-width:780px;margin-top:10px}
+    .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 16px;border-radius:12px;border:1px solid var(--border);background:var(--panel);font-weight:700}
+    .btn.primary{background:linear-gradient(90deg,var(--brand),var(--brand2));color:#001016;border-color:transparent}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);min-height:100%}
+    .card h3{margin:.2rem 0 .4rem}
+    .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.2);color:#001016;background:linear-gradient(90deg,var(--brand),var(--brand2));font-weight:800}
+    section{margin:26px 0}
+    .list{display:grid;gap:8px;margin-top:8px}
+    .list li{background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:10px 12px;color:var(--muted)}
+    .price{font-size:28px;font-weight:900}
+    footer{margin:40px 0;color:var(--muted);border-top:1px solid var(--border);padding-top:18px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <a href="/" class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <span>Zeriah Labs</span>
+      </a>
+      <nav class="links">
+        <a href="#products">Products</a>
+        <a href="#moe">MOE Alignment</a>
+        <a href="#pricing">Pricing</a>
+        <a class="primary" href="https://zeriahgroup.github.io" target="_blank" rel="noopener">Zeriah Group</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>Learning tools that feel like play.</h1>
+      <p class="lead">We build delightful, research-driven apps that help kids progress faster—without losing the fun. Designed for families and schools, aligned to Singapore MOE syllabi, and powered by thoughtful AI.</p>
+      <div class="cta">
+        <a class="btn primary" href="#products">Explore products</a>
+        <a class="btn" href="https://zeriahstudios.github.io" target="_blank" rel="noopener">Visit Zeriah Studios</a>
+      </div>
+    </section>
+
+    <section id="products">
+      <h2>Products</h2>
+      <div class="grid" style="margin-top:12px">
+        <article class="card">
+          <span class="tag">Now</span>
+          <h3>Study Buddy</h3>
+          <p>Quick, bite-sized practice with instant feedback and cheerful micro-rewards. Great for daily drills.</p>
+          <ul class="list">
+            <li>MOE-aligned P1–P2 (Math · English · Chinese)</li>
+            <li>TTS, confetti, streaks, parent view</li>
+            <li>Works offline; respectful of privacy</li>
+          </ul>
+        </article>
+        <article class="card">
+          <span class="tag">Coming Up</span>
+          <h3>Zeriah Learning</h3>
+          <p>Deep-dive mastery for P3–P6 with adaptive question banks and progress dashboards.</p>
+          <ul class="list">
+            <li>Generative variations &amp; scaffolding</li>
+            <li>Teacher/Parent assignment tools</li>
+            <li>Detailed skills tracking</li>
+          </ul>
+        </article>
+        <article class="card">
+          <span class="tag">Toolkit</span>
+          <h3>Content Engine</h3>
+          <p>Our internal pipeline for item generation, rubric checks, and content QA—built to keep quality high.</p>
+          <ul class="list">
+            <li>Human-in-the-loop review gates</li>
+            <li>Versioned content with audits</li>
+            <li>Bias &amp; safety checks</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="moe">
+      <h2>MOE Alignment & Safeguards</h2>
+      <div class="grid" style="margin-top:12px">
+        <article class="card">
+          <h3>Curriculum Mapping</h3>
+          <p>Each item is tagged to MOE objectives and difficulty bands so parents and schools know what’s being practiced.</p>
+        </article>
+        <article class="card">
+          <h3>QA & Review</h3>
+          <p>Dual review (automated + human) with item histories and rapid fixes when feedback is received.</p>
+        </article>
+        <article class="card">
+          <h3>Privacy by Design</h3>
+          <p>No ads in paid tiers, minimal data collection, and transparent storage/retention policies.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="pricing">
+      <h2>Pricing</h2>
+      <div class="grid" style="margin-top:12px">
+        <article class="card">
+          <h3>Family</h3>
+          <p><span class="price">$0–$4.99</span> / month</p>
+          <ul class="list">
+            <li>Daily practice & progress</li>
+            <li>Up to 2 learner profiles</li>
+            <li>Offline mode</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>School</h3>
+          <p><span class="price">Custom</span></p>
+          <ul class="list">
+            <li>Classroom management</li>
+            <li>Assignments & analytics</li>
+            <li>Onboarding & support</li>
+          </ul>
+        </article>
+      </div>
+      <div class="cta" style="margin-top:12px">
+        <a class="btn primary" href="#contact">Request info</a>
+        <a class="btn" href="#contact">Talk to us</a>
+      </div>
+    </section>
+
+    <section id="contact">
+      <h2>Contact</h2>
+      <div class="card" style="margin-top:12px">
+        <p>Questions, pilots, or partnerships? Reach us at <a href="mailto:hello@zeriahlabs.com">hello@zeriahlabs.com</a>.</p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <div>© <span id="y"></span> Zeriah Labs · A <a href="https://zeriahgroup.github.io" target="_blank" rel="noopener">Zeriah Group</a> company</div>
+      </div>
+    </footer>
+  </main>
+
+  <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+</body>
+  </html>
