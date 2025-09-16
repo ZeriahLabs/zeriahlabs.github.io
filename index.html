@@ -16,6 +16,24 @@
       --brand:#00d0ff; --brand2:#22e3b1;
       --border:rgba(255,255,255,.08); --shadow:0 10px 30px rgba(0,0,0,.35);
       --r:18px;
+      .section {
+  padding: 20px;
+}
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+.card {
+  background: #1e293b;
+  border-radius: 16px;
+  padding: 22px;
+  max-width: 360px;
+  flex: 1 1 300px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.25);
+}
+
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -91,54 +109,47 @@ background:
     </section>
 
     <!-- PRODUCTS -->
-    <section id="products">
-      <h2>Products</h2>
-      <div class="grid" style="margin-top:12px">
-        <article class="card">
-          <span class="tag">Now</span>
-          <h3>My Veggie Buddy — Pre-School (N1–K2)</h3>
-          <p>Fun, cute companions that encourage healthy habits and early learning—perfect for on-the-go moments.</p>
-          <ul class="list">
-            <li>Interactive veggie-buddy system</li>
-            <li>TTS narration, cheerful micro-rewards</li>
-            <li>Parent view; privacy-first design</li>
-          </ul>
-        </article>
+    <section id="products" class="section">
+  <div class="grid">
 
-        <article class="card">
-          <span class="tag">Now</span>
-          <h3>Zeriah Learning — Primary 1 &amp; 2</h3>
-          <p>Bite-sized practice aligned to MOE (Math · English · Chinese). Great for daily drills and confidence building.</p>
-          <ul class="list">
-            <li>MOE-aligned syllabus coverage</li>
-            <li>Instant feedback, streaks &amp; TTS</li>
-            <li>Offline mode; respectful of privacy</li>
-          </ul>
-        </article>
+    <!-- My Veggie Buddy -->
+    <article class="card">
+      <span class="tag new">Now</span>
+      <h3>My Veggie Buddy — Pre-School (N1–K2)</h3>
+      <p>Fun, cute companions that encourage healthy habits and early learning — perfect for on-the-go moments.</p>
+      <ul>
+        <li>Interactive veggie-buddy system</li>
+        <li>TTS narration, cheerful micro-rewards</li>
+        <li>Parent view; privacy-first design</li>
+      </ul>
+    </article>
 
-        <article class="card">
-          <span class="tag">Coming Up</span>
-          <h3>Zeriah Learning — Primary 3 &amp; 4</h3>
-          <p>Adaptive practice for deeper mastery with question variations, scaffolding, and skill maps.</p>
-          <ul class="list">
-            <li>Generative question variations</li>
-            <li>Teacher/Parent assignment tools</li>
-            <li>Detailed progress tracking</li>
-          </ul>
-        </article>
+    <!-- Zeriah Learning P1–2 -->
+    <article class="card">
+      <h3>Zeriah Learning — Primary 1 & 2</h3>
+      <p>Bite-sized practice aligned to MOE (Math · English · Chinese). Great for daily drills and confidence building.</p>
+      <ul>
+        <li>MOE-aligned syllabus coverage</li>
+        <li>Instant feedback, streaks & TTS</li>
+        <li>Offline mode; respectful of privacy</li>
+      </ul>
+    </article>
 
-        <article class="card">
-          <span class="tag">Coming Up</span>
-          <h3>Zeriah Learning — Primary 5 &amp; 6</h3>
-          <p>Upper-primary prep with rich question banks and dashboards to build exam readiness.</p>
-          <ul class="list">
-            <li>Advanced skills tracking</li>
-            <li>Exam-style practice items</li>
-            <li>Parent &amp; teacher insights</li>
-          </ul>
-        </article>
-      </div>
-    </section>
+    <!-- Zeriah Learning P3–4 -->
+    <article class="card">
+      <span class="tag upcoming">Coming Up</span>
+      <h3>Zeriah Learning — Primary 3 & 4</h3>
+      <p>Adaptive practice for deeper mastery with question variations, scaffolding, and skill maps.</p>
+      <ul>
+        <li>Generative question variations</li>
+        <li>Teacher/Parent assignment tools</li>
+        <li>Detailed progress tracking</li>
+      </ul>
+    </article>
+
+  </div>
+</section>
+
 
     <!-- MOE ALIGNMENT -->
     <section id="moe">
