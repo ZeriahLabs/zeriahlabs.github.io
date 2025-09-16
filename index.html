@@ -6,8 +6,8 @@
   <title>Zeriah Labs — From Pre-School to P6, learning that feels like play</title>
   <meta name="description" content="Zeriah Labs creates secure, research-driven learning apps for kids from N1 to Primary 6—aligned to Singapore MOE syllabi and designed with privacy first." />
 
-  <!-- Favicon (hosted on R2) -->
-  <link rel="icon" type="image/png" href="https://pub-xxxxxxx.r2.dev/zeriahlabs-assets/zeriah_labs_horizontal_cropped_tight_secondary.png">
+  <!-- Favicon (horizontal cropped version) -->
+  <link rel="icon" type="image/webp" href="https://assets.zeriahlabs.com/zeriah_labs_horizontal_cropped_tight_secondary.webp">
 
   <style>
     :root{
@@ -58,7 +58,12 @@
   <header>
     <div class="wrap nav">
       <a href="/" class="brand" aria-label="Zeriah Labs home">
-        <img src="https://pub-xxxxxxx.r2.dev/zeriahlabs-assets/Zeriah_Labs_Vertical_Final.webp" alt="Zeriah Labs logo">
+        <picture>
+          <!-- WebP -->
+          <source srcset="https://assets.zeriahlabs.com/Zeriah_Labs_Vertical_Final.webp" type="image/webp">
+          <!-- Optional PNG fallback -->
+          <img src="https://assets.zeriahlabs.com/Zeriah_Labs_Vertical_Final.png" alt="Zeriah Labs logo">
+        </picture>
         <span>Zeriah Labs</span>
       </a>
       <nav class="links" aria-label="Primary">
@@ -86,11 +91,17 @@
     </section>
 
     <!-- PRODUCTS (same as before, with My Veggie Buddy + 3 Zeriah Learning cards) -->
-    <!-- ... keep the products section you already have ... -->
+    <!-- ... keep your existing product cards here ... -->
 
     <!-- MOE, Pricing, Contact, Footer stay the same -->
   </main>
 
-  <script>document.getElementById('y')?.textContent=new Date().getFullYear()</script>
+  <footer class="wrap">
+    © <span id="y"></span> Zeriah Labs · A <a href="https://zeriahgroup.github.io" target="_blank" rel="noopener" style="color:#00d0ff">Zeriah Group</a> company
+  </footer>
+
+  <script>
+    document.getElementById('y').textContent=new Date().getFullYear();
+  </script>
 </body>
 </html>
