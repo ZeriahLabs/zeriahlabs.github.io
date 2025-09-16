@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Zeriah Labs — From Pre-School to P6, learning that feels like play</title>
-  <meta name="description" content="Zeriah Labs creates secure, research-driven learning apps for kids from N1 to Primary 6—aligned to Singapore MOE syllabi and designed with privacy first." />
+  <meta name="description" content="Zeriah Labs creates secure, research-driven learning apps for kids from N1 to Primary 6—aligned to Singapore MOE syllabi and designed with privacy first.">
 
   <!-- Favicon (horizontal cropped) -->
   <link rel="icon" type="image/webp" href="https://assets.zeriahlabs.com/zeriah_labs_horizontal_cropped_tight_secondary.webp">
@@ -16,37 +16,39 @@
       --brand:#00d0ff; --brand2:#22e3b1;
       --border:rgba(255,255,255,.08); --shadow:0 10px 30px rgba(0,0,0,.35);
       --r:18px;
-      .section {
-  padding: 20px;
-}
-.grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-}
-.card {
-  background: #1e293b;
-  border-radius: 16px;
-  padding: 22px;
-  max-width: 360px;
-  flex: 1 1 300px;
-  box-shadow: 0 4px 20px rgba(0,0,0,.25);
-}
-
     }
+
+    /* ✅ shared spacing for all card grids (matches Studios) */
+    .section{ padding:20px; }
+    .grid{
+      display:flex;
+      flex-wrap:wrap;
+      gap:20px;
+      justify-content:center;
+    }
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--r);
+      padding:22px;
+      max-width:360px;      /* keep cards from stretching too wide */
+      flex:1 1 300px;       /* nice wrap behavior */
+      box-shadow:var(--shadow);
+      min-height:100%;
+    }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0; font:16px/1.6 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;
       color:var(--text);
-background:
-  radial-gradient(1200px 700px at 85% -10%, #0a2740 0, transparent 60%),
-  linear-gradient(180deg, #061018 0%, #081218 70%, #0b1520 100%);
-
+      background:
+        radial-gradient(1200px 700px at 85% -10%, #0a2740 0, transparent 60%),
+        linear-gradient(180deg, #061018 0%, #081218 70%, #0b1520 100%);
     }
     a{color:inherit;text-decoration:none}
     .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+
     header{position:sticky;top:0;backdrop-filter:saturate(140%) blur(6px);background:rgba(8,18,24,.5);border-bottom:1px solid var(--border);z-index:5}
     .nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
     .brand{display:flex;align-items:center;gap:10px;font-weight:800}
@@ -55,21 +57,25 @@ background:
     .links{display:flex;gap:14px;flex-wrap:wrap}
     .links a{padding:8px 12px;border:1px solid var(--border);border-radius:10px;color:var(--muted)}
     .links a.primary{background:linear-gradient(90deg,var(--brand),var(--brand2));color:#001016;font-weight:700;border-color:transparent}
+
     .hero{padding:56px 0 30px}
     h1{margin:0;font-size:clamp(30px,6vw,48px);line-height:1.05}
     .lead{color:var(--muted);max-width:780px;margin-top:10px}
     .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
     .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 16px;border-radius:12px;border:1px solid var(--border);background:var(--panel);font-weight:700}
     .btn.primary{background:linear-gradient(90deg,var(--brand),var(--brand2));color:#001016;border-color:transparent}
+
     section{margin:26px 0}
     h2{margin:0 0 10px 0}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-    .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);min-height:100%}
     .card h3{margin:.2rem 0 .4rem}
+
     .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.2);color:#001016;background:linear-gradient(90deg,var(--brand),var(--brand2));font-weight:800}
+
     .list{display:grid;gap:8px;margin-top:8px}
     .list li{background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:10px 12px;color:var(--muted)}
+
     .price{font-size:28px;font-weight:900}
+
     footer{margin:40px 0;color:var(--muted);border-top:1px solid var(--border);padding-top:18px}
   </style>
 </head>
@@ -110,46 +116,40 @@ background:
 
     <!-- PRODUCTS -->
     <section id="products" class="section">
-  <div class="grid">
+      <div class="grid">
+        <article class="card">
+          <span class="tag new">Now</span>
+          <h3>My Veggie Buddy — Pre-School (N1–K2)</h3>
+          <p>Fun, cute companions that encourage healthy habits and early learning — perfect for on-the-go moments.</p>
+          <ul>
+            <li>Interactive veggie-buddy system</li>
+            <li>TTS narration, cheerful micro-rewards</li>
+            <li>Parent view; privacy-first design</li>
+          </ul>
+        </article>
 
-    <!-- My Veggie Buddy -->
-    <article class="card">
-      <span class="tag new">Now</span>
-      <h3>My Veggie Buddy — Pre-School (N1–K2)</h3>
-      <p>Fun, cute companions that encourage healthy habits and early learning — perfect for on-the-go moments.</p>
-      <ul>
-        <li>Interactive veggie-buddy system</li>
-        <li>TTS narration, cheerful micro-rewards</li>
-        <li>Parent view; privacy-first design</li>
-      </ul>
-    </article>
+        <article class="card">
+          <h3>Zeriah Learning — Primary 1 &amp; 2</h3>
+          <p>Bite-sized practice aligned to MOE (Math · English · Chinese). Great for daily drills and confidence building.</p>
+          <ul>
+            <li>MOE-aligned syllabus coverage</li>
+            <li>Instant feedback, streaks &amp; TTS</li>
+            <li>Offline mode; respectful of privacy</li>
+          </ul>
+        </article>
 
-    <!-- Zeriah Learning P1–2 -->
-    <article class="card">
-      <h3>Zeriah Learning — Primary 1 & 2</h3>
-      <p>Bite-sized practice aligned to MOE (Math · English · Chinese). Great for daily drills and confidence building.</p>
-      <ul>
-        <li>MOE-aligned syllabus coverage</li>
-        <li>Instant feedback, streaks & TTS</li>
-        <li>Offline mode; respectful of privacy</li>
-      </ul>
-    </article>
-
-    <!-- Zeriah Learning P3–4 -->
-    <article class="card">
-      <span class="tag upcoming">Coming Up</span>
-      <h3>Zeriah Learning — Primary 3 & 4</h3>
-      <p>Adaptive practice for deeper mastery with question variations, scaffolding, and skill maps.</p>
-      <ul>
-        <li>Generative question variations</li>
-        <li>Teacher/Parent assignment tools</li>
-        <li>Detailed progress tracking</li>
-      </ul>
-    </article>
-
-  </div>
-</section>
-
+        <article class="card">
+          <span class="tag upcoming">Coming Up</span>
+          <h3>Zeriah Learning — Primary 3 &amp; 4</h3>
+          <p>Adaptive practice for deeper mastery with question variations, scaffolding, and skill maps.</p>
+          <ul>
+            <li>Generative question variations</li>
+            <li>Teacher/Parent assignment tools</li>
+            <li>Detailed progress tracking</li>
+          </ul>
+        </article>
+      </div>
+    </section>
 
     <!-- MOE ALIGNMENT -->
     <section id="moe">
@@ -215,8 +215,6 @@ background:
     </div>
   </footer>
 
-  <script>
-    document.getElementById('y').textContent = new Date().getFullYear();
-  </script>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 </body>
 </html>
