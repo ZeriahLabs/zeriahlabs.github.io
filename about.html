@@ -154,6 +154,56 @@
       font-size:.92rem;
     }
     footer a{color:var(--brand);font-weight:900}
+    /* =========================
+   Press-down interaction
+   ========================= */
+
+/* Buttons */
+.btn{
+  -webkit-tap-highlight-color: transparent;
+  transform-origin: center;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.btn:active{
+  transform: translateY(1px) scale(0.992);
+}
+
+/* Cards */
+.card{
+  -webkit-tap-highlight-color: transparent;
+  transform-origin: center;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+
+.card:active{
+  transform: translateY(-1px) scale(0.996);
+}
+
+/* =========================
+   Keyboard focus (accessibility)
+   ========================= */
+
+/* Buttons */
+.btn:focus-visible{
+  outline: 2px solid rgba(0,208,255,.45);
+  outline-offset: 3px;
+}
+
+/* Cards (focus-within works for links/buttons inside cards) */
+.card:focus-within{
+  outline: 2px solid rgba(0,208,255,.35);
+  outline-offset: 4px;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .btn,
+  .card{
+    transition: none;
+  }
+}
+
   </style>
 </head>
 
