@@ -3,44 +3,260 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>About Zeriah Labs</title>
-  <meta name="description" content="The story and values behind Zeriah Labs — a parent-built platform for secure, fun, and educational learning tools." />
-  <link rel="icon" type="image/png" href="https://pub-xxxxxxx.r2.dev/zeriahlabs-assets/zeriah_labs_horizontal_cropped_tight_secondary.png">
+  <title>About — Zeriah Labs</title>
+  <meta name="description" content="The story and values behind Zeriah Labs — secure, fun, and meaningful learning tools for kids." />
+  <meta name="theme-color" content="#07131c">
+
+  <!-- Use your app icon as a safe fallback favicon -->
+  <link rel="icon" type="image/webp" href="https://cdn.zeriahlabs.com/ui/app_icon.webp">
+
   <style>
-    body{margin:0;font:16px/1.6 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;color:#e9f3fb;background:#081218}
-    .wrap{max-width:800px;margin:0 auto;padding:40px 20px}
-    header{padding:20px;border-bottom:1px solid rgba(255,255,255,.08)}
-    header a{color:#00d0ff;text-decoration:none;font-weight:700}
-    h1{font-size:2.5rem;margin:0 0 20px}
-    p{margin:16px 0;color:#a8c1d6}
-    footer{margin:40px 0;color:#a8c1d6;border-top:1px solid rgba(255,255,255,.08);padding-top:18px;text-align:center}
+    :root{
+      --bg:#07131c;
+      --panel:rgba(255,255,255,.05);
+      --panel2:rgba(255,255,255,.035);
+      --ink:#eef6ff;
+      --muted:#a9bfd2;
+      --rule:rgba(255,255,255,.10);
+
+      --brand:#00d0ff;
+      --brand2:#22e3b1;
+
+      --max:980px;
+      --r:20px;
+      --shadow:0 18px 70px rgba(0,0,0,.55);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font:16px/1.65 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;
+      color:var(--ink);
+      background:
+        radial-gradient(900px 520px at 20% 0%, rgba(34,227,177,.14), transparent 55%),
+        radial-gradient(900px 520px at 85% 10%, rgba(0,208,255,.12), transparent 55%),
+        linear-gradient(180deg, #061018 0%, #07131c 55%, #07101a 100%);
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
+
+    /* Header (matches index) */
+    header{
+      position:sticky;top:0;z-index:50;
+      backdrop-filter:saturate(150%) blur(10px);
+      background:rgba(7,19,28,.72);
+      border-bottom:1px solid var(--rule);
+    }
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand img{height:32px;width:auto;border-radius:8px;box-shadow:0 8px 22px rgba(0,0,0,.45)}
+    .brand span{font-weight:900;letter-spacing:.2px}
+
+    .links{display:flex;gap:10px;flex-wrap:wrap}
+    .links a{
+      padding:9px 12px;border-radius:12px;
+      border:1px solid var(--rule);
+      color:var(--muted);
+      font-weight:800;font-size:.95rem;
+      background:rgba(255,255,255,.02);
+    }
+    .links a:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+    .links a.primary{
+      background:linear-gradient(90deg,var(--brand),var(--brand2));
+      border-color:transparent;
+      color:#001016;
+    }
+
+    /* Page */
+    main{padding:46px 0 18px}
+    h1{
+      margin:0 0 10px;
+      font-size:clamp(30px,5.6vw,44px);
+      line-height:1.08;
+      letter-spacing:-.6px;
+    }
+    .lead{
+      margin:0 0 18px;
+      color:rgba(238,246,255,.82);
+      max-width:820px;
+      font-size:1.06rem;
+    }
+
+    .hero{
+      border:1px solid var(--rule);
+      border-radius:24px;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      box-shadow:var(--shadow);
+      padding:26px 22px;
+    }
+
+    .grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    }
+    @media (max-width:820px){ .grid{grid-template-columns:1fr} }
+
+    .card{
+      border:1px solid var(--rule);
+      border-radius:20px;
+      background:rgba(255,255,255,.03);
+      padding:18px 18px;
+      color:var(--muted);
+    }
+    .card h2{
+      margin:0 0 8px;
+      font-size:1.05rem;
+      color:var(--ink);
+      letter-spacing:-.2px;
+    }
+    .card p{margin:0}
+
+    .pillbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:7px 10px;border-radius:999px;
+      font-size:.82rem;font-weight:950;
+      border:1px solid var(--rule);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+    }
+
+    .story{
+      margin-top:18px;
+      color:rgba(238,246,255,.80);
+      font-size:1.02rem;
+    }
+    .story p{margin:12px 0;color:rgba(238,246,255,.80)}
+    .story strong{color:var(--ink)}
+
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:12px 16px;border-radius:14px;
+      border:1px solid var(--rule);
+      background:rgba(255,255,255,.04);
+      font-weight:900;
+      color:var(--ink);
+    }
+    .btn.primary{
+      background:linear-gradient(90deg,var(--brand),var(--brand2));
+      border-color:transparent;color:#001016;
+    }
+
+    footer{
+      margin:40px 0;
+      color:var(--muted);
+      border-top:1px solid var(--rule);
+      padding-top:18px;
+      font-size:.92rem;
+    }
+    footer a{color:var(--brand);font-weight:900}
   </style>
 </head>
-<body>
-  <header class="wrap">
-    <a href="index.html">← Back to Zeriah Labs</a>
-  </header>
-  <main class="wrap">
-    <h1>Zeriah Labs</h1>
-<p>
-  Zeriah Labs was created with a simple idea: to provide quality, educational, and enjoyable content for kids.
-  Instead of endless videos or cartoons, we design experiences that are engaging, cute, and meaningful —
-  something that entertains while helping children learn.
-</p>
-<p>
-  Privacy and security come first. Every app is built with data protection in mind,
-  so families can trust the tools they use. Fun and learning follow,
-  supported by features that also give parents useful feedback.
-</p>
-<p>
-  Just as Zeriah Group nurtures ideas with care, and Zeriah Studios creates playful worlds for bonding,
-  Zeriah Labs stays rooted in its mission: safe, meaningful learning that grows alongside children and families.
-</p>
 
+<body>
+  <header>
+    <div class="wrap nav">
+      <a href="index.html" class="brand" aria-label="Zeriah Labs home">
+        <img src="https://assets.zeriahlabs.com/Zeriah_Labs_Vertical_Final.webp" alt="Zeriah Labs logo">
+        <span>Zeriah Labs</span>
+      </a>
+
+      <nav class="links" aria-label="Primary">
+        <a href="index.html#product">Product</a>
+        <a href="index.html#moe">MOE</a>
+        <a href="index.html#pricing">Pricing</a>
+        <a href="about.html" style="color:var(--ink);background:rgba(255,255,255,.06)">About</a>
+        <a class="primary" href="https://zeriahgroup.com" target="_blank" rel="noopener">Zeriah Group</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>About Zeriah Labs</h1>
+      <p class="lead">
+        Zeriah Labs builds calm, meaningful learning tools for kids — designed to be engaging,
+        research-driven, and respectful of privacy.
+      </p>
+
+      <div class="pillbar" aria-label="Values">
+        <span class="pill">🔒 Privacy-first</span>
+        <span class="pill">✅ MOE-aligned</span>
+        <span class="pill">👨‍👩‍👧 Built by a parent</span>
+        <span class="pill">🌿 Calm daily practice</span>
+      </div>
+
+      <div class="grid" role="list">
+        <div class="card" role="listitem">
+          <h2>Why Zeriah Labs exists</h2>
+          <p>
+            Kids deserve better than endless videos. We make experiences that are cute, engaging,
+            and genuinely educational — entertainment that leaves something behind.
+          </p>
+        </div>
+
+        <div class="card" role="listitem">
+          <h2>Security &amp; trust</h2>
+          <p>
+            Privacy and security come first. Our default is minimal data collection,
+            sensible settings, and building for families — not tracking.
+          </p>
+        </div>
+
+        <div class="card" role="listitem">
+          <h2>Learning with structure</h2>
+          <p>
+            We organize content in clear steps so practice stays appropriate, repeatable,
+            and confidence-building — especially for MOE-aligned daily habits.
+          </p>
+        </div>
+
+        <div class="card" role="listitem">
+          <h2>One ecosystem</h2>
+          <p>
+            Zeriah Group nurtures ventures with care. Zeriah Studios builds playful worlds for bonding.
+            Zeriah Labs focuses on safe learning — different missions, same spirit.
+          </p>
+        </div>
+      </div>
+
+      <!-- Keep your original story copy (refined slightly) -->
+      <div class="story">
+        <p>
+          <strong>Zeriah Labs was created with a simple idea:</strong> provide quality, educational,
+          and enjoyable content for kids. Instead of passive screen time, we design experiences that
+          encourage curiosity, practice, and growth.
+        </p>
+        <p>
+          <strong>Privacy and security come first.</strong> Every app is built with data protection in mind,
+          so families can trust the tools they use. Fun and learning follow — supported by features that
+          give parents useful feedback without becoming intrusive.
+        </p>
+        <p>
+          Just as Zeriah Group nurtures ideas with care, and Zeriah Studios creates playful worlds for bonding,
+          Zeriah Labs stays rooted in its mission: safe, meaningful learning that grows alongside children and families.
+        </p>
+      </div>
+
+      <div class="actions">
+        <a class="btn primary" href="index.html#product">Explore the product</a>
+        <a class="btn" href="mailto:support.labs@zeriahgroup.com">Email support.labs@zeriahgroup.com</a>
+      </div>
+    </section>
   </main>
+
   <footer>
-    © <span id="y"></span> Zeriah Labs · A <a href="https://zeriahgroup.github.io" style="color:#00d0ff">Zeriah Group</a> company
+    <div class="wrap">
+      © <span id="y"></span> Zeriah Labs · A <a href="https://zeriahgroup.com" target="_blank" rel="noopener">Zeriah Group</a> company
+    </div>
   </footer>
-  <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
