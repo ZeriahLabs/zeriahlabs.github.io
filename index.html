@@ -29,18 +29,28 @@
     }
 
     *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font:16px/1.6 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;
-      color:var(--ink);
-      background:
-        radial-gradient(900px 520px at 20% 0%, rgba(34,227,177,.14), transparent 55%),
-        radial-gradient(900px 520px at 85% 10%, rgba(0,208,255,.12), transparent 55%),
-        linear-gradient(180deg, #061018 0%, #07131c 55%, #07101a 100%);
-    }
-    a{color:inherit;text-decoration:none}
-    .wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
+    html, body { min-height: 100%; }
+
+body{
+  margin:0;
+  font:16px/1.6 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;
+  color:var(--ink);
+
+  /* Base color always fills infinite height */
+  background-color: #07101a;
+
+  /* Gradients layered on top */
+  background-image:
+    radial-gradient(900px 520px at 20% 0%, rgba(34,227,177,.14), transparent 55%),
+    radial-gradient(900px 520px at 85% 10%, rgba(0,208,255,.12), transparent 55%),
+    linear-gradient(180deg, #061018 0%, #07131c 55%, #07101a 100%);
+
+  /* Key changes */
+  background-repeat: no-repeat;
+  background-attachment: scroll;   /* <-- change from fixed */
+}
+
+
 
     /* Header */
     header{
@@ -99,6 +109,7 @@
       background:linear-gradient(90deg,var(--brand),var(--brand2));
       border-color:transparent;color:#001016;
     }
+main, section, footer { background: transparent; }
 
     /* Sections */
     section{margin:26px 0}
