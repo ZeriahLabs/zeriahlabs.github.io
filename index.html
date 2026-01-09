@@ -4,10 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Zeriah Labs — Learning that feels like play</title>
-  <meta name="description" content="Zeriah Labs builds secure, research-driven learning tools for kids — privacy-first, family-safe, and aligned to Singapore MOE." />
+  <meta name="description" content="Zeriah Labs builds secure, research-driven learning tools for kids — privacy-first, family-safe, and syllabus-based." />
   <meta name="theme-color" content="#07131c">
 
-  <!-- Favicon -->
   <link rel="icon" type="image/webp" href="https://cdn.zeriahlabs.com/ui/app_icon.webp">
 
   <style>
@@ -50,8 +49,6 @@ body{
   background-attachment: scroll;   /* <-- change from fixed */
 }
 
-
-
     /* Header */
     header{
       position:sticky;top:0;z-index:50;
@@ -71,6 +68,7 @@ body{
       color:var(--muted);
       font-weight:800;font-size:.95rem;
       background:rgba(255,255,255,.02);
+      text-decoration: none;
     }
     .links a:hover{color:var(--ink);background:rgba(255,255,255,.05)}
     .links a.primary{
@@ -104,6 +102,7 @@ body{
       background:rgba(255,255,255,.04);
       font-weight:900;
       color:var(--ink);
+      text-decoration: none;
     }
     .btn.primary{
       background:linear-gradient(90deg,var(--brand),var(--brand2));
@@ -217,7 +216,9 @@ main, section, footer { background: transparent; }
 
       <nav class="links" aria-label="Primary">
         <a href="#product">Product</a>
-        <a href="#moe">MOE</a>
+        <a href="https://store.zeriahlabs.com" target="_blank" rel="noopener">Store</a>
+        <a href="https://invest.zeriahlabs.com" target="_blank" rel="noopener">Invest</a>
+        <a href="#standards">Standards</a>
         <a href="#pricing">Pricing</a>
         <a href="about.html">About</a>
         <a class="primary" href="https://zeriahgroup.com" target="_blank" rel="noopener">Zeriah Group</a>
@@ -230,11 +231,11 @@ main, section, footer { background: transparent; }
       <h1>Learning that feels like play.</h1>
       <p class="lead">
         Zeriah Labs builds secure, research-driven learning tools for kids—privacy-first by default,
-        aligned to Singapore MOE, and designed for calm daily practice.
+        based on the Singapore syllabus, and designed for calm daily practice.
       </p>
 
       <div class="trust" aria-label="Trust badges">
-        <span class="badge">✅ MOE-aligned</span>
+        <span class="badge">📚 Syllabus-based</span>
         <span class="badge">🔒 Privacy-first</span>
         <span class="badge">📶 Offline-friendly</span>
         <span class="badge">👨‍👩‍👧‍👦 Family-safe</span>
@@ -246,7 +247,6 @@ main, section, footer { background: transparent; }
       </div>
     </section>
 
-    <!-- PRODUCT (single focus) -->
     <section id="product">
       <h2>Product</h2>
 
@@ -261,7 +261,7 @@ main, section, footer { background: transparent; }
               <div class="subtitle">Primary-friendly Chinese practice — built for daily consistency.</div>
               <div class="pillbar">
                 <span class="pill now">In development</span>
-                <span class="pill dev">MOE-aligned</span>
+                <span class="pill dev">Curriculum-ready</span>
                 <span class="pill">Offline-friendly</span>
                 <span class="pill">Privacy-first</span>
               </div>
@@ -281,19 +281,18 @@ main, section, footer { background: transparent; }
 
           <div class="card-actions">
             <a class="btn primary" href="#contact">Get updates</a>
-            <a class="btn" href="#moe">See MOE safeguards</a>
+            <a class="btn" href="#standards">See curriculum details</a>
           </div>
         </div>
       </article>
     </section>
 
-    <!-- MOE -->
-    <section id="moe">
-      <h2>MOE Alignment &amp; Safeguards</h2>
+    <section id="standards">
+      <h2>Curriculum &amp; Standards</h2>
       <div class="grid">
         <div class="mini">
-          <h3>Curriculum mapping</h3>
-          <div>Content is organized into clear steps and difficulty bands so practice stays appropriate.</div>
+          <h3>Syllabus mapping</h3>
+          <div>Content is structured to follow the current Singapore Primary Chinese syllabus difficulty bands.</div>
         </div>
         <div class="mini">
           <h3>QA &amp; review</h3>
@@ -306,7 +305,6 @@ main, section, footer { background: transparent; }
       </div>
     </section>
 
-    <!-- PRICING (keep simple since you’re still building) -->
     <section id="pricing">
       <h2>Pricing</h2>
       <div class="grid">
@@ -325,7 +323,6 @@ main, section, footer { background: transparent; }
       </div>
     </section>
 
-    <!-- CONTACT -->
     <section id="contact">
       <h2>Contact</h2>
       <div class="mini">
