@@ -353,5 +353,141 @@
   <script>
     document.getElementById('y').textContent = new Date().getFullYear();
   </script>
+<div id="auth-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div style="background: var(--bg); padding: 32px; border-radius: var(--r); border: 1px solid var(--rule); width: 100%; max-width: 400px; box-shadow: var(--shadow);">
+      <h2 id="auth-title" style="margin-top: 0; font-size: 1.5rem;">Sign In</h2>
+      <p id="auth-error" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: -10px;"></p>
+      
+      <form id="auth-form" style="display: flex; flex-direction: column; gap: 16px;">
+        <input type="email" id="email" placeholder="Email Address" required style="padding: 12px; border-radius: 8px; border: 1px solid var(--rule); background: rgba(255,255,255,0.05); color: var(--ink); font-size: 1rem;">
+        <input type="password" id="password" placeholder="Password" required style="padding: 12px; border-radius: 8px; border: 1px solid var(--rule); background: rgba(255,255,255,0.05); color: var(--ink); font-size: 1rem;">
+        <button type="submit" class="btn primary" style="justify-content: center; width: 100%; border: none; cursor: pointer;">Submit</button>
+      </form>
+
+      <div style="margin-top: 16px; text-align: center; font-size: 0.9rem; color: var(--muted);">
+        <span id="auth-switch-text">Don't have an account?</span> 
+        <a href="#" id="auth-switch" style="color: var(--brand); font-weight: bold; text-decoration: none;">Register here</a>
+      </div>
+      <button id="close-modal" style="background: none; border: none; color: var(--muted); margin-top: 16px; width: 100%; cursor: pointer; font-weight: bold;">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. Set current year in footer
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    // 2. Element Selectors
+    const authModal = document.getElementById('auth-modal');
+    const authForm = document.getElementById('auth-form');
+    const authTitle = document.getElementById('auth-title');
+    const authSwitch = document.getElementById('auth-switch');
+    const authSwitchText = document.getElementById('auth-switch-text');
+    const authError = document.getElementById('auth-error');
+    const loginBtn = document.querySelector('a[href="/login"]'); 
+    
+    // UI Elements to update upon login
+    const xpBarFill = document.querySelector('.xp-fill');
+    const levelText = document.querySelector('.user-progress span:first-child');
+    const xpText = document.querySelector('.user-progress span:last-child');
+
+    let isLoginMode = true;
+    const API_URL = 'http://localhost:3000/api';
+
+    // 3. Modal Toggles
+    loginBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      // If user is already logged in, log them out instead
+      if(localStorage.getItem('zeriah_token')) {
+        localStorage.removeItem('zeriah_token');
+        window.location.reload();
+        return;
+      }
+      authModal.style.display = 'flex';
+    });
+
+    document.getElementById('close-modal').addEventListener('click', () => {
+      authModal.style.display = 'none';
+      authError.style.display = 'none';
+    });
+
+    authSwitch.addEventListener('click', (e) => {
+      e.preventDefault();
+      isLoginMode = !isLoginMode;
+      authTitle.textContent = isLoginMode ? 'Sign In' : 'Create Account';
+      authSwitchText.textContent = isLoginMode ? "Don't have an account?" : "Already have an account?";
+      authSwitch.textContent = isLoginMode ? 'Register here' : 'Sign in here';
+      authError.style.display = 'none';
+    });
+
+    // 4. Handle Form Submission
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const endpoint = isLoginMode ? '/login' : '/register';
+
+      try {
+        const response = await fetch(API_URL + endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          authError.textContent = data.error;
+          authError.style.display = 'block';
+          return;
+        }
+
+        // Success! Save the token and refresh UI
+        localStorage.setItem('zeriah_token', data.token);
+        authModal.style.display = 'none';
+        checkSession(); 
+        
+      } catch (err) {
+        authError.textContent = 'Server is currently offline.';
+        authError.style.display = 'block';
+      }
+    });
+
+    // 5. Verify Session on Page Load
+    async function checkSession() {
+      const token = localStorage.getItem('zeriah_token');
+      if (!token) return;
+
+      try {
+        const response = await fetch(API_URL + '/progress', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const user = await response.json();
+          
+          // Update the UI
+          loginBtn.textContent = 'Sign Out';
+          loginBtn.style.background = 'rgba(255,255,255,0.1)'; // Make it look less like a CTA
+          
+          // Update Kongregate Dashboard values
+          levelText.textContent = user.level;
+          xpText.textContent = `${user.xp} / 1000 XP`;
+          
+          // Calculate arbitrary bar fill based on a 1000 XP cap for now
+          const percentage = Math.min((user.xp / 1000) * 100, 100);
+          xpBarFill.style.width = `${percentage}%`;
+        } else {
+          // Token expired or invalid
+          localStorage.removeItem('zeriah_token');
+        }
+      } catch (err) {
+        console.error('Failed to verify session');
+      }
+    }
+
+    // Run on startup
+    checkSession();
+  </script>
+  
 </body>
 </html>
