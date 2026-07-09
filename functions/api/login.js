@@ -20,7 +20,7 @@ export async function onRequestPost(context) {
     }
     
     // 4. Return success to the frontend
-    return new Response(JSON.stringify({ message: 'Login successful', xp: user.xp, level: user.level }), { 
+    return new Response(JSON.stringify({ message: 'Login successful', token: user.id, xp: user.xp, level: user.level }), { 
         status: 200,
         headers: { "Content-Type": "application/json" }
     });
