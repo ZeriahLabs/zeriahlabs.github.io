@@ -1,11 +1,32 @@
+// Game State
 let basketCount = 0;
 const basketTarget = 5;
 let currentAnswer = 0;
 
+// DOM Elements
 const visualMath = document.getElementById('visual-math');
 const abstractMath = document.getElementById('abstract-math');
 const choicesContainer = document.getElementById('choices-container');
 const basketCountDisplay = document.getElementById('basket-count');
+
+// NEW: Screens & Buttons
+const startScreen = document.getElementById('start-screen');
+const gameScreen = document.getElementById('game-screen');
+const startBtn = document.getElementById('start-btn');
+
+// NEW: Start Button Event Listener
+startBtn.addEventListener('click', () => {
+  // Hide the start screen and show the game screen
+  startScreen.style.display = 'none';
+  gameScreen.style.display = 'block';
+  
+  // Reset the basket just in case they are playing a second time
+  basketCount = 0;
+  basketCountDisplay.textContent = basketCount;
+  
+  // Kick off the first round!
+  startNewRound();
+});
 
 function startNewRound() {
   // Generate numbers for toddlers (1 to 4 to keep it simple)
@@ -76,8 +97,14 @@ async function winBasket() {
   // BIG Celebration!
   confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 }, zIndex: 9999 });
   
-  basketCount = 0;
-  basketCountDisplay.textContent = basketCount;
+  // NEW: Transition back to the start screen after a win
+  setTimeout(() => {
+    gameScreen.style.display = 'none';
+    startScreen.style.display = 'block';
+    
+    // Change the start screen text to be encouraging
+    document.querySelector('#start-screen h3').textContent = "Great job! Play again?";
+  }, 3000); // Wait 3 seconds for them to enjoy the confetti
 
   // Talk to our new API!
   const token = localStorage.getItem('zeriah_token');
@@ -87,7 +114,7 @@ async function winBasket() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': token // Passing token via header based on your Cloudflare setup
+          'X-User-Id': token 
         },
         body: JSON.stringify({
           achievementId: 'math_basket_filled',
@@ -96,7 +123,6 @@ async function winBasket() {
       });
 
       if (response.ok) {
-        // We reuse the function you extracted to auth.js to sync the UI sidebar!
         if (typeof checkSession === 'function') {
             checkSession();
         }
@@ -105,9 +131,6 @@ async function winBasket() {
       console.error("Failed to sync progress", error);
     }
   }
-
-  setTimeout(startNewRound, 2000); 
 }
 
-// Kick off the first game
-startNewRound();
+// Notice that we completely removed the auto-executing startNewRound() at the very bottom!
