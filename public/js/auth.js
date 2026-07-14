@@ -140,33 +140,67 @@ authForm.addEventListener('submit', async (e) => {
 
 // 5. Verify Session on Page Load
 async function checkSession() {
-  const token = localStorage.getItem('zeriah_token');
-  if (!token) return;
+    const token = localStorage.getItem('zeriah_token');
+    if (!token) return;
 
-  try {
-    const response = await fetch(API_URL + '/progress', {
-      headers: { 'X-User-Id': token } 
-    });
+    try {
+        const response = await fetch('/api/progress', {
+            headers: { 'X-User-Id': token }
+        });
 
-    if (response.ok) {
-      const user = await response.json();
-      
-      loginBtn.textContent = 'Sign Out';
-      loginBtn.style.background = 'rgba(255,255,255,0.1)'; 
-      
-      if (levelText) levelText.textContent = user.level;
-      if (xpText) xpText.textContent = `${user.xp} / 1000 XP`;
-      
-      if (xpBarFill) {
-        const percentage = Math.min((user.xp / 1000) * 100, 100);
-        xpBarFill.style.width = `${percentage}%`;
-      }
-    } else {
-      localStorage.removeItem('zeriah_token');
+        if (response.ok) {
+            const data = await response.json();
+            
+            // 1. Update the Navigation Bar
+            updateNavToLoggedIn(data.email);
+
+            // 2. Update the Sidebar Stats (Notice we use 'data' instead of 'user')
+            if (levelText) levelText.textContent = data.level;
+            if (xpText) xpText.textContent = `${data.xp} / 1000 XP`;
+            
+            if (xpBarFill) {
+                const percentage = Math.min((data.xp / 1000) * 100, 100);
+                xpBarFill.style.width = `${percentage}%`;
+            }
+        } else {
+            localStorage.removeItem('zeriah_token');
+            window.location.reload();
+        }
+    } catch (err) {
+        console.error("Session check failed", err);
     }
-  } catch (err) {
-    console.error('Failed to verify session');
-  }
 }
-
+// --- NEW: UI Update Logic ---
+function updateNavToLoggedIn(email) {
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) {
+        // Extract the name from the email (e.g. "timothy" from "timothy@email.com")
+        const name = email.split('@')[0];
+        
+        // Remove the glowing primary class so it blends in better
+        loginBtn.classList.remove('primary');
+        loginBtn.style.background = 'rgba(255,255,255,0.05)';
+        loginBtn.style.color = 'var(--ink)';
+        loginBtn.style.border = '1px solid var(--rule)';
+        
+        // Change the text to show a user icon, their name, and a logout button
+        loginBtn.innerHTML = `👤 ${name} <span id="logout-btn" style="color: #ef4444; margin-left: 12px; font-weight: 900; cursor: pointer;">[Logout]</span>`;
+        
+        // Remove the click event that opens the login modal
+        loginBtn.onclick = null;
+        
+        // Attach the logout logic
+        setTimeout(() => {
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    e.stopPropagation();
+                    localStorage.removeItem('zeriah_token');
+                    window.location.reload(); // Refresh the page to clear states
+                });
+            }
+        }, 100); // Tiny delay to ensure the DOM has updated
+    }
+}
 checkSession();
