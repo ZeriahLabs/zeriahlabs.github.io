@@ -30,11 +30,15 @@ export async function onRequestPost(context) {
       'UPDATE users SET xp = xp + ? WHERE id = ?'
     ).bind(xpReward || 50, userId).run();
 
-    // 5. Fetch updated user for level-up check
+    // ... (Your existing steps 1-4)
+
+    // 5. Fetch updated user
     const user = await context.env.zeriah_labs_db.prepare(
       'SELECT xp, level FROM users WHERE id = ?'
     ).bind(userId).first();
     
+    // MODIFIED: Simplified Level-Up Logic
+    // If xp is over 1000 and they are still a 'Rookie', upgrade them.
     let newLevel = user.level;
     if (user.xp >= 1000 && user.level === 'Level 4 Rookie') {
       newLevel = 'Level 5 Scholar';
@@ -43,8 +47,14 @@ export async function onRequestPost(context) {
       ).bind(newLevel, userId).run();
     }
     
-    return new Response(JSON.stringify({ success: true, newXp: user.xp, newLevel: newLevel }), { 
-      status: 200, headers: { "Content-Type": "application/json" }
+    // OPTIONAL: Add a return field to trigger confetti!
+    return new Response(JSON.stringify({ 
+        success: true, 
+        newXp: user.xp, 
+        newLevel: newLevel,
+        isLevelUp: newLevel !== user.level // This helps the frontend know when to show confetti
+    }), { 
+      status: 200, headers: { "Content-Type": "application/json" } 
     });
 
   } catch (err) {
