@@ -14,7 +14,7 @@ export async function onRequestPost(context) {
       .bind(email)
       .first();
     
-    if (!user || user.password !== hashHex) {
+    if (!user || user.password_hash !== hashHex) {
       return new Response(JSON.stringify({ error: 'Invalid credentials' }), { 
         status: 401, headers: { "Content-Type": "application/json" } 
       });
