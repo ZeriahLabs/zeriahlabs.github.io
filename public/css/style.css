@@ -145,7 +145,7 @@
       border: 1px solid var(--rule);
       padding: 10px; border-radius: 12px;
     }
-    .achievement-item.locked { opacity: 0.5; }
+    .achievement-item.locked { opacity: 0.5; filter: grayscale(1); }
     .achievement-badge { font-size: 1.5rem; background: rgba(255,255,255,0.05); padding: 6px; border-radius: 8px; }
     .achievement-info { flex: 1; }
     .achievement-info h4 { margin: 0; font-size: 0.9rem; font-weight: 700; }
