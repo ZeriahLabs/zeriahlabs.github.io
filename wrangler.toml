@@ -1,0 +1,17 @@
+name = "tight-fog-bd89"
+main = "src/index.js"
+compatibility_date = "2026-07-08"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "zeriah_labs_db"
+database_name = "zeriah-labs-db"
+database_id = "f35495d7-bf03-4588-9513-3704ac19125a"
+
+# Add this at the end of wrangler.toml
+[assets]
+directory = "public"
+binding = "ASSETS"
