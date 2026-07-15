@@ -11,7 +11,7 @@ export async function onRequestPost(context) {
     // Note: I used 'password' here to match your login.js check above. 
     // Ensure your schema.sql created the column as 'password' or 'password_hash'
     await context.env.zeriah_labs_db.prepare(
-      'INSERT INTO users (email, password_hash, security_question, security_answer) VALUES (?, ?, ?, ?)'
+      'INSERT INTO users (email, password, security_question, security_answer) VALUES (?, ?, ?, ?)'
     ).bind(email, hashHex, question, answer).run();
     
     return new Response(JSON.stringify({ message: 'Account created' }), { 
