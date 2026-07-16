@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who's That Dinosaur? | Zeriah Labs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --brand-blue: #00d0ff;
+            --brand-green: #22e3b1;
+            --brand-purple: #a855f7;
+            --bg-color: #1e1e2f;
+            --card-bg: #2a2a40;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            box-sizing: border-box;
+            font-size: 1.5rem;
+        }
+
+        .timer { color: var(--brand-green); }
+        .score { color: var(--brand-blue); }
+
+        .game-container {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 18px 70px rgba(0,0,0,0.4);
+            max-width: 600px;
+            width: 90%;
+            margin-top: 20px;
+        }
+
+        /* THE MAGIC CSS TRICK */
+        .dino-image-container {
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .dino-img {
+            max-height: 100%;
+            max-width: 100%;
+            transition: filter 0.2s ease-out, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Prevent dragging the image to cheat */
+            pointer-events: none; 
+            user-select: none;
+        }
+
+        .silhouette {
+            /* Turns the image completely black */
+            filter: brightness(0) drop-shadow(0 0 10px rgba(0,0,0,0.5));
+            transform: scale(0.95);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background-color: #3b3b5c;
+            color: white;
+            border: 3px solid transparent;
+            border-radius: 16px;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-family: 'Nunito', sans-serif;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 #1e1e2f;
+        }
+
+        .option-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #1e1e2f;
+        }
+
+        .option-btn.correct {
+            background-color: var(--brand-green);
+            color: #1e1e2f;
+        }
+
+        .option-btn.wrong {
+            background-color: #ef4444;
+            opacity: 0.5;
+        }
+
+        .game-over {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .restart-btn {
+            background-color: var(--brand-purple);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header" id="game-header">
+        <div class="timer">⏱ <span id="time">60</span>s</div>
+        <div class="score">⭐ <span id="score">0</span></div>
+    </div>
+
+    <div class="game-container" id="game-screen">
+        <h2 id="question-text">Who's That Dinosaur?</h2>
+        
+        <div class="dino-image-container">
+            <img id="dino-display" class="dino-img silhouette" src="" alt="Dinosaur">
+        </div>
+
+        <div class="options-grid" id="options">
+            </div>
+    </div>
+
+    <div class="game-container game-over" id="game-over-screen">
+        <h1>Time's Up!</h1>
+        <h2>You identified <span id="final-score" style="color: var(--brand-blue);">0</span> Dinosaurs!</h2>
+        <p>Heguru Memory Rank: <strong id="rank" style="color: var(--brand-purple);">Paleontologist</strong></p>
+        <button class="restart-btn" onclick="startGame()">Play Again</button>
+    </div>
+
+    <script>
+        // Database of Dinosaurs (You can expand this!)
+        // Note: Using Wikipedia commons images for the prototype so it works immediately.
+        const dinosaurDB = [
+            { name: "Triceratops", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Triceratops_white_background.jpg/800px-Triceratops_white_background.jpg" },
+            { name: "T-Rex", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Tyrannosaurus_rex_mmartyniuk.png/800px-Tyrannosaurus_rex_mmartyniuk.png" },
+            { name: "Stegosaurus", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Stegosaurus_stenops_life_reconstruction.png/800px-Stegosaurus_stenops_life_reconstruction.png" },
+            { name: "Brachiosaurus", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Brachiosaurus_DB.jpg/800px-Brachiosaurus_DB.jpg" },
+            { name: "Velociraptor", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Velociraptor_mongoliensis_transparent.png/800px-Velociraptor_mongoliensis_transparent.png" },
+            { name: "Pterodactyl", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Pteranodon_sternbergi_Heinrich_Harder.jpg/800px-Pteranodon_sternbergi_Heinrich_Harder.jpg" }
+        ];
+
+        let currentDino;
+        let score = 0;
+        let timeLeft = 60;
+        let timerInterval;
+        let isRevealed = false;
+        let streak = 0;
+
+        const timeEl = document.getElementById('time');
+        const scoreEl = document.getElementById('score');
+        const dinoDisplay = document.getElementById('dino-display');
+        const optionsContainer = document.getElementById('options');
+        const questionText = document.getElementById('question-text');
+
+        function startGame() {
+            score = 0;
+            timeLeft = 60;
+            streak = 0;
+            scoreEl.innerText = score;
+            timeEl.innerText = timeLeft;
+            
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('game-header').style.display = 'flex';
+            document.getElementById('game-over-screen').style.display = 'none';
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            loadNextDinosaur();
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            timeEl.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+
+        function loadNextDinosaur() {
+            isRevealed = false;
+            dinoDisplay.classList.add('silhouette');
+            questionText.innerText = "Who's That Dinosaur?";
+            
+            // Pick a random dinosaur
+            currentDino = dinosaurDB[Math.floor(Math.random() * dinosaurDB.length)];
+            dinoDisplay.src = currentDino.img;
+
+            // Generate wrong options
+            let options = [currentDino.name];
+            while (options.length < 4) {
+                let randomWrong = dinosaurDB[Math.floor(Math.random() * dinosaurDB.length)].name;
+                if (!options.includes(randomWrong)) {
+                    options.push(randomWrong);
+                }
+            }
+            
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+
+            // Render Buttons
+            optionsContainer.innerHTML = '';
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = option;
+                btn.onclick = () => checkAnswer(option, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedName, btnElement) {
+            if (isRevealed) return; // Prevent double clicking
+            isRevealed = true;
+
+            const buttons = document.querySelectorAll('.option-btn');
+            
+            if (selectedName === currentDino.name) {
+                // Correct!
+                btnElement.classList.add('correct');
+                score++;
+                streak++;
+                timeLeft += 3; // Time bonus!
+                
+                scoreEl.innerText = score;
+                
+                // Add green pulse to timer to show they gained time
+                timeEl.style.color = 'var(--brand-green)';
+                timeEl.innerText = `+3s`;
+                setTimeout(() => timeEl.innerText = timeLeft, 500);
+
+                questionText.innerText = `It's ${currentDino.name}!`;
+
+                // Zeriah Labs Confetti logic (Milestone every 5 correct)
+                if (streak % 5 === 0) {
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                }
+            } else {
+                // Wrong
+                btnElement.classList.add('wrong');
+                streak = 0;
+                questionText.innerText = `Nope! It's ${currentDino.name}!`;
+                
+                // Highlight the correct one
+                buttons.forEach(b => {
+                    if (b.innerText === currentDino.name) b.classList.add('correct');
+                });
+            }
+
+            // Remove silhouette (The Reveal Flash!)
+            dinoDisplay.classList.remove('silhouette');
+
+            // Wait 1.5 seconds, then load next
+            setTimeout(loadNextDinosaur, 1500);
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('game-header').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'flex';
+            
+            document.getElementById('final-score').innerText = score;
+            
+            let rank = "Egg";
+            if(score > 5) rank = "Hatchling";
+            if(score > 15) rank = "Raptor Rider";
+            if(score > 30) rank = "T-Rex Master!";
+            
+            document.getElementById('rank').innerText = rank;
+            
+            // Fire off confetti if they did well!
+            if(score > 10) {
+                const duration = 3000;
+                const end = Date.now() + duration;
+                (function frame() {
+                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                }());
+            }
+        }
+
+        // Start game on load
+        window.onload = startGame;
+    </script>
+</body>
+</html>
