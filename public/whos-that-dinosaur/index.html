@@ -95,6 +95,8 @@
                     <div class="dino-image-container">
                         <img id="dino-display" class="dino-img" src="" alt="Dinosaur" style="display: none;">
                     </div>
+                    <!-- Add this new attribution line -->
+                    <div id="attribution-text" style="font-size: 0.75rem; color: var(--muted); margin-bottom: 20px; display: none;"></div>
 
                     <div class="options-grid" id="options">
                         </div>
@@ -164,11 +166,12 @@
                 // Map CSV row logic: url, option1, option2, option3, option4, correct
                 dinosaurDB = dataRows.map(row => {
                     const cols = row.split(',').map(c => c.trim());
-                    if (cols.length >= 6) {
+                    if (cols.length >= 7) {
                         return {
                             img: cols[0],
                             options: [cols[1], cols[2], cols[3], cols[4]],
-                            name: cols[5]
+                            name: cols[5],
+                            author: cols[6] // The new column!
                         };
                     }
                     return null;
@@ -212,6 +215,7 @@
             isRevealed = false;
             dinoDisplay.style.display = 'block';
             dinoDisplay.classList.add('silhouette');
+            document.getElementById('attribution-text').style.display = 'none'; // Hide attribution
             questionText.innerText = "Who's That Dinosaur?";
             
             currentDino = dinosaurDB[Math.floor(Math.random() * dinosaurDB.length)];
@@ -261,6 +265,12 @@
             }
 
             dinoDisplay.classList.remove('silhouette');
+
+            // Show compliant CC BY 4.0 attribution
+            const attributionEl = document.getElementById('attribution-text');
+            attributionEl.innerHTML = `Original image by ${currentDino.author} / <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" style="color: inherit; text-decoration: underline;">CC BY 4.0</a> / Modified from original`;
+            attributionEl.style.display = 'block';
+            
             setTimeout(loadNextDinosaur, 1500);
         }
 
