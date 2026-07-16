@@ -8,9 +8,63 @@
   <meta name="theme-color" content="#07131c">
 
   <link rel="icon" type="image/webp" href="https://cdn.zeriahlabs.com/ui/app_icon.webp">
-
   <link rel="stylesheet" href="/css/style.css">
-  
+
+  <style>
+    /* New Styles for Search and Favorites */
+    .search-bar {
+      margin-top: 24px;
+      padding: 14px 24px;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 99px;
+      border: 1px solid var(--rule);
+      background: rgba(255,255,255,0.05);
+      color: var(--ink);
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+    .search-bar:focus {
+      outline: none;
+      border-color: var(--brand);
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* Wrapper for valid HTML (button inside link is bad practice) */
+    .portrait-wrapper {
+      position: relative;
+      display: block;
+    }
+
+    .fav-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 10;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--rule);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 1.1rem;
+      transition: all 0.2s;
+      backdrop-filter: blur(4px);
+    }
+    .fav-btn:hover {
+      transform: scale(1.1);
+      color: white;
+    }
+    .fav-btn.active {
+      color: #fbbf24; /* Gold star */
+      border-color: #fbbf24;
+      background: rgba(251, 191, 36, 0.15);
+    }
+  </style>
 </head>
 
 <body>
@@ -23,7 +77,7 @@
 
       <nav class="links" aria-label="Primary">
         <a href="#games">Games</a>
-        <a href="#standards">Syllabus</a>
+        <a href="#utilities">Utilities</a>
         <a href="#contact">Contact</a>
         <a href="javascript:void(0)" id="login-btn" class="primary">Sign In / Register</a>
       </nav>
@@ -35,8 +89,9 @@
       <h1>Learning that feels like play.</h1>
       <p style="color:rgba(238,246,255,.82); max-width:820px; margin:16px 0 0; font-size: 1.1rem;">
         Zeriah Labs builds secure, research-driven learning tools for kids—privacy-first by default,
-        based on the Singapore syllabus, and designed for calm, addictive-free daily practice.
+        and designed for calm, addictive-free daily practice.
       </p>
+      <input type="text" id="app-search" class="search-bar" placeholder="🔍 Search games and apps...">
     </section>
 
     <div class="dashboard-layout">
@@ -45,59 +100,77 @@
         
         <div class="netflix-section">
           <h2>Educational Games</h2>
-          <div class="netflix-row">
+          <div class="netflix-row" id="games-grid">
             
-            <a href="https://math.zeriahlabs.com/equation-defense" class="portrait-card" target="_blank">
-              <div class="card-bg-icon">🚀</div>
-              <div class="card-details">
-                <h3>Equation Defense</h3>
-                <p>Blast arithmetic meteors down using fast equations.</p>
-              </div>
-            </a>
+            <div class="portrait-wrapper app-card-container">
+              <button class="fav-btn" data-app-id="eq-defense" aria-label="Favorite">★</button>
+              <a href="https://math.zeriahlabs.com/equation-defense" class="portrait-card" target="_blank">
+                <div class="card-bg-icon">🚀</div>
+                <div class="card-details">
+                  <h3 class="app-title">Equation Defense</h3>
+                  <p>Blast arithmetic meteors down using fast equations.</p>
+                </div>
+              </a>
+            </div>
 
-            <a href="#" class="portrait-card">
-              <div class="card-bg-icon">🧙‍♂️</div>
-              <div class="card-details">
-                <h3>Math Wizard</h3>
-                <p>Cast spell-binding operations to solve mystical puzzles.</p>
-              </div>
-            </a>
+            <div class="portrait-wrapper app-card-container">
+              <button class="fav-btn" data-app-id="math-wizard" aria-label="Favorite">★</button>
+              <a href="#" class="portrait-card">
+                <div class="card-bg-icon">🧙‍♂️</div>
+                <div class="card-details">
+                  <h3 class="app-title">Math Wizard</h3>
+                  <p>Cast spell-binding operations to solve mystical puzzles.</p>
+                </div>
+              </a>
+            </div>
 
-            <a href="#" class="portrait-card">
-              <div class="card-bg-icon">🛡️</div>
-              <div class="card-details">
-                <h3>Sector Defense</h3>
-                <p>Deploy mathematical logic to secure quadrants.</p>
-              </div>
-            </a>
-
-          </div>
-        </div>
-
-        <div class="netflix-section">
-          <h2>Language Practice</h2>
-          <div class="netflix-row">
-
-            <a href="#" class="portrait-card">
-              <div class="card-bg-icon">🇨🇳</div>
-              <div class="card-details">
-                <h3>Zeriah Chinese</h3>
-                <p>Vocabulary loops mapping the Singapore primary syllabus.</p>
-              </div>
-            </a>
-
-            <a href="#" class="portrait-card">
-              <div class="card-bg-icon">✍️</div>
-              <div class="card-details">
-                <h3>Character Run</h3>
-                <p>Trace stroke-orders and master reading mechanics.</p>
-              </div>
-            </a>
+            <div class="portrait-wrapper app-card-container">
+              <button class="fav-btn" data-app-id="sec-defense" aria-label="Favorite">★</button>
+              <a href="#" class="portrait-card">
+                <div class="card-bg-icon">🛡️</div>
+                <div class="card-details">
+                  <h3 class="app-title">Sector Defense</h3>
+                  <p>Deploy mathematical logic to secure quadrants.</p>
+                </div>
+              </a>
+            </div>
 
           </div>
         </div>
 
-      </div>
+        <div class="netflix-section" id="utilities">
+          <h2>Utility Apps</h2>
+          <p style="color: var(--muted); font-size: 0.9rem; margin-top: -10px; margin-bottom: 16px;">
+            In-house tools we use daily. Free to download with ads. Upgrade to remove ads.
+          </p>
+          <div class="netflix-row" id="utils-grid">
+
+            <div class="portrait-wrapper app-card-container">
+              <button class="fav-btn" data-app-id="focus-timer" aria-label="Favorite">★</button>
+              <a href="#" class="portrait-card">
+                <div class="card-bg-icon">⏱️</div>
+                <div class="card-details">
+                  <h3 class="app-title">Focus Block</h3>
+                  <p>A minimalist pomodoro timer for deep work sessions.</p>
+                </div>
+              </a>
+            </div>
+
+            <div class="portrait-wrapper app-card-container">
+              <button class="fav-btn" data-app-id="daily-habits" aria-label="Favorite">★</button>
+              <a href="#" class="portrait-card">
+                <div class="card-bg-icon">✅</div>
+                <div class="card-details">
+                  <h3 class="app-title">Daily Tracker</h3>
+                  <p>Keep your streaks alive without complex charts.</p>
+                </div>
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+        </div>
 
       <aside class="achievements-panel">
         <h2>🏆 Achievements</h2>
@@ -123,26 +196,9 @@
 
     </div>
 
-    <section id="standards">
-      <div class="grid">
-        <div class="mini">
-          <h3>Syllabus mapping</h3>
-          <div>Content is structured to follow the current Singapore Primary syllabus difficulty bands.</div>
-        </div>
-        <div class="mini">
-          <h3>QA &amp; review</h3>
-          <div>We prioritize correctness, clarity, and fast fixes when feedback is received.</div>
-        </div>
-        <div class="mini">
-          <h3>Privacy by design</h3>
-          <div>We default to minimal collection and focus on learning—never profiling.</div>
-        </div>
-      </div>
-    </section>
-
-    <section id="contact">
+    <section id="contact" style="margin-top: 40px;">
       <h2>Contact Us</h2>
-      <div class="mini">
+      <div class="mini" style="border:1px solid var(--rule); border-radius:var(--r); background:rgba(255,255,255,.03); padding:24px;">
         Questions or partnerships? Email 
         <a href="mailto:support.labs@zeriahgroup.com" style="color:var(--brand);font-weight:900">
           support.labs@zeriahgroup.com
@@ -167,43 +223,61 @@
   </footer>
 
   <div id="auth-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-    <div style="background: var(--bg); padding: 32px; border-radius: var(--r); border: 1px solid var(--rule); width: 100%; max-width: 400px; box-shadow: var(--shadow);">
-      <h2 id="auth-title" style="margin-top: 0; font-size: 1.5rem;">Sign In</h2>
-      <p id="auth-error" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: -10px;"></p>
-      <p id="auth-success" style="color: var(--brand2); font-size: 0.85rem; display: none; margin-top: -10px;"></p>
-      
-      <form id="auth-form" style="display: flex; flex-direction: column; gap: 16px;">
-        <input type="email" id="email" placeholder="Email Address" required style="padding: 12px; border-radius: 8px; border: 1px solid var(--rule); background: rgba(255,255,255,0.05); color: var(--ink);">
-        
-        <input type="text" id="sec-question" placeholder="Security Question (e.g. Favorite Game)" style="display:none; padding: 12px; border-radius: 8px; border: 1px solid var(--rule); background: rgba(255,255,255,0.05); color: var(--ink);">
-        <input type="text" id="sec-answer" placeholder="Your Answer" style="display:none; padding: 12px; border-radius: 8px; border: 1px solid var(--rule); background: rgba(255,255,255,0.05); color: var(--ink);">
-
-        <div id="password-container" style="position: relative; display: flex; align-items: center;">
-          <input type="password" id="password" placeholder="Password" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--rule); background: rgba(255,255,255,0.05); color: var(--ink);">
-          <button id="toggle-password" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; font-size: 1.2rem;">👁️</button>
-        </div>
-        
-        <button type="submit" style="padding: 12px; border-radius: 8px; background: linear-gradient(90deg, var(--brand), var(--brand2)); border: none; color: #001016; font-weight: 800; cursor: pointer;">Submit</button>
-      </form>
-
-      <div style="margin-top: 16px; text-align: center; font-size: 0.9rem; color: var(--muted); display: flex; flex-direction: column; gap: 10px;">
-        <div>
-          <span id="auth-switch-text">Don't have an account?</span> 
-          <a href="#" id="auth-switch" style="color: var(--brand); font-weight: bold; text-decoration: none;">Register here</a>
-        </div>
-        <a href="#" id="forgot-link" style="color: var(--muted); text-decoration: underline; font-size: 0.85rem;">Forgot password?</a>
-      </div>
-      <button id="close-modal" style="background: none; border: none; color: var(--muted); margin-top: 16px; width: 100%; cursor: pointer; font-weight: bold;">Cancel</button>
-    </div>
-  </div>
+     </div>
 
   <script>
-    // Just handling the footer year here, keeping it separate from the auth logic
+    // 1. Footer Year
     const yearSpan = document.getElementById('y');
     if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+
+    // 2. Search Functionality
+    const searchInput = document.getElementById('app-search');
+    const appContainers = document.querySelectorAll('.app-card-container');
+
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      
+      appContainers.forEach(container => {
+        const title = container.querySelector('.app-title').textContent.toLowerCase();
+        if (title.includes(searchTerm)) {
+          container.style.display = 'block';
+        } else {
+          container.style.display = 'none';
+        }
+      });
+    });
+
+    // 3. Favorites Functionality (Local Storage)
+    const favButtons = document.querySelectorAll('.fav-btn');
+    let savedFavorites = JSON.parse(localStorage.getItem('zeriah_favorites')) || [];
+
+    // Initialize favorite states on page load
+    favButtons.forEach(btn => {
+      const appId = btn.getAttribute('data-app-id');
+      if (savedFavorites.includes(appId)) {
+        btn.classList.add('active');
+      }
+
+      // Handle clicking the favorite star
+      btn.addEventListener('click', (e) => {
+        e.preventDefault(); // Stop from clicking the link underneath if overlapping
+        e.stopPropagation();
+
+        if (savedFavorites.includes(appId)) {
+          // Remove from favorites
+          savedFavorites = savedFavorites.filter(id => id !== appId);
+          btn.classList.remove('active');
+        } else {
+          // Add to favorites
+          savedFavorites.push(appId);
+          btn.classList.add('active');
+        }
+        // Save back to local storage
+        localStorage.setItem('zeriah_favorites', JSON.stringify(savedFavorites));
+      });
+    });
   </script>
   
   <script src="/js/auth.js"></script>
-
 </body>
 </html>
