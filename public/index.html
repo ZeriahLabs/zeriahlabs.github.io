@@ -97,6 +97,12 @@
     <div class="dashboard-layout">
       
       <div id="games">
+
+        <div class="netflix-section" id="favorites-section" style="display: none;">
+          <h2 style="color: #fbbf24;">Your Favorites</h2>
+          <div class="netflix-row" id="favorites-grid">
+            </div>
+        </div>
         
         <div class="netflix-section">
           <h2>Educational Games</h2>
@@ -170,7 +176,7 @@
           </div>
         </div>
 
-        </div>
+      </div>
 
       <aside class="achievements-panel">
         <h2>🏆 Achievements</h2>
@@ -232,12 +238,10 @@
 
     // 2. Search Functionality
     const searchInput = document.getElementById('app-search');
-    const appContainers = document.querySelectorAll('.app-card-container');
-
     searchInput.addEventListener('input', (e) => {
       const searchTerm = e.target.value.toLowerCase();
-      
-      appContainers.forEach(container => {
+      // Re-query dynamically so we include any dynamically cloned favorite cards
+      document.querySelectorAll('.app-card-container').forEach(container => {
         const title = container.querySelector('.app-title').textContent.toLowerCase();
         if (title.includes(searchTerm)) {
           container.style.display = 'block';
@@ -247,35 +251,70 @@
       });
     });
 
-    // 3. Favorites Functionality (Local Storage)
-    const favButtons = document.querySelectorAll('.fav-btn');
+    // 3. Favorites Logic & Dynamic Row Rendering
     let savedFavorites = JSON.parse(localStorage.getItem('zeriah_favorites')) || [];
+    const favSection = document.getElementById('favorites-section');
+    const favGrid = document.getElementById('favorites-grid');
+    // Grab only the original cards, not clones, to build the favorites row
+    const originalCards = Array.from(document.querySelectorAll('#games-grid .app-card-container, #utils-grid .app-card-container'));
 
-    // Initialize favorite states on page load
-    favButtons.forEach(btn => {
-      const appId = btn.getAttribute('data-app-id');
-      if (savedFavorites.includes(appId)) {
-        btn.classList.add('active');
+    function renderFavorites() {
+      // Clear current favorites row
+      favGrid.innerHTML = '';
+      
+      if (savedFavorites.length === 0) {
+        favSection.style.display = 'none';
+      } else {
+        favSection.style.display = 'block';
+        
+        // Clone saved apps into the favorites grid
+        savedFavorites.forEach(appId => {
+          const cardToClone = originalCards.find(card => card.querySelector('.fav-btn').getAttribute('data-app-id') === appId);
+          if (cardToClone) {
+            const clone = cardToClone.cloneNode(true);
+            clone.querySelector('.fav-btn').classList.add('active');
+            favGrid.appendChild(clone);
+          }
+        });
       }
 
-      // Handle clicking the favorite star
-      btn.addEventListener('click', (e) => {
-        e.preventDefault(); // Stop from clicking the link underneath if overlapping
-        e.stopPropagation();
-
+      // Update the star icons on the ORIGINAL grids
+      originalCards.forEach(card => {
+        const btn = card.querySelector('.fav-btn');
+        const appId = btn.getAttribute('data-app-id');
         if (savedFavorites.includes(appId)) {
-          // Remove from favorites
-          savedFavorites = savedFavorites.filter(id => id !== appId);
-          btn.classList.remove('active');
-        } else {
-          // Add to favorites
-          savedFavorites.push(appId);
           btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
         }
-        // Save back to local storage
-        localStorage.setItem('zeriah_favorites', JSON.stringify(savedFavorites));
       });
+    }
+
+    // Use Event Delegation to handle clicks on both original and cloned buttons
+    document.body.addEventListener('click', (e) => {
+      const btn = e.target.closest('.fav-btn');
+      if (!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const appId = btn.getAttribute('data-app-id');
+      
+      if (savedFavorites.includes(appId)) {
+        // Remove from array
+        savedFavorites = savedFavorites.filter(id => id !== appId);
+      } else {
+        // Add to array
+        savedFavorites.push(appId);
+      }
+      
+      // Save and re-render
+      localStorage.setItem('zeriah_favorites', JSON.stringify(savedFavorites));
+      renderFavorites();
     });
+
+    // Initial render on page load
+    renderFavorites();
   </script>
   
   <script src="/js/auth.js"></script>
