@@ -202,6 +202,7 @@
         let timerInterval;
         let isRevealed = false;
         let streak = 0;
+        let previousDino = null;
 
         const timeEl = document.getElementById('time');
         const scoreEl = document.getElementById('score');
@@ -286,7 +287,18 @@
             attributionEl.style.display = 'none'; // Hide attribution during question
             questionText.innerText = "Who's That Dinosaur?";
             
-            currentDino = dinosaurDB[Math.floor(Math.random() * dinosaurDB.length)];
+            // Pick a random dino, but prevent back-to-back duplicates
+            if (dinosaurDB.length > 1) {
+                do {
+                    currentDino = dinosaurDB[Math.floor(Math.random() * dinosaurDB.length)];
+                } while (previousDino && currentDino.name === previousDino.name);
+            } else {
+                // Failsafe in case your CSV only has 1 dinosaur in it
+                currentDino = dinosaurDB[0];
+            }
+            
+            // Save this dino to memory for the next round
+            previousDino = currentDino;
             dinoDisplay.src = currentDino.img;
 
             let shuffledOptions = [...currentDino.options].sort(() => Math.random() - 0.5);
