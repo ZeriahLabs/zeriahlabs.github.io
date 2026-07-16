@@ -97,7 +97,28 @@
 </head>
 <body>
 
+    <!-- ZERIAH LABS GLOBAL HEADER -->
+    <nav class="global-header">
+        <div class="brand-container">
+            <!-- Ensure this path points to your actual logo asset -->
+            <img src="../assets/logo.png" alt="Zeriah Labs Logo" class="brand-logo" onerror="this.style.display='none'">
+            <span>Zeriah Labs</span>
+        </div>
+        <div class="user-badge">
+            <!-- auth.js should dynamically fill this span -->
+            <span>👤 <span id="nav-username">timothythiam</span></span>
+            <span class="logout-btn" onclick="logout()">[Logout]</span>
+        </div>
+    </nav>
+
     <div class="wrap">
+        
+        <!-- BREADCRUMB NAVIGATION -->
+        <div class="breadcrumb">
+            <!-- Adjust the href to point to your actual dashboard file -->
+            <a href="../index.html" class="back-link">← Back to Dashboard</a>
+        </div>
+
         <div class="dashboard-layout">
             
             <!-- LEFT SIDE: GAME -->
