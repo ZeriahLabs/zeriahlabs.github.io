@@ -38,6 +38,62 @@
       padding: 0 24px;
     }
 
+      /* Global Navbar Styles */
+        .global-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #0b131a; /* Very dark background from the screenshot */
+            padding: 15px 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .brand-container { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            font-size: 1.3rem; 
+            font-weight: 900; 
+        }
+        
+        .brand-logo { height: 35px; }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: rgba(255,255,255,0.05);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-weight: 700;
+        }
+
+        .logout-btn { 
+            color: #ef4444; 
+            cursor: pointer; 
+            transition: opacity 0.2s; 
+        }
+        
+        .logout-btn:hover { opacity: 0.8; }
+        
+        /* Back to Dashboard Breadcrumb */
+        .breadcrumb { 
+            margin: 20px 0; 
+            text-align: left; 
+        }
+        
+        .back-link {
+            color: var(--brand2); /* Uses the cyan from your root variables */
+            text-decoration: none;
+            font-weight: 900;
+            font-size: 1.1rem;
+            transition: opacity 0.2s;
+        }
+        
+        .back-link:hover { opacity: 0.8; }
+
+
     /* Header */
     header {
       position:sticky; top:0; z-index:50;
