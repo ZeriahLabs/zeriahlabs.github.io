@@ -7,51 +7,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
+    <link rel="stylesheet" href="../css/style.css"> 
+    
     <style>
-        :root {
-            --brand-blue: #00d0ff;
-            --brand-green: #22e3b1;
-            --brand-purple: #a855f7;
-            --bg-color: #1e1e2f;
-            --card-bg: #2a2a40;
-        }
-
-        body {
-            font-family: 'Nunito', sans-serif;
-            background-color: var(--bg-color);
-            color: white;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+        /* Specific Game Layout */
+        .game-wrapper {
+            background-color: rgba(255,255,255,0.03);
+            border: 1px solid var(--rule);
+            border-radius: var(--r);
+            padding: 30px;
+            box-shadow: var(--shadow);
             text-align: center;
         }
 
-        .header {
+        .header-stats {
             display: flex;
             justify-content: space-between;
-            width: 100%;
-            max-width: 600px;
-            padding: 20px;
-            box-sizing: border-box;
             font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 900;
         }
+        
+        .timer { color: var(--brand2); }
+        .score { color: var(--brand); }
 
-        .timer { color: var(--brand-green); }
-        .score { color: var(--brand-blue); }
-
-        .game-container {
-            background-color: var(--card-bg);
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 18px 70px rgba(0,0,0,0.4);
-            max-width: 600px;
-            width: 90%;
-            margin-top: 20px;
-        }
-
-        /* THE MAGIC CSS TRICK */
         .dino-image-container {
             height: 300px;
             display: flex;
@@ -63,14 +42,12 @@
         .dino-img {
             max-height: 100%;
             max-width: 100%;
-            transition: filter 0.2s ease-out, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            /* Prevent dragging the image to cheat */
+            transition: filter 0.2s ease-out, transform 0.3s ease;
             pointer-events: none; 
             user-select: none;
         }
 
         .silhouette {
-            /* Turns the image completely black */
             filter: brightness(0) drop-shadow(0 0 10px rgba(0,0,0,0.5));
             transform: scale(0.95);
         }
@@ -82,89 +59,83 @@
         }
 
         .option-btn {
-            background-color: #3b3b5c;
-            color: white;
-            border: 3px solid transparent;
-            border-radius: 16px;
-            padding: 20px;
+            background-color: rgba(255,255,255,0.05);
+            color: var(--ink);
+            border: 1px solid var(--rule);
+            border-radius: 12px;
+            padding: 15px;
             font-size: 1.2rem;
             font-family: 'Nunito', sans-serif;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.1s ease;
-            box-shadow: 0 4px 0 #1e1e2f;
         }
 
-        .option-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 0 0 #1e1e2f;
-        }
+        .option-btn:active { transform: translateY(4px); }
+        .option-btn:hover { background-color: rgba(255,255,255,0.1); }
 
-        .option-btn.correct {
-            background-color: var(--brand-green);
-            color: #1e1e2f;
-        }
-
-        .option-btn.wrong {
-            background-color: #ef4444;
-            opacity: 0.5;
-        }
-
-        .game-over {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .restart-btn {
-            background-color: var(--brand-purple);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 15px 30px;
-            font-size: 1.5rem;
-            font-weight: 900;
-            cursor: pointer;
-            margin-top: 20px;
-        }
+        .option-btn.correct { background-color: var(--brand2); color: #07101a; border-color: transparent;}
+        .option-btn.wrong { background-color: #ef4444; opacity: 0.5; border-color: transparent;}
     </style>
 </head>
 <body>
 
-    <div class="header" id="game-header">
-        <div class="timer">⏱ <span id="time">60</span>s</div>
-        <div class="score">⭐ <span id="score">0</span></div>
-    </div>
+    <div class="wrap">
+        <div class="dashboard-layout">
+            
+            <div>
+                <div class="game-wrapper" id="game-screen">
+                    <div class="header-stats">
+                        <div class="timer">⏱ <span id="time">60</span>s</div>
+                        <div class="score">⭐ <span id="score">0</span></div>
+                    </div>
 
-    <div class="game-container" id="game-screen">
-        <h2 id="question-text">Who's That Dinosaur?</h2>
-        
-        <div class="dino-image-container">
-            <img id="dino-display" class="dino-img silhouette" src="" alt="Dinosaur">
-        </div>
+                    <h2 id="question-text" style="font-family: 'Nunito';">Loading Dinosaurs...</h2>
+                    
+                    <div class="dino-image-container">
+                        <img id="dino-display" class="dino-img" src="" alt="Dinosaur" style="display: none;">
+                    </div>
 
-        <div class="options-grid" id="options">
+                    <div class="options-grid" id="options">
+                        </div>
+                </div>
+
+                <div class="game-wrapper" id="game-over-screen" style="display: none;">
+                    <h1>Time's Up!</h1>
+                    <h2>You identified <span id="final-score" style="color: var(--brand);">0</span> Dinosaurs!</h2>
+                    <p>Paleontology Rank: <strong id="rank" style="color: var(--purple);">Egg</strong></p>
+                    <button class="option-btn" style="background-color: var(--purple); color: white; margin-top: 20px;" onclick="startGame()">Play Again</button>
+                </div>
             </div>
+
+            <div class="achievements-panel">
+                <h2>🏆 Trophies</h2>
+                <div class="user-progress">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span id="levelText" style="font-weight: bold;">Level 1 Rookie</span>
+                        <span id="xpText" style="color: var(--muted); font-size: 0.8rem;">0 / 1000 XP</span>
+                    </div>
+                    <div class="xp-bar"><div class="xp-fill" id="xpBarFill" style="width: 0%;"></div></div>
+                </div>
+                <div class="achievement-list" id="achievementsList">
+                     <div class="achievement-item locked">
+                        <div class="achievement-badge">🦕</div>
+                        <div class="achievement-info">
+                            <h4>Dino Master</h4>
+                            <p>Identify 10 Dinosaurs correctly</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
-    <div class="game-container game-over" id="game-over-screen">
-        <h1>Time's Up!</h1>
-        <h2>You identified <span id="final-score" style="color: var(--brand-blue);">0</span> Dinosaurs!</h2>
-        <p>Heguru Memory Rank: <strong id="rank" style="color: var(--brand-purple);">Paleontologist</strong></p>
-        <button class="restart-btn" onclick="startGame()">Play Again</button>
-    </div>
+    <script src="../js/auth.js"></script>
+    <script src="../js/ui.js"></script>
 
     <script>
-        // Database of Dinosaurs (You can expand this!)
-        // Note: Using Wikipedia commons images for the prototype so it works immediately.
-        const dinosaurDB = [
-            { name: "Triceratops", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Triceratops_white_background.jpg/800px-Triceratops_white_background.jpg" },
-            { name: "T-Rex", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Tyrannosaurus_rex_mmartyniuk.png/800px-Tyrannosaurus_rex_mmartyniuk.png" },
-            { name: "Stegosaurus", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Stegosaurus_stenops_life_reconstruction.png/800px-Stegosaurus_stenops_life_reconstruction.png" },
-            { name: "Brachiosaurus", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Brachiosaurus_DB.jpg/800px-Brachiosaurus_DB.jpg" },
-            { name: "Velociraptor", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Velociraptor_mongoliensis_transparent.png/800px-Velociraptor_mongoliensis_transparent.png" },
-            { name: "Pterodactyl", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Pteranodon_sternbergi_Heinrich_Harder.jpg/800px-Pteranodon_sternbergi_Heinrich_Harder.jpg" }
-        ];
-
+        let dinosaurDB = [];
         let currentDino;
         let score = 0;
         let timeLeft = 60;
@@ -178,6 +149,43 @@
         const optionsContainer = document.getElementById('options');
         const questionText = document.getElementById('question-text');
 
+        // 1. Fetch and Parse the CSV
+        async function loadDinosaurCSV() {
+            try {
+                const response = await fetch('dinos.csv');
+                if (!response.ok) throw new Error("CSV not found");
+                
+                const text = await response.text();
+                
+                // Split by newline and remove the header row
+                const rows = text.split('\n').map(r => r.trim()).filter(r => r);
+                const dataRows = rows.slice(1); 
+
+                // Map CSV row logic: url, option1, option2, option3, option4, correct
+                dinosaurDB = dataRows.map(row => {
+                    const cols = row.split(',').map(c => c.trim());
+                    if (cols.length >= 6) {
+                        return {
+                            img: cols[0],
+                            options: [cols[1], cols[2], cols[3], cols[4]],
+                            name: cols[5]
+                        };
+                    }
+                    return null;
+                }).filter(d => d !== null);
+
+                if(dinosaurDB.length > 0) {
+                    startGame();
+                } else {
+                    questionText.innerText = "Error: No valid dinosaurs in CSV";
+                }
+            } catch (error) {
+                console.error(error);
+                questionText.innerText = "Please create a 'dinos.csv' file!";
+            }
+        }
+
+        // 2. Gameplay Loop
         function startGame() {
             score = 0;
             timeLeft = 60;
@@ -186,7 +194,6 @@
             timeEl.innerText = timeLeft;
             
             document.getElementById('game-screen').style.display = 'block';
-            document.getElementById('game-header').style.display = 'flex';
             document.getElementById('game-over-screen').style.display = 'none';
 
             clearInterval(timerInterval);
@@ -198,35 +205,23 @@
         function updateTimer() {
             timeLeft--;
             timeEl.innerText = timeLeft;
-            if (timeLeft <= 0) {
-                endGame();
-            }
+            if (timeLeft <= 0) endGame();
         }
 
         function loadNextDinosaur() {
             isRevealed = false;
+            dinoDisplay.style.display = 'block';
             dinoDisplay.classList.add('silhouette');
             questionText.innerText = "Who's That Dinosaur?";
             
-            // Pick a random dinosaur
             currentDino = dinosaurDB[Math.floor(Math.random() * dinosaurDB.length)];
             dinoDisplay.src = currentDino.img;
 
-            // Generate wrong options
-            let options = [currentDino.name];
-            while (options.length < 4) {
-                let randomWrong = dinosaurDB[Math.floor(Math.random() * dinosaurDB.length)].name;
-                if (!options.includes(randomWrong)) {
-                    options.push(randomWrong);
-                }
-            }
-            
-            // Shuffle options
-            options.sort(() => Math.random() - 0.5);
+            // Randomize options order so the correct answer isn't always in the same spot
+            let shuffledOptions = [...currentDino.options].sort(() => Math.random() - 0.5);
 
-            // Render Buttons
             optionsContainer.innerHTML = '';
-            options.forEach(option => {
+            shuffledOptions.forEach(option => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerText = option;
@@ -236,83 +231,57 @@
         }
 
         function checkAnswer(selectedName, btnElement) {
-            if (isRevealed) return; // Prevent double clicking
+            if (isRevealed) return; 
             isRevealed = true;
 
             const buttons = document.querySelectorAll('.option-btn');
             
             if (selectedName === currentDino.name) {
-                // Correct!
                 btnElement.classList.add('correct');
                 score++;
                 streak++;
-                timeLeft += 3; // Time bonus!
+                timeLeft += 3; // Time bonus
                 
                 scoreEl.innerText = score;
-                
-                // Add green pulse to timer to show they gained time
-                timeEl.style.color = 'var(--brand-green)';
+                timeEl.style.color = 'var(--brand2)';
                 timeEl.innerText = `+3s`;
-                setTimeout(() => timeEl.innerText = timeLeft, 500);
+                setTimeout(() => { timeEl.style.color = ''; timeEl.innerText = timeLeft; }, 500);
 
                 questionText.innerText = `It's ${currentDino.name}!`;
 
-                // Zeriah Labs Confetti logic (Milestone every 5 correct)
-                if (streak % 5 === 0) {
-                    confetti({
-                        particleCount: 100,
-                        spread: 70,
-                        origin: { y: 0.6 }
-                    });
-                }
+                if (streak % 5 === 0) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             } else {
-                // Wrong
                 btnElement.classList.add('wrong');
                 streak = 0;
                 questionText.innerText = `Nope! It's ${currentDino.name}!`;
                 
-                // Highlight the correct one
                 buttons.forEach(b => {
                     if (b.innerText === currentDino.name) b.classList.add('correct');
                 });
             }
 
-            // Remove silhouette (The Reveal Flash!)
             dinoDisplay.classList.remove('silhouette');
-
-            // Wait 1.5 seconds, then load next
             setTimeout(loadNextDinosaur, 1500);
         }
 
         function endGame() {
             clearInterval(timerInterval);
             document.getElementById('game-screen').style.display = 'none';
-            document.getElementById('game-header').style.display = 'none';
-            document.getElementById('game-over-screen').style.display = 'flex';
-            
+            document.getElementById('game-over-screen').style.display = 'block';
             document.getElementById('final-score').innerText = score;
             
             let rank = "Egg";
             if(score > 5) rank = "Hatchling";
             if(score > 15) rank = "Raptor Rider";
             if(score > 30) rank = "T-Rex Master!";
-            
             document.getElementById('rank').innerText = rank;
-            
-            // Fire off confetti if they did well!
-            if(score > 10) {
-                const duration = 3000;
-                const end = Date.now() + duration;
-                (function frame() {
-                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
-                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
-                    if (Date.now() < end) requestAnimationFrame(frame);
-                }());
-            }
+
+            // Optional: Connect to your existing API logic to save XP
+            // fetch('/api/unlock-achievement', { ... }) 
         }
 
-        // Start game on load
-        window.onload = startGame;
+        // Boot up by loading the CSV
+        window.onload = loadDinosaurCSV;
     </script>
 </body>
 </html>
