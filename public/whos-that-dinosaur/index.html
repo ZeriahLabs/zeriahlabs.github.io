@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
+    <!-- Inherit your global styles -->
     <link rel="stylesheet" href="../css/style.css"> 
     
     <style>
@@ -36,7 +37,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
         }
 
         .dino-img {
@@ -72,10 +73,26 @@
         }
 
         .option-btn:active { transform: translateY(4px); }
-        .option-btn:hover { background-color: rgba(255,255,255,0.1); }
+        .option-btn:hover:not(:disabled) { background-color: rgba(255,255,255,0.1); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.7; }
 
         .option-btn.correct { background-color: var(--brand2); color: #07101a; border-color: transparent;}
         .option-btn.wrong { background-color: #ef4444; opacity: 0.5; border-color: transparent;}
+        
+        .primary-btn {
+            background-color: var(--brand); 
+            color: #07101a; 
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            border-radius: 12px;
+            font-weight: 900;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.1s;
+        }
+        .primary-btn:active { transform: scale(0.95); }
+        .primary-btn:disabled { background-color: var(--rule); cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -83,33 +100,46 @@
     <div class="wrap">
         <div class="dashboard-layout">
             
+            <!-- LEFT SIDE: GAME -->
             <div>
-                <div class="game-wrapper" id="game-screen">
+                <!-- START SCREEN -->
+                <div class="game-wrapper" id="start-screen">
+                    <h1 style="font-size: 2.5rem; margin-bottom: 10px; color: var(--brand2);">Who's That Dinosaur?</h1>
+                    <p style="color: var(--muted); margin-bottom: 30px;">High-speed flashcard identification.</p>
+                    <button id="start-btn" class="primary-btn" onclick="startGame()" disabled>Loading Dinosaurs...</button>
+                </div>
+
+                <!-- PLAY SCREEN -->
+                <div class="game-wrapper" id="game-screen" style="display: none;">
                     <div class="header-stats">
                         <div class="timer">⏱ <span id="time">60</span>s</div>
                         <div class="score">⭐ <span id="score">0</span></div>
                     </div>
 
-                    <h2 id="question-text" style="font-family: 'Nunito';">Loading Dinosaurs...</h2>
+                    <h2 id="question-text" style="font-family: 'Nunito';">Loading...</h2>
                     
                     <div class="dino-image-container">
                         <img id="dino-display" class="dino-img" src="" alt="Dinosaur" style="display: none;">
                     </div>
-                    <!-- Add this new attribution line -->
+                    
+                    <!-- Legal Attribution Text (Hidden during silhouette phase) -->
                     <div id="attribution-text" style="font-size: 0.75rem; color: var(--muted); margin-bottom: 20px; display: none;"></div>
 
                     <div class="options-grid" id="options">
-                        </div>
+                        <!-- Buttons injected by CSV data -->
+                    </div>
                 </div>
 
+                <!-- GAME OVER SCREEN -->
                 <div class="game-wrapper" id="game-over-screen" style="display: none;">
                     <h1>Time's Up!</h1>
                     <h2>You identified <span id="final-score" style="color: var(--brand);">0</span> Dinosaurs!</h2>
                     <p>Paleontology Rank: <strong id="rank" style="color: var(--purple);">Egg</strong></p>
-                    <button class="option-btn" style="background-color: var(--purple); color: white; margin-top: 20px;" onclick="startGame()">Play Again</button>
+                    <button class="primary-btn" onclick="startGame()">Play Again</button>
                 </div>
             </div>
 
+            <!-- RIGHT SIDE: ACHIEVEMENTS -->
             <div class="achievements-panel">
                 <h2>🏆 Trophies</h2>
                 <div class="user-progress">
@@ -133,9 +163,16 @@
         </div>
     </div>
 
+    <!-- Audio Elements -->
+    <audio id="sound-correct" src="../sounds/yay.mp3"></audio>
+    <audio id="sound-wrong" src="../sounds/wrong.mp3"></audio>
+    <audio id="bgm" src="../sounds/bgm.mp3" loop></audio>
+
+    <!-- Zeriah Labs Shared Scripts -->
     <script src="../js/auth.js"></script>
     <script src="../js/ui.js"></script>
 
+    <!-- Game Engine & CSV Parser -->
     <script>
         let dinosaurDB = [];
         let currentDino;
@@ -150,6 +187,7 @@
         const dinoDisplay = document.getElementById('dino-display');
         const optionsContainer = document.getElementById('options');
         const questionText = document.getElementById('question-text');
+        const attributionEl = document.getElementById('attribution-text');
 
         // 1. Fetch and Parse the CSV
         async function loadDinosaurCSV() {
@@ -158,33 +196,35 @@
                 if (!response.ok) throw new Error("CSV not found");
                 
                 const text = await response.text();
-                
-                // Split by newline and remove the header row
                 const rows = text.split('\n').map(r => r.trim()).filter(r => r);
                 const dataRows = rows.slice(1); 
 
-                // Map CSV row logic: url, option1, option2, option3, option4, correct
+                // Map logic: url, opt1, opt2, opt3, opt4, correct, author
                 dinosaurDB = dataRows.map(row => {
+                    // Handle potential commas inside quotes if Excel exports it that way
                     const cols = row.split(',').map(c => c.trim());
                     if (cols.length >= 7) {
                         return {
                             img: cols[0],
                             options: [cols[1], cols[2], cols[3], cols[4]],
                             name: cols[5],
-                            author: cols[6] // The new column!
+                            author: cols[6]
                         };
                     }
                     return null;
                 }).filter(d => d !== null);
 
                 if(dinosaurDB.length > 0) {
-                    startGame();
+                    // Activate the Start Button
+                    const startBtn = document.getElementById('start-btn');
+                    startBtn.innerText = "Start Game";
+                    startBtn.disabled = false;
                 } else {
-                    questionText.innerText = "Error: No valid dinosaurs in CSV";
+                    document.getElementById('start-btn').innerText = "Error: CSV is empty";
                 }
             } catch (error) {
                 console.error(error);
-                questionText.innerText = "Please create a 'dinos.csv' file!";
+                document.getElementById('start-btn').innerText = "Error loading dinos.csv";
             }
         }
 
@@ -196,8 +236,15 @@
             scoreEl.innerText = score;
             timeEl.innerText = timeLeft;
             
+            // Switch Screens
+            document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
             document.getElementById('game-over-screen').style.display = 'none';
+
+            // Start Audio
+            const bgm = document.getElementById('bgm');
+            bgm.volume = 0.3; // Lower volume so sounds effects pop
+            bgm.play().catch(e => console.log("Audio play failed:", e));
 
             clearInterval(timerInterval);
             timerInterval = setInterval(updateTimer, 1000);
@@ -215,13 +262,12 @@
             isRevealed = false;
             dinoDisplay.style.display = 'block';
             dinoDisplay.classList.add('silhouette');
-            document.getElementById('attribution-text').style.display = 'none'; // Hide attribution
+            attributionEl.style.display = 'none'; // Hide attribution during question
             questionText.innerText = "Who's That Dinosaur?";
             
             currentDino = dinosaurDB[Math.floor(Math.random() * dinosaurDB.length)];
             dinoDisplay.src = currentDino.img;
 
-            // Randomize options order so the correct answer isn't always in the same spot
             let shuffledOptions = [...currentDino.options].sort(() => Math.random() - 0.5);
 
             optionsContainer.innerHTML = '';
@@ -242,9 +288,11 @@
             
             if (selectedName === currentDino.name) {
                 btnElement.classList.add('correct');
+                document.getElementById('sound-correct').play();
+                
                 score++;
                 streak++;
-                timeLeft += 3; // Time bonus
+                timeLeft += 3; 
                 
                 scoreEl.innerText = score;
                 timeEl.style.color = 'var(--brand2)';
@@ -256,6 +304,8 @@
                 if (streak % 5 === 0) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             } else {
                 btnElement.classList.add('wrong');
+                document.getElementById('sound-wrong').play();
+                
                 streak = 0;
                 questionText.innerText = `Nope! It's ${currentDino.name}!`;
                 
@@ -265,17 +315,20 @@
             }
 
             dinoDisplay.classList.remove('silhouette');
-
-            // Show compliant CC BY 4.0 attribution
-            const attributionEl = document.getElementById('attribution-text');
-            attributionEl.innerHTML = `Original image by ${currentDino.author} / <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" style="color: inherit; text-decoration: underline;">CC BY 4.0</a> / Modified from original`;
-            attributionEl.style.display = 'block';
             
+            // Show compliant CC BY 4.0 attribution
+            if(currentDino.author) {
+                attributionEl.innerHTML = `Original image by ${currentDino.author} / <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" style="color: inherit; text-decoration: underline;">CC BY 4.0</a> / Modified from original`;
+                attributionEl.style.display = 'block';
+            }
+
             setTimeout(loadNextDinosaur, 1500);
         }
 
         function endGame() {
             clearInterval(timerInterval);
+            document.getElementById('bgm').pause(); // Stop music
+            
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'block';
             document.getElementById('final-score').innerText = score;
@@ -285,12 +338,9 @@
             if(score > 15) rank = "Raptor Rider";
             if(score > 30) rank = "T-Rex Master!";
             document.getElementById('rank').innerText = rank;
-
-            // Optional: Connect to your existing API logic to save XP
-            // fetch('/api/unlock-achievement', { ... }) 
         }
 
-        // Boot up by loading the CSV
+        // Boot up by loading the CSV (but don't start the timer yet)
         window.onload = loadDinosaurCSV;
     </script>
 </body>
