@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word-terfall | Zeriah Labs</title>
+    <style>
+        :root {
+          --bg:#07131c;
+          --panel:rgba(255,255,255,.05);
+          --panel2:rgba(255,255,255,.035);
+          --ink:#eef6ff;
+          --muted:#a9bfd2;
+          --rule:rgba(255,255,255,.10);
+          --brand:#00d0ff;
+          --brand2:#22e3b1;
+          --purple:#a855f7;
+          --max:1200px;
+          --r:16px;
+          --shadow:0 18px 70px rgba(0,0,0,.55);
+        }
+
+        *{box-sizing:border-box}
+        html, body { min-height: 100%; margin: 0; }
+
+        body {
+          font:16px/1.6 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;
+          color:var(--ink);
+          background-color: #07101a;
+          background-image:
+            radial-gradient(900px 520px at 20% 0%, rgba(34,227,177,.14), transparent 55%),
+            radial-gradient(900px 520px at 85% 10%, rgba(0,208,255,.12), transparent 55%),
+            linear-gradient(180deg, #061018 0%, #07131c 55%, #07101a 100%);
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .wrap {
+          max-width: var(--max);
+          margin: 0 auto;
+          padding: 0 24px;
+          width: 100%;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding-bottom: 80px;
+        }
+
+        header {
+          position: sticky; 
+          top: 0; 
+          z-index: 50;
+          backdrop-filter: saturate(150%) blur(10px);
+          background: rgba(7,19,28,.72);
+          border-bottom: 1px solid var(--rule);
+          width: 100%;
+        }
+
+        .global-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background-color: #0b131a; 
+          padding: 15px 30px;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          width: 100%;
+        }
+
+        .brand-container { 
+          display: flex; 
+          align-items: center; 
+          gap: 15px; 
+          font-size: 1.3rem; 
+          font-weight: 900; 
+          color: var(--ink);
+          text-decoration: none;
+        }
+
+        .user-badge {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          background-color: rgba(255,255,255,0.05);
+          padding: 8px 15px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.1);
+          font-weight: 700;
+          color: var(--ink);
+        }
+
+        .breadcrumb { 
+          width: 100%;
+          margin: 20px 0; 
+          text-align: left; 
+        }
+
+        .back-link {
+          color: var(--brand2);
+          text-decoration: none;
+          font-weight: 900;
+          font-size: 1.1rem;
+          transition: opacity 0.2s;
+        }
+
+        .back-link:hover { opacity: 0.8; }
+
+        h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 8px; letter-spacing: 0.5px; }
+
+        .game-info {
+          display: flex;
+          gap: 16px;
+          align-items: center;
+          margin-bottom: 24px;
+          color: var(--muted);
+          font-weight: 600;
+        }
+
+        .timer { font-family: monospace; font-size: 1.25rem; color: var(--ink); }
+        .timer.urgent { color: #ef4444; animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .status-box { height: 32px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; }
+        .status-msg { font-size: 1.1rem; font-weight: 700; color: #facc15; animation: pulse 1.5s infinite; }
+
+        .grid-container { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+        .row { display: flex; gap: 8px; }
+        
+        .tile {
+          width: 60px;
+          height: 60px;
+          border: 2px solid rgba(255,255,255,0.2);
+          background-color: rgba(255,255,255,0.03);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.75rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          border-radius: 8px;
+          transition: all 0.2s;
+        }
+
+        .tile.active { border-color: var(--brand); box-shadow: 0 0 12px rgba(0,208,255,0.3); }
+        .tile.correct { background-color: var(--brand2); border-color: var(--brand2); color: #07131c; box-shadow: 0 0 15px rgba(34,227,177,0.4); }
+        .tile.present { background-color: #ca8a04; border-color: #ca8a04; color: #fff; }
+        .tile.absent { background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.1); color: var(--muted); }
+
+        .keyboard {
+          margin-top: 32px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          width: 100%;
+          max-width: 500px;
+          padding: 0 10px;
+          z-index: 10;
+        }
+
+        .kb-row { display: flex; gap: 6px; justify-content: width; width: 100%; }
+        
+        .key {
+          flex: 1;
+          height: 54px;
+          background-color: rgba(255,255,255,0.08);
+          border: 1px solid var(--rule);
+          border-radius: 8px;
+          color: var(--ink);
+          font-weight: 800;
+          font-size: 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          user-select: none;
+          transition: background-color 0.2s;
+        }
+
+        .key.wide { flex: 1.5; font-size: 0.85rem; }
+        .key:hover { background-color: rgba(255,255,255,0.15); }
+        .key.correct { background-color: var(--brand2); color: #07131c; border-color: transparent; }
+        .key.present { background-color: #ca8a04; border-color: transparent; }
+        .key.absent { background-color: rgba(255,255,255,0.03); color: rgba(255,255,255,0.3); }
+
+        /* MODAL */
+        .modal-overlay {
+          position: fixed;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background-color: rgba(0,0,0,0.8);
+          display: none;
+          align-items: center;
+          justify-content: center;
+          z-index: 100;
+          backdrop-filter: blur(5px);
+        }
+
+        .modal {
+          background-color: #0b131a;
+          border: 1px solid var(--rule);
+          padding: 32px;
+          border-radius: var(--r);
+          box-shadow: var(--shadow);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: 320px;
+        }
+
+        .modal h2 { margin-top: 0; margin-bottom: 24px; letter-spacing: 1px; }
+        
+        .stats-grid { display: flex; gap: 16px; margin-bottom: 28px; }
+        .stat-item { display: flex; flex-direction: column; align-items: center; }
+        .stat-val { font-size: 2rem; font-weight: 900; color: var(--ink); }
+        .stat-lbl { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; }
+
+        .btn-primary {
+          background: linear-gradient(90deg, var(--brand), var(--brand2));
+          color: #001016;
+          border: none;
+          padding: 12px 32px;
+          font-weight: 900;
+          border-radius: 12px;
+          cursor: pointer;
+          font-size: 1rem;
+          transition: opacity 0.2s;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="global-header">
+            <a href="https://zeriahlabs.com" class="brand-container">
+                <span>Zeriah Labs</span>
+            </a>
+            <div class="user-badge">
+                <span>Word-terfall</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="wrap">
+        <div class="breadcrumb">
+            <a href="https://zeriahlabs.com" class="back-link">← Back to Dashboard</a>
+        </div>
+
+        <h1>Word-terfall</h1>
+        
+        <div class="game-info">
+            <span id="level-indicator">Level 1</span>
+            <span>|</span>
+            <span id="timer" class="timer">03:00</span>
+        </div>
+
+        <div class="status-box">
+            <span id="status-msg" class="status-msg"></span>
+        </div>
+
+        <div id="game-grid" class="grid-container"></div>
+
+        <div class="keyboard" id="keyboard">
+            <div class="kb-row">
+                <button class="key" data-key="Q">Q</button><button class="key" data-key="W">W</button><button class="key" data-key="E">E</button><button class="key" data-key="R">R</button><button class="key" data-key="T">T</button><button class="key" data-key="Y">Y</button><button class="key" data-key="U">U</button><button class="key" data-key="I">I</button><button class="key" data-key="O">O</button><button class="key" data-key="P">P</button>
+            </div>
+            <div class="kb-row">
+                <button class="key" data-key="A">A</button><button class="key" data-key="S">S</button><button class="key" data-key="D">D</button><button class="key" data-key="F">F</button><button class="key" data-key="G">G</button><button class="key" data-key="H">H</button><button class="key" data-key="J">J</button><button class="key" data-key="K">K</button><button class="key" data-key="L">L</button>
+            </div>
+            <div class="kb-row">
+                <button class="key wide" data-key="Enter">Enter</button><button class="key" data-key="Z">Z</button><button class="key" data-key="X">X</button><button class="key" data-key="C">C</button><button class="key" data-key="V">V</button><button class="key" data-key="B">B</button><button class="key" data-key="N">N</button><button class="key" data-key="M">M</button><button class="key wide" data-key="Backspace">⌫</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS MODAL -->
+    <div id="stats-modal" class="modal-overlay">
+        <div class="modal">
+            <h2>STATISTICS</h2>
+            <div class="stats-grid">
+                <div class="stat-item"><span id="stat-played" class="stat-val">0</span><span class="stat-lbl">Played</span></div>
+                <div class="stat-item"><span id="stat-win" class="stat-val">0</span><span class="stat-lbl">Win %</span></div>
+                <div class="stat-item"><span id="stat-streak" class="stat-val">0</span><span class="stat-lbl">Streak</span></div>
+                <div class="stat-item"><span id="stat-max" class="stat-val">0</span><span class="stat-lbl">Max</span></div>
+            </div>
+            <button class="btn-primary" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // --- BUILT-IN MINI DICTIONARIES (Self-Contained) ---
+        const TARGETS = {
+            0: ["CODE", "DATA", "FLOW", "NODE", "BYTE", "SYNC"],
+            1: ["WORLD", "THERE", "ABOUT", "WHICH", "TRAIN", "SOUND"],
+            2: ["SYSTEM", "STREAM", "UPDATE", "MATRIX", "VECTOR", "CLIENT"],
+            3: ["NETWORK", "PROJECT", "DIGITAL", "PROGRAM", "VERSION", "RELEASE"]
+        };
+
+        const ALL_WORDS = new Set([...TARGETS[0], ...TARGETS[1], ...TARGETS[2], ...TARGETS[3], "ROUTER", "SERVER", "LOGIC", "ENGINE", "CLOUD"]);
+
+        // --- EPOCH ENGINE ---
+        function getEpochDay() {
+            const now = new Date();
+            const utcNow = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+            return Math.floor(utcNow / (1000 * 60 * 60 * 24));
+        }
+
+        function getDailyWord(level) {
+            const list = TARGETS[level];
+            const index = getEpochDay() % list.length;
+            return list[index];
+        }
+
+        // --- GAME STATE ---
+        let currentLevel = 0;
+        let targetWord = getDailyWord(currentLevel);
+        let currentGuess = "";
+        let guesses = [];
+        let turn = 0;
+        let gameEnded = false;
+        let timeLeft = 180;
+        let timerInterval = null;
+        let completedRowsHTML = "";
+
+        // Stats tracking
+        let stats = JSON.parse(localStorage.getItem("wordterfall_stats")) || { played: 0, wins: 0, currentStreak: 0, maxStreak: 0, lastEpoch: 0 };
+
+        function initGame() {
+            targetWord = getDailyWord(currentLevel);
+            currentGuess = "";
+            guesses = Array(6).fill("");
+            turn = 0;
+            gameEnded = false;
+            completedRowsHTML = "";
+            document.getElementById("level-indicator").innerText = `Level ${currentLevel + 1} (${targetWord.length} Letters)`;
+            renderGrid();
+            resetKeyboardColors();
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (gameEnded) return;
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    triggerGameOver(false);
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            const el = document.getElementById("timer");
+            el.innerText = `${m}:${s}`;
+            if (timeLeft <= 30) el.classList.add("urgent");
+            else el.classList.remove("urgent");
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById("game-grid");
+            let html = completedRowsHTML;
+
+            if (!gameEnded || currentLevel < TARGETS.length - 1) {
+                for (let r = 0; r < 6; r++) {
+                    html += `<div class="row">`;
+                    const wordLen = targetWord.length;
+                    const displayVal = (r === turn) ? currentGuess.padEnd(wordLen, " ") : guesses[r].padEnd(wordLen, " ");
+                    
+                    for (let c = 0; c < wordLen; c++) {
+                        let char = displayVal[c] !== " " ? displayVal[c] : "";
+                        let statusClass = "";
+                        
+                        if (r < turn) {
+                            statusClass = getTileStatus(guesses[r], targetWord, c);
+                        } else if (r === turn && c === currentGuess.length) {
+                            statusClass = "active";
+                        }
+                        
+                        html += `<div class="tile ${statusClass}">${char}</div>`;
+                    }
+                    html += `</div>`;
+                }
+            }
+            grid.innerHTML = html;
+        }
+
+        function getTileStatus(guess, target, index) {
+            const gChar = guess[index];
+            const tChar = target[index];
+            if (gChar === tChar) return "correct";
+            if (target.includes(gChar)) return "present";
+            return "absent";
+        }
+
+        // --- INPUT HANDLING ---
+        window.addEventListener("keydown", (e) => {
+            if (gameEnded) return;
+            if (e.key === "Backspace") handleBackspace();
+            else if (e.key === "Enter") handleEnter();
+            else if (/^[a-zA-Z]$/.test(e.key)) handleLetter(e.key.toUpperCase());
+        });
+
+        document.getElementById("keyboard").addEventListener("click", (e) => {
+            const btn = e.target.closest(".key");
+            if (!btn || gameEnded) return;
+            const key = btn.getAttribute("data-key");
+            if (key === "Backspace") handleBackspace();
+            else if (key === "Enter") handleEnter();
+            else handleLetter(key);
+        });
+
+        function handleLetter(letter) {
+            if (currentGuess.length < targetWord.length) {
+                currentGuess += letter;
+                renderGrid();
+            }
+        }
+
+        function handleBackspace() {
+            if (currentGuess.length > 0) {
+                currentGuess = currentGuess.slice(0, -1);
+                renderGrid();
+            }
+        }
+
+        function handleEnter() {
+            if (currentGuess.length !== targetWord.length) {
+                showStatus("Not enough letters!");
+                return;
+            }
+            if (!ALL_WORDS.has(currentGuess)) {
+                showStatus("Not in word list!");
+                return;
+            }
+
+            guesses[turn] = currentGuess;
+            
+            // Lock completed row into cache markup
+            let rowHtml = `<div class="row">`;
+            for(let i=0; i<targetWord.length; i++) {
+                rowHtml += `<div class="tile ${getTileStatus(currentGuess, targetWord, i)}">${currentGuess[i]}</div>`;
+            }
+            rowHtml += `</div>`;
+            completedRowsHTML += rowHtml;
+
+            updateKeyboardColors(currentGuess, targetWord);
+
+            if (currentGuess === targetWord) {
+                if (currentLevel === TARGETS.length - 1) {
+                    gameEnded = true;
+                    clearInterval(timerInterval);
+                    showStatus("Victory! You beat the Word-terfall!");
+                    triggerGameOver(true);
+                } else {
+                    currentLevel++;
+                    showStatus(`Level Up! Moving to ${TARGETS[currentLevel].length} letters.`);
+                    setTimeout(() => {
+                        targetWord = getDailyWord(currentLevel);
+                        currentGuess = "";
+                        guesses = Array(6).fill("");
+                        turn = 0;
+                        completedRowsHTML = "";
+                        document.getElementById("level-indicator").innerText = `Level ${currentLevel + 1} (${targetWord.length} Letters)`;
+                        renderGrid();
+                        resetKeyboardColors();
+                    }, 1500);
+                }
+                return;
+            }
+
+            if (turn === 5) {
+                gameEnded = true;
+                clearInterval(timerInterval);
+                showStatus(`Game Over! The word was ${targetWord}.`);
+                triggerGameOver(false);
+            } else {
+                turn++;
+                currentGuess = "";
+                renderGrid();
+            }
+        }
+
+        function showStatus(msg) {
+            const el = document.getElementById("status-msg");
+            el.innerText = msg;
+            setTimeout(() => { if (el.innerText === msg) el.innerText = ""; }, 2000);
+        }
+
+        function updateKeyboardColors(guess, target) {
+            for (let i = 0; i < guess.length; i++) {
+                const char = guess[i];
+                const btn = document.querySelector(`[data-key="${char}"]`);
+                if (!btn) continue;
+                const status = getTileStatus(guess, target, i);
+                
+                if (status === "correct") {
+                    btn.className = "key correct";
+                } else if (status === "present" && !btn.classList.contains("correct")) {
+                    btn.className = "key present";
+                } else if (status === "absent" && !btn.classList.contains("correct") && !btn.classList.contains("present")) {
+                    btn.className = "key absent";
+                }
+            }
+        }
+
+        function resetKeyboardColors() {
+            document.querySelectorAll(".key").forEach(btn => {
+                const isWide = btn.classList.contains("wide");
+                btn.className = isWide ? "key wide" : "key";
+            });
+        }
+
+        // --- STATS & STORAGE ---
+        function triggerGameOver(isWin) {
+            const today = getEpochDay();
+            if (stats.lastEpoch !== today) {
+                stats.played += 1;
+                if (isWin) {
+                    if (stats.lastEpoch === today - 1) stats.currentStreak += 1;
+                    else stats.currentStreak = 1;
+                    stats.wins += 1;
+                } else {
+                    stats.currentStreak = 0;
+                }
+                stats.maxStreak = Math.max(stats.maxStreak, stats.currentStreak);
+                stats.lastEpoch = today;
+                localStorage.setItem("wordterfall_stats", JSON.stringify(stats));
+            }
+
+            setTimeout(() => {
+                document.getElementById("stat-played").innerText = stats.played;
+                document.getElementById("stat-win").innerText = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
+                document.getElementById("stat-streak").innerText = stats.currentStreak;
+                document.getElementById("stat-max").innerText = stats.maxStreak;
+                document.getElementById("stats-modal").style.display = "flex";
+            }, 1000);
+        }
+
+        function closeModal() {
+            document.getElementById("stats-modal").style.display = "none";
+        }
+
+        // Boot
+        initGame();
+    </script>
+</body>
+</html>
