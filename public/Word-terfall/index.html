@@ -534,23 +534,24 @@
             }
 
             guesses[turn] = currentGuess;
-            
-            // Lock completed row into cache markup
-            let rowHtml = `<div class="row">`;
-            for(let i=0; i<targetWord.length; i++) {
-                rowHtml += `<div class="tile ${getTileStatus(currentGuess, targetWord, i)}">${currentGuess[i]}</div>`;
-            }
-            rowHtml += `</div>`;
-            completedRowsHTML += rowHtml;
 
             updateKeyboardColors(currentGuess, targetWord);
 
             if (currentGuess === targetWord) {
+                // Lock ONLY the winning word into the permanent waterfall above the board
+                let rowHtml = `<div class="row" style="margin-bottom: 24px;">`;
+                for(let i=0; i<targetWord.length; i++) {
+                    rowHtml += `<div class="tile correct" style="box-shadow: 0 0 15px rgba(34,227,177,0.4);">${currentGuess[i]}</div>`;
+                }
+                rowHtml += `</div>`;
+                completedRowsHTML += rowHtml;
+
                 if (currentLevel === Object.keys(TARGETS).length - 1) {
                     gameEnded = true;
                     clearInterval(timerInterval);
                     showStatus("Victory! You beat the Word-terfall!");
                     triggerGameOver(true);
+                    renderGrid(); // Render to hide the empty board and show full waterfall
                 } else {
                     currentLevel++;
                     showStatus(`Level Up! Moving to ${TARGETS[currentLevel][0].length} letters.`);
@@ -559,7 +560,7 @@
                         currentGuess = "";
                         guesses = Array(6).fill("");
                         turn = 0;
-                        completedRowsHTML = "";
+                        // Notice we REMOVED the line wiping completedRowsHTML here so they stack!
                         document.getElementById("level-indicator").innerText = `Level ${currentLevel + 1} (${targetWord.length} Letters)`;
                         renderGrid();
                         resetKeyboardColors();
