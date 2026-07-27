@@ -1,10 +1,30 @@
+/*
+  =============================================================================
+  AI / GEMINI CONTEXT BLOCK (DO NOT REMOVE)
+  =============================================================================
+  ROLE: Lead Engineer.
+  TASK: Write the specific game logic in this file. 
+  
+  CRITICAL RULES:
+  1. ACHIEVEMENT INTEGRATION: Use the `triggerAchievement(id, xp)` function 
+     provided below to ping the Cloudflare Worker D1 database. 
+  2. ANTI-SPAM: Always wrap achievements in `!sessionAchievements.has(id)` 
+     so the API is only hit once per milestone per session.
+  3. UI REFRESH: If an achievement fires, `window.renderAchievements()` is 
+     called automatically to refresh the scrollable sidebar.
+  =============================================================================
+*/
+
 // ==========================================
 // ZERIAH LABS CORE: Achievement Engine
 // ==========================================
 async function triggerAchievement(achievementId, xpReward) {
     const userId = localStorage.getItem('zeriah_token');
-    if (!userId) {
-        console.log(`Offline: Would have unlocked [${achievementId}] for ${xpReward}XP`);
+    
+    // Offline / Local Testing Fallback
+    if (!userId || userId === "local_test_token_123") {
+        console.log(`[TESTING] Unlocked: [${achievementId}] for ${xpReward}XP`);
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         return;
     }
 
@@ -16,89 +36,88 @@ async function triggerAchievement(achievementId, xpReward) {
         });
         
         const result = await response.json();
-        if (result.isLevelUp) {
+        
+        // Zeriah Signature Celebration
+        if (result.isLevelUp || result.success) {
             confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         }
         
+        // Redraw UI sidebar
         if (typeof window.renderAchievements === 'function') {
             window.renderAchievements();
         }
     } catch (err) {
-        console.error("Achievement failed", err);
+        console.error("Achievement API failed:", err);
     }
 }
 
 // ==========================================
-// HELLO WORLD: Game Logic
+// GAMEPLAY VARIABLES & LOGIC
 // ==========================================
 let score = 0;
 let timeLeft = 60;
 let timerInterval;
 
-// Track achievements locally per session to prevent API spam
+// Session locks prevent spamming the database API
 let sessionAchievements = new Set();
 
-// 1. Start Game Loop
 window.startGame = function() {
+    // 1. Reset State
     score = 0;
     timeLeft = 60;
-    sessionAchievements.clear();
+    sessionAchievements.clear(); 
     
-    // Reset UI
+    // 2. Update UI
     document.getElementById('score').innerText = score;
     document.getElementById('time').innerText = timeLeft;
     
-    // Switch Screens
+    // 3. Switch Screens
     document.getElementById('start-screen').style.display = 'none';
     document.getElementById('game-screen').style.display = 'block';
     document.getElementById('game-over-screen').style.display = 'none';
 
-    // Start Audio
+    // 4. Audio
     const bgm = document.getElementById('bgm');
     if(bgm) {
         bgm.volume = 0.3; 
-        bgm.play().catch(e => console.log("Audio play failed:", e));
+        bgm.play().catch(e => console.log("BGM play failed", e));
     }
 
-    // Start Timer
+    // 5. Start Timer
     clearInterval(timerInterval);
     timerInterval = setInterval(updateTimer, 1000);
     
-    loadNextInteraction();
+    // --> Trigger your custom game loop here
+    // loadNextQuestion();
 }
 
-// 2. Timer Tick
 function updateTimer() {
     timeLeft--;
-    document.getElementById('time').innerText = timeLeft;
+    const timeEl = document.getElementById('time');
+    if(timeEl) timeEl.innerText = timeLeft;
+    
     if (timeLeft <= 0) endGame();
 }
 
-// 3. Load Next State (Replace with your specific module logic)
-function loadNextInteraction() {
-    // e.g., Generate a new math problem, load a new image, etc.
-    document.getElementById('main-display').innerText = "Keep clicking!";
-}
-
-// 4. Handle User Interaction
-window.scorePoint = function() {
-    score++;
-    document.getElementById('score').innerText = score;
-    
-    const correctSound = document.getElementById('sound-correct');
-    if(correctSound) correctSound.play();
-
-    // Achievement Trigger Example
-    if (score === 1 && !sessionAchievements.has('first_click')) {
-        sessionAchievements.add('first_click');
-        triggerAchievement('first_click', 50);
-        confetti({ particleCount: 50, spread: 40 });
+// Example Interaction Function (Replace with your actual game logic)
+window.handleUserAction = function(isCorrect) {
+    if (isCorrect) {
+        score++;
+        document.getElementById('score').innerText = score;
+        const sfx = document.getElementById('sound-correct');
+        if(sfx) sfx.play();
+        
+        // Example Achievement Check
+        if (score === 10 && !sessionAchievements.has('game_master')) {
+            sessionAchievements.add('game_master');
+            triggerAchievement('game_master', 100);
+        }
+    } else {
+        const sfx = document.getElementById('sound-wrong');
+        if(sfx) sfx.play();
     }
-
-    loadNextInteraction();
 }
 
-// 5. Game Over Sequence
 function endGame() {
     clearInterval(timerInterval);
     
@@ -107,11 +126,7 @@ function endGame() {
     
     document.getElementById('game-screen').style.display = 'none';
     document.getElementById('game-over-screen').style.display = 'block';
-    document.getElementById('final-score').innerText = score;
+    
+    const finalScoreEl = document.getElementById('final-score');
+    if(finalScoreEl) finalScoreEl.innerText = score;
 }
-
-// Optional: Run any pre-loading logic when the file is read
-window.onload = () => {
-    console.log("Hello World Engine Loaded!");
-    // document.getElementById('start-btn').disabled = false;
-};
