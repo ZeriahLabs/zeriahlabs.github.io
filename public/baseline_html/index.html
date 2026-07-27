@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Project | Zeriah Labs</title>
+    <style>
+        /* ==========================================================================
+           ZERIAH LABS GLOBAL STYLES (DO NOT EDIT)
+           ========================================================================== */
+        :root {
+          --bg:#07131c;
+          --panel:rgba(255,255,255,.05);
+          --panel2:rgba(255,255,255,.035);
+          --ink:#eef6ff;
+          --muted:#a9bfd2;
+          --rule:rgba(255,255,255,.10);
+          --brand:#00d0ff;
+          --brand2:#22e3b1;
+          --purple:#a855f7;
+          --max:1200px;
+          --r:16px;
+          --shadow:0 18px 70px rgba(0,0,0,.55);
+        }
+
+        *{box-sizing:border-box}
+        html, body { min-height: 100%; margin: 0; }
+
+        body {
+          font:16px/1.6 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;
+          color:var(--ink);
+          background-color: #07101a;
+          background-image:
+            radial-gradient(900px 520px at 20% 0%, rgba(34,227,177,.14), transparent 55%),
+            radial-gradient(900px 520px at 85% 10%, rgba(0,208,255,.12), transparent 55%),
+            linear-gradient(180deg, #061018 0%, #07131c 55%, #07101a 100%);
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .wrap {
+          max-width: var(--max);
+          margin: 0 auto;
+          padding: 0 24px;
+          width: 100%;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding-bottom: 80px;
+        }
+
+        header {
+          position: sticky; 
+          top: 0; 
+          z-index: 50;
+          backdrop-filter: saturate(150%) blur(10px);
+          background: rgba(7,19,28,.72);
+          border-bottom: 1px solid var(--rule);
+          width: 100%;
+        }
+
+        .global-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background-color: #0b131a; 
+          padding: 15px 30px;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          width: 100%;
+        }
+
+        .brand-container { 
+          display: flex; 
+          align-items: center; 
+          gap: 15px; 
+          font-size: 1.3rem; 
+          font-weight: 900; 
+          color: var(--ink);
+          text-decoration: none;
+        }
+
+        .user-badge {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          background-color: rgba(255,255,255,0.05);
+          padding: 8px 15px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.1);
+          font-weight: 700;
+          color: var(--ink);
+        }
+
+        .breadcrumb { 
+          width: 100%;
+          margin: 20px 0; 
+          text-align: left; 
+        }
+
+        .back-link {
+          color: var(--brand2);
+          text-decoration: none;
+          font-weight: 900;
+          font-size: 1.1rem;
+          transition: opacity 0.2s;
+        }
+
+        .back-link:hover { opacity: 0.8; }
+
+        h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 8px; letter-spacing: 0.5px; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+
+        /* SPLIT LAYOUT & ACHIEVEMENTS */
+        .dashboard-layout {
+          display: grid;
+          grid-template-columns: 1fr 320px;
+          gap: 32px;
+          margin-top: 10px;
+          width: 100%;
+        }
+        @media (max-width: 960px) {
+          .dashboard-layout { grid-template-columns: 1fr; }
+        }
+
+        .game-panel {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .start-screen {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0,0,0,0.4);
+          border: 1px solid var(--rule);
+          border-radius: var(--r);
+          padding: 60px 40px;
+          width: 100%;
+          text-align: center;
+          margin-top: 20px;
+          box-shadow: inset 0 2px 10px rgba(255,255,255,0.02);
+        }
+        
+        .start-screen p { color: var(--muted); margin-bottom: 30px; font-size: 1.1rem; }
+
+        /* UNIVERSAL BUTTONS */
+        .btn-primary {
+          background: linear-gradient(90deg, var(--brand), var(--brand2));
+          color: #001016;
+          border: none;
+          padding: 16px 48px;
+          font-weight: 900;
+          border-radius: 12px;
+          cursor: pointer;
+          font-size: 1.5rem;
+          transition: all 0.2s;
+          box-shadow: 0 4px 15px rgba(34,227,177,0.3);
+        }
+        .btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(34,227,177,0.4); }
+        .btn-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 10px rgba(34,227,177,0.3); }
+        .btn-primary:disabled { background: var(--rule); color: var(--muted); cursor: not-allowed; box-shadow: none; }
+
+        /* ACHIEVEMENTS SIDEBAR STYLING */
+        .achievements-panel {
+          background: rgba(255,255,255,.03);
+          border: 1px solid var(--rule);
+          border-radius: var(--r);
+          padding: 24px;
+          height: fit-content;
+        }
+        .achievements-panel h2 { font-size: 1.2rem; margin: 0 0 16px; display: flex; align-items: center; gap: 8px; color: var(--ink); text-shadow: none; }
+        .user-progress { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
+        .xp-bar { background: rgba(255,255,255,0.1); border-radius: 99px; height: 8px; overflow: hidden; margin-top: 6px; }
+        .xp-fill { background: linear-gradient(90deg, var(--brand), var(--brand2)); height: 100%; width: 0%; transition: width 0.5s ease-out; }
+        
+        .achievement-list { display: flex; flex-direction: column; gap: 12px; }
+        .achievement-item {
+          display: flex; align-items: center; gap: 12px;
+          background: rgba(255,255,255,.02);
+          border: 1px solid var(--rule);
+          padding: 10px; border-radius: 12px;
+          transition: all 0.3s;
+        }
+        .achievement-item.locked { opacity: 0.4; filter: grayscale(1); }
+        .achievement-badge { font-size: 1.5rem; background: rgba(255,255,255,0.05); padding: 6px; border-radius: 8px; }
+        .achievement-info { flex: 1; }
+        .achievement-info h4 { margin: 0; font-size: 0.95rem; font-weight: 800; color: var(--ink); }
+        .achievement-info p { margin: 0; font-size: 0.75rem; color: var(--muted); line-height: 1.2; }
+        .achievement-points { font-size: 0.75rem; font-weight: 900; color: var(--brand2); background: rgba(34,227,177,.1); padding: 2px 6px; border-radius: 4px; }
+        
+        /* ==========================================================================
+           GAME SPECIFIC STYLES CAN GO BELOW THIS LINE
+           ========================================================================== */
+    </style>
+</head>
+<body>
+
+    <!-- ZERIAH GLOBAL HEADER -->
+    <header>
+        <div class="global-header">
+            <a href="https://zeriahlabs.com" class="brand-container">
+                <span>Zeriah Labs</span>
+            </a>
+            <div class="user-badge">
+                <span id="header-game-title">Project Template</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="wrap">
+        <div class="breadcrumb">
+            <a href="https://zeriahlabs.com" class="back-link">← Back to Dashboard</a>
+        </div>
+
+        <div class="dashboard-layout">
+            <!-- ========================================== -->
+            <!-- LEFT: GAME PANEL                           -->
+            <!-- ========================================== -->
+            <div class="game-panel">
+                <h1 id="main-game-title">Hello World Game</h1>
+                
+                <!-- START SCREEN -->
+                <div id="start-screen" class="start-screen">
+                    <h2 style="font-size: 2.2rem; margin: 0 0 10px 0; color: var(--ink);">Ready to Play?</h2>
+                    <p>This is the baseline template for new Zeriah Labs projects.</p>
+                    <button id="play-btn" class="btn-primary">Play!</button>
+                </div>
+
+                <!-- ACTIVE GAME CONTAINER -->
+                <div id="game-container" style="display: none; width: 100%; flex-direction: column; align-items: center; background: rgba(0,0,0,0.2); border: 1px dashed var(--rule); border-radius: var(--r); padding: 60px 20px; margin-top: 20px;">
+                    <h2 style="color: var(--brand2); margin-bottom: 20px;">Game Canvas Active</h2>
+                    <p style="color: var(--muted); margin-bottom: 40px; text-align: center;">Inject your HTML canvas, React components, or DOM elements here.</p>
+                    
+                    <!-- Demo button to trigger an achievement API call -->
+                    <button id="demo-win-btn" class="btn-primary" style="font-size: 1rem; padding: 12px 32px;">Simulate Level Win</button>
+                </div> <!-- End game-container -->
+            </div> <!-- End game-panel -->
+
+            <!-- ========================================== -->
+            <!-- RIGHT: ACHIEVEMENTS SIDEBAR                -->
+            <!-- ========================================== -->
+            <div class="achievements-panel">
+                <h2>🏆 Your Progress</h2>
+                <div class="user-progress">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--ink);">
+                        <span>Current Rank</span>
+                        <span id="xp-text">Local Preview</span>
+                    </div>
+                    <div class="xp-bar"><div id="xp-fill" class="xp-fill" style="width: 50%;"></div></div>
+                </div>
+                
+                <!-- DYNAMIC ACHIEVEMENT LIST INJECTED HERE -->
+                <div class="achievement-list" id="global-achievement-list">
+                    <div style="text-align: center; color: var(--muted); padding: 10px; font-size: 0.85rem;">
+                        Fetching live achievements...
+                    </div>
+                </div>
+            </div> <!-- End achievements-panel -->
+        </div> <!-- End dashboard-layout -->
+    </div>
+
+    <script>
+        /* ==========================================================================
+           1. GAME LOGIC
+           ========================================================================== */
+        
+        // Start Game Handler
+        document.getElementById("play-btn").onclick = () => {
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("game-container").style.display = "flex";
+            
+            // Call your custom initGame() function here!
+            console.log("Game Started");
+        };
+
+        // Demo Win Handler (Example of triggering an achievement)
+        document.getElementById("demo-win-btn").onclick = async () => {
+            alert("Victory Simulated! Reaching out to Zeriah Labs database...");
+            
+            // Replace 'template_first_win' with your actual SQL achievement_id
+            await unlockGlobalAchievement('template_first_win', 50); 
+        };
+
+
+        /* ==========================================================================
+           2. ZERIAH LABS GLOBAL AUTH & ACHIEVEMENTS ENGINE (DO NOT EDIT)
+           ========================================================================== */
+        
+        /**
+         * Unlocks a specific achievement in the database and adds XP.
+         * @param {string} achievementId - The exact ID from your achievements_master table
+         * @param {number} xpReward - Optional: Amount of XP to award (Default is 30)
+         */
+        async function unlockGlobalAchievement(achievementId, xpReward = 30) {
+            try {
+                const token = localStorage.getItem("zeriah_token"); 
+                if (!token) {
+                    console.warn("User not logged in. Achievement not saved globally.");
+                    return; 
+                }
+
+                // POST to unlock-achievement.js
+                const response = await fetch('/api/unlock-achievement', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-User-Id': token 
+                    },
+                    body: JSON.stringify({ 
+                        userId: token, 
+                        achievementId: achievementId,
+                        xpReward: xpReward 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.isLevelUp) {
+                    console.log(`Level Up! Welcome to ${data.newLevel}!`);
+                    // Optional: Fire confetti.js here if you include the library
+                }
+
+                // Force sidebar to repaint with new unlocked color
+                fetchGlobalAchievements(); 
+                
+                // Update universal nav bar if present on the parent DOM
+                if (typeof checkSession === 'function') {
+                    checkSession(); 
+                }
+            } catch (error) {
+                console.error("Could not save achievement to global DB:", error);
+            }
+        }
+
+        /**
+         * Fetches the user's current progress against the master list of achievements
+         */
+        async function fetchGlobalAchievements() {
+            try {
+                const token = localStorage.getItem("zeriah_token") || ""; 
+
+                // GET from achievements.js
+                const response = await fetch('/api/achievements', {
+                    method: 'GET',
+                    headers: { 'X-User-Id': token }
+                });
+
+                if (!response.ok) throw new Error("API not ready yet");
+
+                const achievements = await response.json();
+                renderGlobalAchievements(achievements);
+            } catch (error) {
+                console.warn("Global API not connected or offline, using fallback UI.");
+                renderFallbackAchievements();
+            }
+        }
+
+        /**
+         * Renders live database achievements into the sidebar
+         */
+        function renderGlobalAchievements(achievements) {
+            const list = document.getElementById("global-achievement-list");
+            list.innerHTML = "";
+
+            achievements.forEach(ach => {
+                const isLocked = !ach.isUnlocked;
+                const lockedClass = isLocked ? "locked" : "";
+                
+                list.innerHTML += `
+                    <div class="achievement-item ${lockedClass}">
+                        <div class="achievement-badge">${ach.icon || '🏆'}</div>
+                        <div class="achievement-info">
+                            <h4>${ach.name || ach.title}</h4>
+                            <p>${ach.description}</p>
+                        </div>
+                        <div class="achievement-points">+${ach.points || 50}</div>
+                    </div>
+                `;
+            });
+        }
+
+        /**
+         * Fallback UI renderer for local testing before the DB is connected
+         */
+        function renderFallbackAchievements() {
+            const list = document.getElementById("global-achievement-list");
+            list.innerHTML = `
+                <div class="achievement-item locked">
+                    <div class="achievement-badge">🚀</div>
+                    <div class="achievement-info">
+                        <h4>Hello World</h4>
+                        <p>Complete the first level of the new game.</p>
+                    </div>
+                    <div class="achievement-points">+50</div>
+                </div>
+                <div class="achievement-item locked">
+                    <div class="achievement-badge">🔥</div>
+                    <div class="achievement-info">
+                        <h4>On Fire</h4>
+                        <p>Win 3 times in a row.</p>
+                    </div>
+                    <div class="achievement-points">+30</div>
+                </div>
+            `;
+        }
+
+        // --- BOOT SEQUENCE ---
+        // Fetch the list of badges immediately when the page loads
+        fetchGlobalAchievements();
+
+    </script>
+</body>
+</html>
