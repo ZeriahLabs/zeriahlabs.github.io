@@ -48,6 +48,43 @@
       100% { transform: scale(1); opacity: 1; }
     }
     .animate-pop { animation: popIn 0.4s ease-out forwards; }
+  /* SCROLLABLE ACHIEVEMENTS SIDEBAR */
+    .achievements-panel {
+      background: rgba(255,255,255,.03); border: 1px solid var(--rule);
+      border-radius: var(--r); padding: 24px; height: fit-content;
+    }
+    .achievements-panel h2 { font-size: 1.2rem; margin: 0 0 16px; display: flex; align-items: center; gap: 8px; color: var(--ink); }
+    .user-progress { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
+    .xp-bar { background: rgba(255,255,255,0.1); border-radius: 99px; height: 8px; overflow: hidden; margin-top: 6px; }
+    .xp-fill { background: linear-gradient(90deg, var(--brand), var(--brand2)); height: 100%; width: 0%; transition: width 0.5s ease-out; }
+    
+    .achievement-list { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 12px; 
+        max-height: 380px; /* Locks the height */
+        overflow-y: auto;  /* Makes it scrollable */
+        padding-right: 8px;
+        margin-bottom: 20px;
+    }
+    
+    /* Sleek Custom Scrollbar */
+    .achievement-list::-webkit-scrollbar { width: 6px; }
+    .achievement-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 8px; }
+    .achievement-list::-webkit-scrollbar-thumb { background: rgba(34,227,177,0.5); border-radius: 8px; }
+    .achievement-list::-webkit-scrollbar-thumb:hover { background: var(--brand2); }
+
+    .achievement-item {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,.02); border: 1px solid var(--rule);
+      padding: 12px; border-radius: 12px; transition: all 0.3s;
+    }
+    .achievement-item.locked { opacity: 0.4; filter: grayscale(1); }
+    .achievement-badge { font-size: 1.8rem; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 10px; flex-shrink: 0; }
+    .achievement-info { flex: 1; min-width: 0; }
+    .achievement-info h4 { margin: 0; font-size: 0.95rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .achievement-info p { margin: 0; font-size: 0.75rem; color: var(--muted); line-height: 1.2; }
+    .achievement-points { font-size: 0.8rem; font-weight: 900; color: var(--brand2); background: rgba(34,227,177,.1); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
   </style>
 </head>
 <body>
