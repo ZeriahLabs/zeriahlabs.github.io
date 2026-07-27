@@ -1,11 +1,184 @@
-<audio id="sound-correct" src="../sounds/yay.mp3"></audio>
-    <audio id="sound-wrong" src="../sounds/wrong.mp3"></audio>
-    <audio id="bgm" src="../sounds/bgm.mp3" loop></audio>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dino Guess: Dinosaur Memory Game | Zeriah Labs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <link rel="stylesheet" href="/public/css/style.css"> 
+    
+    <style>
+        /* Specific Game Layout */
+        .game-wrapper {
+            background-color: rgba(255,255,255,0.03);
+            border: 1px solid var(--rule);
+            border-radius: var(--r);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
 
-    <script src="../js/auth.js"></script>
-    <script src="../js/ui.js"></script>
+        .header-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 900;
+        }
+        
+        .timer { color: var(--brand2); }
+        .score { color: var(--brand); }
 
-    <script src="../js/dino-engine.js"></script>
+        .dino-image-container {
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .dino-img {
+            max-height: 100%;
+            max-width: 100%;
+            transition: filter 0.2s ease-out, transform 0.3s ease;
+            pointer-events: none; 
+            user-select: none;
+        }
+
+        .silhouette {
+            filter: brightness(0) drop-shadow(0 0 10px rgba(0,0,0,0.5));
+            transform: scale(0.95);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background-color: rgba(255,255,255,0.05);
+            color: var(--ink);
+            border: 1px solid var(--rule);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .option-btn:active { transform: translateY(4px); }
+        .option-btn:hover:not(:disabled) { background-color: rgba(255,255,255,0.1); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+
+        .option-btn.correct { background-color: var(--brand2); color: #07101a; border-color: transparent;}
+        .option-btn.wrong { background-color: #ef4444; opacity: 0.5; border-color: transparent;}
+        
+        .primary-btn {
+            background-color: var(--brand); 
+            color: #07101a; 
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            border-radius: 12px;
+            font-weight: 900;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.1s;
+        }
+        .primary-btn:active { transform: scale(0.95); }
+        .primary-btn:disabled { background-color: var(--rule); cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <nav class="global-header">
+        <div class="brand-container">
+            <img src="/public/assets/logo.png" alt="Zeriah Labs Logo" class="brand-logo" onerror="this.style.display='none'">
+            <span>Zeriah Labs</span>
+        </div>
+        <div class="user-badge">
+            <span>👤 <span id="nav-username">timothythiam</span></span>
+            <span class="logout-btn" onclick="logout()">[Logout]</span>
+        </div>
+    </nav>
+
+    <div class="wrap">
+        
+        <div class="breadcrumb">
+            <a href="/public/index.html" class="back-link">← Back to Dashboard</a>
+        </div>
+
+        <div class="dashboard-layout">
+            
+            <div>
+                <div class="game-wrapper" id="start-screen">
+                    <h1 style="font-size: 2.5rem; margin-bottom: 10px; color: var(--brand2);">Dino Guess</h1>
+                    <p style="color: var(--muted); margin-bottom: 30px;">Can you name all of them?</p>
+                    <button id="start-btn" class="primary-btn" onclick="startGame()" disabled>Loading Dinosaurs...</button>
+                </div>
+
+                <div class="game-wrapper" id="game-screen" style="display: none;">
+                    <div class="header-stats">
+                        <div class="timer">⏱ <span id="time">60</span>s</div>
+                        <div class="score">⭐ <span id="score">0</span></div>
+                    </div>
+
+                    <h2 id="question-text" style="font-family: 'Nunito';">Loading...</h2>
+                    
+                    <div class="dino-image-container">
+                        <img id="dino-display" class="dino-img" src="" alt="Dinosaur" style="display: none;">
+                    </div>
+                    
+                    <div id="attribution-text" style="font-size: 0.75rem; color: var(--muted); margin-bottom: 20px; display: none;"></div>
+
+                    <div class="options-grid" id="options">
+                        </div>
+                </div>
+
+                <div class="game-wrapper" id="game-over-screen" style="display: none;">
+                    <h1>Time's Up!</h1>
+                    <h2>You identified <span id="final-score" style="color: var(--brand);">0</span> Dinosaurs!</h2>
+                    <p>Paleontology Rank: <strong id="rank" style="color: var(--purple);">Egg</strong></p>
+                    <button class="primary-btn" onclick="startGame()">Play Again</button>
+                </div>
+            </div>
+
+            <div class="achievements-panel">
+                <h2>🏆 Trophies</h2>
+                <div class="user-progress">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span id="levelText" style="font-weight: bold;">Level 1 Rookie</span>
+                        <span id="xpText" style="color: var(--muted); font-size: 0.8rem;">0 / 1000 XP</span>
+                    </div>
+                    <div class="xp-bar"><div class="xp-fill" id="xpBarFill" style="width: 0%;"></div></div>
+                </div>
+                <div class="achievement-list" id="achievementsList">
+                     <div class="achievement-item locked">
+                        <div class="achievement-badge">🦕</div>
+                        <div class="achievement-info">
+                            <h4>Dino Master</h4>
+                            <p>Identify 10 Dinosaurs correctly</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <audio id="sound-correct" src="/public/sounds/yay.mp3"></audio>
+    <audio id="sound-wrong" src="/public/sounds/wrong.mp3"></audio>
+    <audio id="bgm" src="/public/sounds/bgm.mp3" loop></audio>
+
+    <script src="/public/js/auth.js"></script>
+    <script src="/public/js/ui.js"></script>
+
+    <script src="/public/js/dino-engine.js"></script>
 
 </body>
 </html>
