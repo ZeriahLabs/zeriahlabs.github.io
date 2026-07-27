@@ -90,6 +90,13 @@
           color: #001016; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: opacity 0.2s;
         }
         .btn-sm:hover { opacity: 0.8; }
+        
+        .btn-outline {
+          background: transparent; color: var(--brand2); border: 1px solid var(--brand2);
+          padding: 8px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: all 0.2s;
+          text-decoration: none; display: block; text-align: center;
+        }
+        .btn-outline:hover { background: rgba(34,227,177,0.1); box-shadow: 0 4px 15px rgba(34,227,177,0.2); }
 
         /* DASHBOARD LAYOUT */
         .dashboard-layout {
@@ -146,7 +153,7 @@
         .game-desc { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; flex: 1; }
         .play-tag { font-size: 0.75rem; font-weight: 800; color: var(--brand2); margin-top: auto; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* ACHIEVEMENTS SIDEBAR */
+        /* SCROLLABLE ACHIEVEMENTS SIDEBAR */
         .achievements-panel {
           background: rgba(255,255,255,.03); border: 1px solid var(--rule);
           border-radius: var(--r); padding: 24px; height: fit-content;
@@ -156,18 +163,33 @@
         .xp-bar { background: rgba(255,255,255,0.1); border-radius: 99px; height: 8px; overflow: hidden; margin-top: 6px; }
         .xp-fill { background: linear-gradient(90deg, var(--brand), var(--brand2)); height: 100%; width: 0%; transition: width 0.5s ease-out; }
         
-        .achievement-list { display: flex; flex-direction: column; gap: 12px; }
+        .achievement-list { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            max-height: 380px; /* Locks the height */
+            overflow-y: auto;  /* Makes it scrollable */
+            padding-right: 8px;
+            margin-bottom: 20px;
+        }
+        
+        /* Sleek Custom Scrollbar */
+        .achievement-list::-webkit-scrollbar { width: 6px; }
+        .achievement-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 8px; }
+        .achievement-list::-webkit-scrollbar-thumb { background: rgba(34,227,177,0.5); border-radius: 8px; }
+        .achievement-list::-webkit-scrollbar-thumb:hover { background: var(--brand2); }
+
         .achievement-item {
           display: flex; align-items: center; gap: 12px;
           background: rgba(255,255,255,.02); border: 1px solid var(--rule);
           padding: 12px; border-radius: 12px; transition: all 0.3s;
         }
         .achievement-item.locked { opacity: 0.4; filter: grayscale(1); }
-        .achievement-badge { font-size: 1.8rem; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 10px; }
-        .achievement-info { flex: 1; }
-        .achievement-info h4 { margin: 0; font-size: 0.95rem; font-weight: 800; color: var(--ink); }
+        .achievement-badge { font-size: 1.8rem; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 10px; flex-shrink: 0; }
+        .achievement-info { flex: 1; min-width: 0; }
+        .achievement-info h4 { margin: 0; font-size: 0.95rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .achievement-info p { margin: 0; font-size: 0.75rem; color: var(--muted); line-height: 1.2; }
-        .achievement-points { font-size: 0.8rem; font-weight: 900; color: var(--brand2); background: rgba(34,227,177,.1); padding: 4px 8px; border-radius: 6px; }
+        .achievement-points { font-size: 0.8rem; font-weight: 900; color: var(--brand2); background: rgba(34,227,177,.1); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
         
         /* FOOTER */
         footer {
@@ -249,7 +271,7 @@
                             <div class="game-img" style="background: linear-gradient(135deg, #22e3b122, #000);">🦖</div>
                             <div class="game-info">
                                 <h3 class="game-title">Dino Guess</h3>
-                                <p class="game-desc">Dinosaur flashcard training. Can you identify the dinosaur from its silhouette?</p>
+                                <p class="game-desc">Heguru-style flashcard training. Can you identify the dinosaur from its silhouette?</p>
                                 <span class="play-tag">Play Now →</span>
                             </div>
                         </a>
@@ -285,12 +307,15 @@
                         <div class="xp-bar"><div id="sidebar-xp-fill" class="xp-fill" style="width: 0%;"></div></div>
                     </div>
                     
-                    <!-- DYNAMIC ACHIEVEMENT LIST -->
+                    <!-- DYNAMIC SCROLLABLE ACHIEVEMENT LIST -->
                     <div class="achievement-list" id="global-achievement-list">
                         <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 0.85rem;">
                             Log in to view your Zeriah Labs arcade achievements!
                         </div>
                     </div>
+                    
+                    <!-- SEE ALL BUTTON -->
+                    <a href="/achievements/" class="btn-outline">View Master Trophy Room</a>
                 </div>
             </aside>
 
@@ -337,26 +362,19 @@
         
         let isLoginMode = true;
 
-        /**
-         * Checks session and updates Header + Progress Bar
-         */
         async function checkSession() {
             const token = localStorage.getItem("zeriah_token");
             const authContainer = document.getElementById("auth-container");
 
             if (!token) {
-                // Not logged in -> Show Login Button
                 authContainer.innerHTML = `<button class="btn-sm" onclick="showAuthModal()">Login / Register</button>`;
                 document.getElementById('sidebar-xp-text').innerText = "Log in to track";
                 document.getElementById('sidebar-xp-fill').style.width = "0%";
-                
-                // Show generic offline UI for achievements
                 renderFallbackAchievements(false); 
                 return;
             }
 
             try {
-                // Ping the progress.js worker
                 const response = await fetch('/api/progress', {
                     headers: { 'X-User-Id': token }
                 });
@@ -367,11 +385,7 @@
                 renderLoggedInHeader(user.name, user.level, user.xp);
                 
             } catch (err) {
-                console.warn("Session check failed:", err.message);
-                
-                // LOCAL OFFLINE FALLBACK FOR TESTING
                 if (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    console.log("Local testing mode detected! Simulating logged-in session.");
                     renderLoggedInHeader("Test User", "Level 4 Rookie", 850);
                 } else {
                     localStorage.removeItem("zeriah_token");
@@ -380,7 +394,6 @@
             }
         }
 
-        // Updates the UI when successfully logged in
         function renderLoggedInHeader(name, level, xp) {
             const authContainer = document.getElementById("auth-container");
             authContainer.innerHTML = `
@@ -401,7 +414,7 @@
             fetchGlobalAchievements();
         }
 
-        // --- AUTH MODAL LOGIC ---
+        // --- AUTH LOGIC ---
         function showAuthModal() {
             document.getElementById("auth-modal").style.display = "flex";
             document.getElementById("auth-error").style.display = "none";
@@ -410,10 +423,8 @@
         function closeAuthModal() {
             document.getElementById("auth-modal").style.display = "none";
             document.getElementById("auth-form").reset();
-            
             const btn = document.getElementById("auth-submit-btn");
-            btn.style.background = "";
-            btn.style.color = "";
+            btn.style.background = ""; btn.style.color = "";
         }
 
         function toggleAuthMode(e) {
@@ -436,9 +447,7 @@
             const password = document.getElementById("auth-password").value;
             const name = document.getElementById("auth-name").value;
 
-            btn.disabled = true;
-            btn.innerText = "Processing...";
-            errorBox.style.display = "none";
+            btn.disabled = true; btn.innerText = "Processing..."; errorBox.style.display = "none";
 
             const endpoint = isLoginMode ? '/api/login' : '/api/register';
             const payload = isLoginMode ? { email, password } : { email, password, name };
@@ -449,42 +458,23 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
                 const data = await response.json();
-
                 if (!response.ok) throw new Error(data.error || "Authentication failed.");
 
-                const token = data.token || data.userId;
-                localStorage.setItem("zeriah_token", token);
+                localStorage.setItem("zeriah_token", data.token || data.userId);
                 
-                // UX Polish
-                btn.style.background = "var(--brand2)";
-                btn.style.color = "#001016";
-                btn.innerText = data.message || "Success!";
-                
-                setTimeout(() => {
-                    closeAuthModal();
-                    checkSession(); 
-                }, 800);
+                btn.style.background = "var(--brand2)"; btn.style.color = "#001016"; btn.innerText = data.message || "Success!";
+                setTimeout(() => { closeAuthModal(); checkSession(); }, 800);
 
             } catch (err) {
-                // LOCAL OFFLINE BYPASS
                 if (err.message.includes("Failed to fetch") && (window.location.protocol === 'file:' || window.location.hostname === 'localhost')) {
-                    console.log("Local mode: Bypassing server login requirement.");
                     localStorage.setItem("zeriah_token", "local_test_token_123");
-                    btn.style.background = "var(--brand2)";
-                    btn.style.color = "#001016";
-                    btn.innerText = "Local Bypass Success!";
-                    
+                    btn.style.background = "var(--brand2)"; btn.style.color = "#001016"; btn.innerText = "Local Bypass Success!";
                     setTimeout(() => { closeAuthModal(); checkSession(); }, 800);
                     return;
                 }
-
-                errorBox.innerText = err.message;
-                errorBox.style.display = "block";
-                
-                btn.disabled = false;
-                btn.innerText = isLoginMode ? "Login" : "Sign Up";
+                errorBox.innerText = err.message; errorBox.style.display = "block";
+                btn.disabled = false; btn.innerText = isLoginMode ? "Login" : "Sign Up";
             }
         }
 
@@ -494,9 +484,9 @@
         }
 
         /**
-         * Fetches User's live global achievements from Cloudflare
+         * Dynamic Fetch: Can filter achievements by a specific keyword!
          */
-        async function fetchGlobalAchievements() {
+        async function fetchGlobalAchievements(gameFilterKeyword = null) {
             try {
                 const token = localStorage.getItem("zeriah_token"); 
                 if (!token) return;
@@ -508,16 +498,30 @@
 
                 if (!response.ok) throw new Error("API not ready yet");
 
-                const achievements = await response.json();
+                let achievements = await response.json();
+
+                // If a gameFilterKeyword is provided, only show matching achievements
+                if (gameFilterKeyword) {
+                    achievements = achievements.filter(ach => 
+                        (ach.id && ach.id.toLowerCase().includes(gameFilterKeyword)) || 
+                        (ach.achievement_id && ach.achievement_id.toLowerCase().includes(gameFilterKeyword))
+                    );
+                }
+
                 renderGlobalAchievements(achievements);
             } catch (error) {
-                renderFallbackAchievements(true);
+                renderFallbackAchievements(true, gameFilterKeyword);
             }
         }
 
         function renderGlobalAchievements(achievements) {
             const list = document.getElementById("global-achievement-list");
             list.innerHTML = "";
+
+            if (achievements.length === 0) {
+                list.innerHTML = `<div style="text-align: center; color: var(--muted); padding: 10px; font-size: 0.85rem;">No achievements found.</div>`;
+                return;
+            }
 
             achievements.forEach(ach => {
                 const isLocked = !ach.isUnlocked;
@@ -536,7 +540,7 @@
             });
         }
 
-        function renderFallbackAchievements(isLoggedIn) {
+        function renderFallbackAchievements(isLoggedIn, gameFilterKeyword = null) {
             const list = document.getElementById("global-achievement-list");
             if (!isLoggedIn) {
                 list.innerHTML = `
@@ -547,35 +551,36 @@
                 return;
             }
 
-            list.innerHTML = `
-                <div class="achievement-item">
-                    <div class="achievement-badge">🍉</div>
-                    <div class="achievement-info">
-                        <h4>Fruit Basket</h4>
-                        <p>Complete your first Math Junior session.</p>
+            // Dummy Data
+            let dummyData = [
+                { id: "math_basket", icon: "🍉", title: "Fruit Basket", desc: "Complete Math Junior.", pts: 50, locked: false },
+                { id: "wordterfall_master", icon: "🌊", title: "Waterfall Master", desc: "Beat all 4 levels.", pts: 50, locked: true },
+                { id: "dino_expert", icon: "🦖", title: "Paleontologist", desc: "Identify 10 dinos.", pts: 100, locked: true },
+                { id: "wordterfall_first", icon: "💧", title: "First Splash", desc: "Play your first word game.", pts: 10, locked: false }
+            ];
+
+            // Filter dummy data if needed
+            if (gameFilterKeyword) {
+                dummyData = dummyData.filter(d => d.id.includes(gameFilterKeyword));
+            }
+
+            list.innerHTML = "";
+            dummyData.forEach(ach => {
+                list.innerHTML += `
+                    <div class="achievement-item ${ach.locked ? 'locked' : ''}">
+                        <div class="achievement-badge">${ach.icon}</div>
+                        <div class="achievement-info">
+                            <h4>${ach.title}</h4>
+                            <p>${ach.desc}</p>
+                        </div>
+                        <div class="achievement-points">+${ach.pts}</div>
                     </div>
-                    <div class="achievement-points">+50</div>
-                </div>
-                <div class="achievement-item locked">
-                    <div class="achievement-badge">🌊</div>
-                    <div class="achievement-info">
-                        <h4>Waterfall Master</h4>
-                        <p>Beat all 4 levels in Word-terfall.</p>
-                    </div>
-                    <div class="achievement-points">+50</div>
-                </div>
-                <div class="achievement-item locked">
-                    <div class="achievement-badge">🦖</div>
-                    <div class="achievement-info">
-                        <h4>Paleontologist</h4>
-                        <p>Identify 10 dinosaurs correctly.</p>
-                    </div>
-                    <div class="achievement-points">+100</div>
-                </div>
-            `;
+                `;
+            });
         }
 
         // --- BOOT SEQUENCE ---
+        // Calling it with NO parameters loads the full global list for the main dashboard!
         checkSession();
 
     </script>
