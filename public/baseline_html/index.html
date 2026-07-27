@@ -163,6 +163,12 @@
         .btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(34,227,177,0.4); }
         .btn-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 10px rgba(34,227,177,0.3); }
         .btn-primary:disabled { background: var(--rule); color: var(--muted); cursor: not-allowed; box-shadow: none; }
+        
+        .btn-sm {
+          background: linear-gradient(90deg, var(--brand), var(--brand2));
+          color: #001016; border: none; padding: 6px 16px; border-radius: 6px; font-weight: 800; cursor: pointer; transition: opacity 0.2s;
+        }
+        .btn-sm:hover { opacity: 0.8; }
 
         /* ACHIEVEMENTS SIDEBAR STYLING */
         .achievements-panel {
@@ -192,6 +198,28 @@
         .achievement-info p { margin: 0; font-size: 0.75rem; color: var(--muted); line-height: 1.2; }
         .achievement-points { font-size: 0.75rem; font-weight: 900; color: var(--brand2); background: rgba(34,227,177,.1); padding: 2px 6px; border-radius: 4px; }
         
+        /* MODALS (AUTH & ALERTS) */
+        .modal-overlay {
+          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+          background-color: rgba(0,0,0,0.8);
+          display: none; align-items: center; justify-content: center;
+          z-index: 100; backdrop-filter: blur(8px);
+        }
+        .modal {
+          background: linear-gradient(180deg, #0b131a, #07101a);
+          border: 1px solid var(--rule); padding: 40px; border-radius: 24px;
+          box-shadow: 0 20px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+          display: flex; flex-direction: column; align-items: center; width: 360px;
+        }
+        .modal h2 { margin-top: 0; margin-bottom: 24px; letter-spacing: 1px; font-weight: 900; }
+        
+        .auth-input {
+          width: 100%; padding: 12px 16px; margin-bottom: 12px;
+          background: rgba(255,255,255,0.05); border: 1px solid var(--rule);
+          border-radius: 8px; color: var(--ink); font-size: 1rem; outline: none;
+        }
+        .auth-input:focus { border-color: var(--brand); background: rgba(255,255,255,0.08); }
+
         /* ==========================================================================
            GAME SPECIFIC STYLES CAN GO BELOW THIS LINE
            ========================================================================== */
@@ -205,8 +233,9 @@
             <a href="https://zeriahlabs.com" class="brand-container">
                 <span>Zeriah Labs</span>
             </a>
-            <div class="user-badge">
-                <span id="header-game-title">Project Template</span>
+            <!-- Dynamic Auth Container -->
+            <div id="auth-container" class="user-badge" style="background: transparent; border: none; padding: 0;">
+                <!-- Content injected via checkSession() -->
             </div>
         </div>
     </header>
@@ -248,9 +277,9 @@
                 <div class="user-progress">
                     <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--ink);">
                         <span>Current Rank</span>
-                        <span id="xp-text">Local Preview</span>
+                        <span id="sidebar-xp-text">Offline</span>
                     </div>
-                    <div class="xp-bar"><div id="xp-fill" class="xp-fill" style="width: 50%;"></div></div>
+                    <div class="xp-bar"><div id="sidebar-xp-fill" class="xp-fill" style="width: 0%;"></div></div>
                 </div>
                 
                 <!-- DYNAMIC ACHIEVEMENT LIST INJECTED HERE -->
@@ -263,9 +292,33 @@
         </div> <!-- End dashboard-layout -->
     </div>
 
+    <!-- ========================================== -->
+    <!-- AUTHENTICATION MODAL OVERLAY               -->
+    <!-- ========================================== -->
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal">
+            <h2 id="auth-title">Welcome Back</h2>
+            <div id="auth-error" style="color: #ef4444; margin-bottom: 12px; font-size: 0.9rem; font-weight: bold; display: none;"></div>
+            
+            <form id="auth-form" style="width: 100%;" onsubmit="handleAuthSubmit(event)">
+                <input type="text" id="auth-name" placeholder="Display Name" class="auth-input" style="display: none;" />
+                <input type="email" id="auth-email" placeholder="Email Address" required class="auth-input" />
+                <input type="password" id="auth-password" placeholder="Password" required class="auth-input" />
+                <button type="submit" id="auth-submit-btn" class="btn-primary" style="width: 100%; margin-top: 10px; font-size: 1.1rem; padding: 12px;">Login</button>
+            </form>
+            
+            <p style="margin-top: 24px; font-size: 0.9rem; color: var(--muted);">
+                <span id="auth-toggle-text">Don't have an account?</span> 
+                <a href="#" onclick="toggleAuthMode(event)" style="color: var(--brand2); text-decoration: none; font-weight: bold;">Click here</a>
+            </p>
+            <button onclick="closeAuthModal()" style="margin-top: 10px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem;">Cancel</button>
+        </div>
+    </div>
+
+
     <script>
         /* ==========================================================================
-           1. GAME LOGIC
+           1. GAME LOGIC (CUSTOMIZE FOR EACH PROJECT)
            ========================================================================== */
         
         // Start Game Handler
@@ -290,10 +343,133 @@
            2. ZERIAH LABS GLOBAL AUTH & ACHIEVEMENTS ENGINE (DO NOT EDIT)
            ========================================================================== */
         
+        let isLoginMode = true;
+
+        /**
+         * Checks if the user is logged in by pinging the progress.js worker.
+         * Updates the header and sidebar based on auth status.
+         */
+        async function checkSession() {
+            const token = localStorage.getItem("zeriah_token");
+            const authContainer = document.getElementById("auth-container");
+
+            if (!token) {
+                // Not logged in -> Show Login Button
+                authContainer.innerHTML = `<button class="btn-sm" onclick="showAuthModal()">Login / Register</button>`;
+                document.getElementById('sidebar-xp-text').innerText = "Not Logged In";
+                document.getElementById('sidebar-xp-fill').style.width = "0%";
+                fetchGlobalAchievements(); // Fetch badges anyway (will show offline fallback if API blocks unauth)
+                return;
+            }
+
+            try {
+                // Ping the progress.js worker to validate token and get user info
+                const response = await fetch('/api/progress', {
+                    headers: { 'X-User-Id': token }
+                });
+
+                if (!response.ok) throw new Error("Invalid session");
+
+                const user = await response.json();
+                
+                // Update header with user data
+                authContainer.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 15px; background: var(--panel); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--rule);">
+                        <span style="color: var(--brand2); font-weight: 800;">${user.name || 'Student'}</span>
+                        <span style="font-size: 0.75rem; color: var(--muted); background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px;">${user.level || 'Rookie'}</span>
+                        <button onclick="handleLogout()" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; font-weight: bold; padding: 0 4px;">Exit</button>
+                    </div>
+                `;
+
+                // Update Sidebar XP
+                const xp = user.xp || 0;
+                const nextLevelXp = 1000; // Adjust this math based on your actual XP curves
+                const xpPercent = Math.min((xp / nextLevelXp) * 100, 100);
+                document.getElementById('sidebar-xp-text').innerText = `${xp} XP`;
+                document.getElementById('sidebar-xp-fill').style.width = `${xpPercent}%`;
+
+                // Fetch their personal achievement unlocks
+                fetchGlobalAchievements();
+            } catch (err) {
+                console.warn("Session invalid or offline:", err);
+                localStorage.removeItem("zeriah_token");
+                checkSession(); // Re-run to reset to "Login" state
+            }
+        }
+
+        // --- AUTH MODAL HANDLERS ---
+        function showAuthModal() {
+            document.getElementById("auth-modal").style.display = "flex";
+            document.getElementById("auth-error").style.display = "none";
+        }
+
+        function closeAuthModal() {
+            document.getElementById("auth-modal").style.display = "none";
+            document.getElementById("auth-form").reset();
+        }
+
+        function toggleAuthMode(e) {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            document.getElementById("auth-title").innerText = isLoginMode ? "Welcome Back" : "Create Account";
+            document.getElementById("auth-name").style.display = isLoginMode ? "none" : "block";
+            document.getElementById("auth-name").required = !isLoginMode;
+            document.getElementById("auth-submit-btn").innerText = isLoginMode ? "Login" : "Sign Up";
+            document.getElementById("auth-toggle-text").innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
+            document.getElementById("auth-error").style.display = "none";
+        }
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById("auth-submit-btn");
+            const errorBox = document.getElementById("auth-error");
+            
+            const email = document.getElementById("auth-email").value;
+            const password = document.getElementById("auth-password").value;
+            const name = document.getElementById("auth-name").value;
+
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+            errorBox.style.display = "none";
+
+            const endpoint = isLoginMode ? '/api/login' : '/api/register';
+            const payload = isLoginMode ? { email, password } : { email, password, name };
+
+            try {
+                // Calls your login.js or register.js workers
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) throw new Error(data.error || "Authentication failed.");
+
+                // Success! Save the token (assuming API returns { userId: "..." } or { token: "..." })
+                const token = data.token || data.userId;
+                localStorage.setItem("zeriah_token", token);
+                
+                closeAuthModal();
+                checkSession(); // Instantly update header and fetch badges
+
+            } catch (err) {
+                errorBox.innerText = err.message;
+                errorBox.style.display = "block";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = isLoginMode ? "Login" : "Sign Up";
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem("zeriah_token");
+            checkSession();
+        }
+
         /**
          * Unlocks a specific achievement in the database and adds XP.
-         * @param {string} achievementId - The exact ID from your achievements_master table
-         * @param {number} xpReward - Optional: Amount of XP to award (Default is 30)
          */
         async function unlockGlobalAchievement(achievementId, xpReward = 30) {
             try {
@@ -306,31 +482,17 @@
                 // POST to unlock-achievement.js
                 const response = await fetch('/api/unlock-achievement', {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-User-Id': token 
-                    },
-                    body: JSON.stringify({ 
-                        userId: token, 
-                        achievementId: achievementId,
-                        xpReward: xpReward 
-                    })
+                    headers: { 'Content-Type': 'application/json', 'X-User-Id': token },
+                    body: JSON.stringify({ userId: token, achievementId: achievementId, xpReward: xpReward })
                 });
 
                 const data = await response.json();
 
                 if (data.isLevelUp) {
                     console.log(`Level Up! Welcome to ${data.newLevel}!`);
-                    // Optional: Fire confetti.js here if you include the library
                 }
 
-                // Force sidebar to repaint with new unlocked color
-                fetchGlobalAchievements(); 
-                
-                // Update universal nav bar if present on the parent DOM
-                if (typeof checkSession === 'function') {
-                    checkSession(); 
-                }
+                checkSession(); // Repaints header, XP bar, and sidebar achievements
             } catch (error) {
                 console.error("Could not save achievement to global DB:", error);
             }
@@ -342,7 +504,6 @@
         async function fetchGlobalAchievements() {
             try {
                 const token = localStorage.getItem("zeriah_token") || ""; 
-                console.log("📡 Attempting to fetch achievements...");
 
                 // GET from achievements.js
                 const response = await fetch('/api/achievements', {
@@ -350,21 +511,12 @@
                     headers: { 'X-User-Id': token }
                 });
 
-                console.log("📡 Response Status:", response.status);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error("📡 API Error Details:", errorText);
-                    throw new Error("API returned status " + response.status);
-                }
+                if (!response.ok) throw new Error("API not ready yet");
 
                 const achievements = await response.json();
-                console.log("📡 Successfully loaded achievements:", achievements);
-                
                 renderGlobalAchievements(achievements);
             } catch (error) {
-                console.error("🚨 Fetch Error:", error.message);
-                console.warn("Using fallback UI because the API connection failed.");
+                console.warn("Global API offline, using fallback UI for layout testing.");
                 renderFallbackAchievements();
             }
         }
@@ -419,8 +571,8 @@
         }
 
         // --- BOOT SEQUENCE ---
-        // Fetch the list of badges immediately when the page loads
-        fetchGlobalAchievements();
+        // Validate user session and build the page elements instantly on load
+        checkSession();
 
     </script>
 </body>
