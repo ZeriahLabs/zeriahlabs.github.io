@@ -786,21 +786,22 @@
 
         async function unlockGlobalAchievement(achievementId) {
             try {
-                // In your live site, this comes from your authentication system
-                const userId = localStorage.getItem("zeriah_user_id"); 
-                if (!userId) return; // Skip if user is not logged in
+                // Synchronized with your actual login system (zeriah_token)
+                const token = localStorage.getItem("zeriah_token"); 
+                if (!token) return; // Skip if user is not logged in
 
                 // Calls your unlock-achievement.js Cloudflare Worker
                 const response = await fetch('/api/unlock-achievement', {
                     method: 'POST',
                     headers: { 
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-User-Id': token // Keep headers identical to Math Junior
                     },
                     // Send exactly what your backend expects:
                     body: JSON.stringify({ 
-                        userId: userId,
+                        userId: token, // Your backend uses the token as the user ID
                         achievementId: achievementId,
-                        xpReward: 30 // You can customize XP per badge here!
+                        xpReward: 30 
                     })
                 });
 
@@ -809,11 +810,13 @@
                 // If your backend detects a level up, celebrate!
                 if (data.isLevelUp) {
                     console.log(`Level Up! Welcome to ${data.newLevel}!`);
-                    // If you add a confetti library later, fire it here!
                 }
 
-                // Refresh the panel to show the badge changing from grayscale to color!
+                // Refresh the panel and global session
                 fetchGlobalAchievements(); 
+                if (typeof checkSession === 'function') {
+                    checkSession(); // Updates the top navbar if you have one!
+                }
             } catch (error) {
                 console.warn("Could not save achievement to global DB:", error);
             }
@@ -821,13 +824,13 @@
 
         async function fetchGlobalAchievements() {
             try {
-                // In your live site, this comes from your authentication system
-                const userId = localStorage.getItem("zeriah_user_id") || ""; 
+                // Synchronized with your actual login system (zeriah_token)
+                const token = localStorage.getItem("zeriah_token") || ""; 
 
                 // Fetching from the Cloudflare Worker you found (e.g. deployed to /api/achievements)
                 const response = await fetch('/api/achievements', {
                     method: 'GET',
-                    headers: { 'X-User-Id': userId }
+                    headers: { 'X-User-Id': token }
                 });
 
                 if (!response.ok) throw new Error("API not ready yet");
