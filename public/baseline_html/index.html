@@ -342,6 +342,7 @@
         async function fetchGlobalAchievements() {
             try {
                 const token = localStorage.getItem("zeriah_token") || ""; 
+                console.log("📡 Attempting to fetch achievements...");
 
                 // GET from achievements.js
                 const response = await fetch('/api/achievements', {
@@ -349,12 +350,21 @@
                     headers: { 'X-User-Id': token }
                 });
 
-                if (!response.ok) throw new Error("API not ready yet");
+                console.log("📡 Response Status:", response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("📡 API Error Details:", errorText);
+                    throw new Error("API returned status " + response.status);
+                }
 
                 const achievements = await response.json();
+                console.log("📡 Successfully loaded achievements:", achievements);
+                
                 renderGlobalAchievements(achievements);
             } catch (error) {
-                console.warn("Global API not connected or offline, using fallback UI.");
+                console.error("🚨 Fetch Error:", error.message);
+                console.warn("Using fallback UI because the API connection failed.");
                 renderFallbackAchievements();
             }
         }
