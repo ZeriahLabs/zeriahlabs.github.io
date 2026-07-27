@@ -1,5 +1,32 @@
 <!doctype html>
 <html lang="en">
+<!--
+  =============================================================================
+  AI / GEMINI CONTEXT BLOCK (DO NOT REMOVE)
+  =============================================================================
+  ROLE: You are the Lead Engineer for Zeriah Labs Academy.
+  TASK: When given this template to build a new game, adhere to these strict rules:
+  
+  1. PATHING: This runs on Cloudflare Pages. ALWAYS use absolute root paths for 
+     global assets (e.g., `/css/style.css`, `/js/auth.js`, `/sounds/yay.mp3`). 
+     NEVER use `../` or `/public/`.
+  
+  2. AUTH.JS DEPENDENCIES: The global `auth.js` script handles user sessions. 
+     It STRICTLY REQUIRES the following elements to remain untouched:
+     - <a id="login-btn"> (In the header. auth.js transforms this into the logout/profile badge)
+     - <div id="auth-modal"> (And all its child inputs/forms)
+     - <div class="xp-bar"><div class="xp-fill"></div></div> (Sidebar progress)
+     
+  3. UI.JS DEPENDENCIES: The global `ui.js` script handles achievements.
+     It exports `loadAchievements(priorityKeyword)` and STRICTLY REQUIRES:
+     - <div class="achievement-list" id="global-achievement-list">
+     - It relies on `window.currentAchievementFilter` being set on page load.
+
+  4. STYLING: Global styles are in `/css/style.css`. ONLY place game-specific 
+     CSS (like canvas layouts, specific buttons) in the <style> block below. 
+     Do NOT alter `.dashboard-layout` or `.achievements-panel`.
+  =============================================================================
+-->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -8,6 +35,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
+  <!-- Core Zeriah Labs Styles -->
   <link rel="stylesheet" href="/css/style.css">
   
   <style>
@@ -41,17 +69,20 @@
 </head>
 <body>
 
+  <!-- GLOBAL HEADER -->
   <header>
-    <div class="wrap nav">
-      <a href="/" class="brand-container" style="text-decoration: none; color: var(--ink);">
+    <div class="wrap nav" style="display: flex; justify-content: space-between; align-items: center;">
+      <a href="/" class="brand-container" style="text-decoration: none; color: var(--ink); display: flex; align-items: center; gap: 15px; font-weight: 900; font-size: 1.5rem;">
         <img src="https://assets.zeriahlabs.com/Zeriah_Labs_Vertical_Final.webp" alt="Zeriah Labs logo" style="height:36px; object-fit: contain;">
         <span>Zeriah Labs</span>
       </a>
-      <div id="auth-container"></div>
+      <!-- Target ID for auth.js to hook the modal and inject logged-in state -->
+      <a href="javascript:void(0)" id="login-btn" class="primary-btn" style="margin-top: 0; padding: 10px 20px; font-size: 1rem; text-decoration: none;">Sign In / Register</a>
     </div>
   </header>
 
   <main class="wrap dashboard-layout">
+    <!-- LEFT: GAME SECTION -->
     <section>
       <a href="/" style="color: var(--brand); text-decoration: none; font-weight: 700;">← Back to Dashboard</a>
       
@@ -63,16 +94,20 @@
           </div>
         </div>
 
+        <!-- 1. START SCREEN -->
         <div id="start-screen" style="padding: 20px 0;">
           <h3 style="color: #eef6ff; font-size: 1.5rem; margin-bottom: 30px;">[Insert Game Tagline Here]</h3>
           <button id="start-btn" class="primary-btn animate-pop" onclick="startGame()">Start Game</button>
         </div>
 
+        <!-- 2. PLAY SCREEN -->
         <div id="game-screen" style="display: none;">
             <h2 id="question-text" style="color: #eef6ff; font-size: 1.8rem; margin-bottom: 15px;">Game Active!</h2>
+            <!-- Inject Custom Game Canvas/HTML here -->
             <div id="game-interactive-area" style="min-height: 200px;"></div>
         </div>
 
+        <!-- 3. GAME OVER SCREEN -->
         <div id="game-over-screen" style="display: none; padding: 40px 0;">
             <h1 style="color: #fff; font-size: 3rem; margin-bottom: 10px;">Time's Up!</h1>
             <h2 style="color: #eef6ff; margin-bottom: 20px;">Final Score: <span id="final-score" style="color: var(--brand);">0</span></h2>
@@ -81,6 +116,7 @@
       </div>
     </section>
 
+    <!-- RIGHT: GLOBAL ACHIEVEMENTS SIDEBAR -->
     <aside>
         <div class="achievements-panel">
             <h2>🏆 Global Progress</h2>
@@ -92,6 +128,7 @@
                 <div class="xp-bar"><div id="sidebar-xp-fill" class="xp-fill" style="width: 0%;"></div></div>
             </div>
             
+            <!-- Target for ui.js -->
             <div class="achievement-list" id="global-achievement-list">
                 <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 0.85rem;">
                     Loading achievements...
@@ -103,6 +140,7 @@
     </aside>
   </main>
 
+  <!-- AUTH MODAL (Required by auth.js) -->
   <div id="auth-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
       <div class="modal" style="background: linear-gradient(180deg, #0b131a, #07101a); border: 1px solid var(--rule); padding: 40px; border-radius: 24px; box-shadow: 0 20px 80px rgba(0,0,0,0.8); width: 360px;">
           <h2 id="auth-title" style="margin-top: 0;">Welcome Back</h2>
@@ -118,7 +156,7 @@
                   <input type="password" id="password" placeholder="Password" required style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
                   <button id="toggle-password" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; font-size: 1.2rem;">👁️</button>
               </div>
-              <button type="submit" id="auth-submit-btn" class="btn-primary" style="background: linear-gradient(90deg, var(--brand), var(--brand2)); color: #001016; padding: 12px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer;">Login</button>
+              <button type="submit" id="auth-submit-btn" class="primary-btn" style="margin-top: 0; background: linear-gradient(90deg, var(--brand), var(--brand2)); color: #001016; padding: 12px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer;">Login</button>
           </form>
           
           <div style="margin-top: 16px; text-align: center; font-size: 0.9rem; color: var(--muted); display: flex; flex-direction: column; gap: 10px;">
@@ -132,13 +170,16 @@
       </div>
   </div>
 
+  <!-- Audio Resources -->
   <audio id="sound-correct" src="/sounds/yay.mp3"></audio>
   <audio id="sound-wrong" src="/sounds/wrong.mp3"></audio>
   <audio id="bgm" src="/sounds/bgm.mp3" loop></audio>
 
+  <!-- Global Scripts -->
   <script src="/js/auth.js"></script>
   <script src="/js/ui.js"></script>
   
+  <!-- LOCAL GAME ENGINE -->
   <script src="./game-engine.js"></script>
   
   <script>
