@@ -1,15 +1,59 @@
-// Game State
+/*
+  =============================================================================
+  ZERIAH LABS ENGINE: Math Junior
+  =============================================================================
+*/
+
+// ==========================================
+// CORE: Achievement Engine (Baseline Standard)
+// ==========================================
+async function triggerAchievement(achievementId, xpReward) {
+    const userId = localStorage.getItem('zeriah_token');
+    
+    if (!userId || userId === "local_test_token_123") {
+        console.log(`[TESTING] Unlocked: [${achievementId}] for ${xpReward}XP`);
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/unlock-achievement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, achievementId, xpReward })
+        });
+        
+        const result = await response.json();
+        
+        if (result.isLevelUp || result.success) {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+        
+        if (typeof window.renderAchievements === 'function') {
+            window.renderAchievements();
+        }
+    } catch (err) {
+        console.error("Achievement API failed:", err);
+    }
+}
+
+// ==========================================
+// GAMEPLAY VARIABLES & LOGIC
+// ==========================================
 let basketCount = 0;
 const basketTarget = 5;
 let currentAnswer = 0;
 
-// Audio Setup (Notice the ../ to go up to the public folder, then into sounds)
-const bgMusic = new Audio('../sounds/bgm.mp3');
-bgMusic.loop = true;
-bgMusic.volume = 0.2; // Keep background music very quiet so it doesn't distract
+// Track total correct answers across multiple baskets in one session
+let sessionScore = 0; 
+let sessionAchievements = new Set();
 
-const yaySound = new Audio('../sounds/yay.mp3');
-const wrongSound = new Audio('../sounds/wrong.mp3');
+// Audio Setup (Using Absolute Paths per Baseline)
+const bgMusic = new Audio('/sounds/bgm.mp3');
+bgMusic.loop = true;
+bgMusic.volume = 0.2; 
+
+const yaySound = new Audio('/sounds/yay.mp3');
+const wrongSound = new Audio('/sounds/wrong.mp3');
 
 // DOM Elements
 const visualMath = document.getElementById('visual-math');
@@ -27,7 +71,6 @@ startBtn.addEventListener('click', () => {
   startScreen.style.display = 'none';
   gameScreen.style.display = 'block';
   
-  // Start the background music on the first click!
   bgMusic.play().catch(e => console.log("Audio play failed:", e));
   
   basketCount = 0;
@@ -38,15 +81,11 @@ startBtn.addEventListener('click', () => {
 
 // Text-to-Speech Function
 function speakEquation(num1, num2) {
-  // Check if the browser supports it
   if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel(); // Stop any currently talking audio
+    window.speechSynthesis.cancel(); 
     const speech = new SpeechSynthesisUtterance(`${num1} plus ${num2}, equals?`);
-    
-    // Tweak the voice for kids (slightly higher pitch, slightly slower)
     speech.pitch = 1.2;
     speech.rate = 0.9;
-    
     window.speechSynthesis.speak(speech);
   }
 }
@@ -56,10 +95,9 @@ function startNewRound() {
   const num2 = Math.floor(Math.random() * 4) + 1;
   currentAnswer = num1 + num2;
 
-  // Read the equation out loud!
   speakEquation(num1, num2);
 
-  const item = '🍌';
+  const item = '🍌'; // Using banana as the visual item
   const visual1 = item.repeat(num1);
   const visual2 = item.repeat(num2);
   visualMath.innerHTML = `<span class="animate-pop">${visual1}</span> <span style="color:var(--brand)">+</span> <span class="animate-pop">${visual2}</span>`;
@@ -92,22 +130,37 @@ function startNewRound() {
 
 async function handleAnswer(selectedChoice) {
   if (selectedChoice === currentAnswer) {
-    // Play the success sound!
-    yaySound.currentTime = 0; // Rewind to start in case they click fast
+    yaySound.currentTime = 0; 
     yaySound.play().catch(e => console.log(e));
 
     basketCount++;
+    sessionScore++;
     basketCountDisplay.textContent = basketCount;
     
     confetti({ particleCount: 30, spread: 40, origin: { y: 0.8 }, zIndex: 9999 });
 
+    // ---------------------------------------------------------
+    // ACHIEVEMENT TRIGGERS
+    // ---------------------------------------------------------
+    if (sessionScore === 5 && !sessionAchievements.has('math_basket')) {
+        sessionAchievements.add('math_basket');
+        triggerAchievement('math_basket', 50);
+    }
+    if (sessionScore === 15 && !sessionAchievements.has('math_scholar')) {
+        sessionAchievements.add('math_scholar');
+        triggerAchievement('math_scholar', 100);
+    }
+    if (sessionScore === 30 && !sessionAchievements.has('math_master')) {
+        sessionAchievements.add('math_master');
+        triggerAchievement('math_master', 200);
+    }
+
     if (basketCount >= basketTarget) {
       await winBasket();
     } else {
-      setTimeout(startNewRound, 1200); // Increased delay slightly so the "Yay!" finishes before the voice speaks again
+      setTimeout(startNewRound, 1200); 
     }
   } else {
-    // Play the wrong sound!
     wrongSound.currentTime = 0;
     wrongSound.play().catch(e => console.log(e));
 
@@ -126,29 +179,4 @@ async function winBasket() {
     startScreen.style.display = 'block';
     document.querySelector('#start-screen h3').textContent = "Great job! Play again?";
   }, 3000); 
-
-  const token = localStorage.getItem('zeriah_token');
-  if (token) {
-    try {
-      const response = await fetch('/api/unlock-achievement', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': token 
-        },
-        body: JSON.stringify({
-          achievementId: 'math_basket_filled',
-          xpReward: 50
-        })
-      });
-
-      if (response.ok) {
-        if (typeof checkSession === 'function') {
-            checkSession();
-        }
-      }
-    } catch (error) {
-      console.error("Failed to sync progress", error);
-    }
-  }
 }
