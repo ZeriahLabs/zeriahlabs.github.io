@@ -1,593 +1,134 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Project | Zeriah Labs</title>
-    <style>
-        /* ==========================================================================
-           ZERIAH LABS GLOBAL STYLES (DO NOT EDIT)
-           ========================================================================== */
-        :root {
-          --bg:#07131c;
-          --panel:rgba(255,255,255,.05);
-          --panel2:rgba(255,255,255,.035);
-          --ink:#eef6ff;
-          --muted:#a9bfd2;
-          --rule:rgba(255,255,255,.10);
-          --brand:#00d0ff;
-          --brand2:#22e3b1;
-          --purple:#a855f7;
-          --max:1200px;
-          --r:16px;
-          --shadow:0 18px 70px rgba(0,0,0,.55);
-        }
-
-        *{box-sizing:border-box}
-        html, body { min-height: 100%; margin: 0; }
-
-        body {
-          font:16px/1.6 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;
-          color:var(--ink);
-          background-color: #07101a;
-          background-image:
-            radial-gradient(900px 520px at 20% 0%, rgba(34,227,177,.14), transparent 55%),
-            radial-gradient(900px 520px at 85% 10%, rgba(0,208,255,.12), transparent 55%),
-            linear-gradient(180deg, #061018 0%, #07131c 55%, #07101a 100%);
-          background-repeat: no-repeat;
-          background-attachment: fixed;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .wrap {
-          max-width: var(--max);
-          margin: 0 auto;
-          padding: 0 24px;
-          width: 100%;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding-bottom: 80px;
-        }
-
-        header {
-          position: sticky; 
-          top: 0; 
-          z-index: 50;
-          backdrop-filter: saturate(150%) blur(10px);
-          background: rgba(7,19,28,.72);
-          border-bottom: 1px solid var(--rule);
-          width: 100%;
-        }
-
-        .global-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          background-color: #0b131a; 
-          padding: 15px 30px;
-          border-bottom: 1px solid rgba(255,255,255,0.05);
-          width: 100%;
-        }
-
-        .brand-container { 
-          display: flex; 
-          align-items: center; 
-          gap: 15px; 
-          font-size: 1.3rem; 
-          font-weight: 900; 
-          color: var(--ink);
-          text-decoration: none;
-        }
-
-        .user-badge {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          background-color: rgba(255,255,255,0.05);
-          padding: 8px 15px;
-          border-radius: 8px;
-          border: 1px solid rgba(255,255,255,0.1);
-          font-weight: 700;
-          color: var(--ink);
-        }
-
-        .breadcrumb { 
-          width: 100%;
-          margin: 20px 0; 
-          text-align: left; 
-        }
-
-        .back-link {
-          color: var(--brand2);
-          text-decoration: none;
-          font-weight: 900;
-          font-size: 1.1rem;
-          transition: opacity 0.2s;
-        }
-
-        .back-link:hover { opacity: 0.8; }
-
-        h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 8px; letter-spacing: 0.5px; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-
-        /* SPLIT LAYOUT & ACHIEVEMENTS */
-        .dashboard-layout {
-          display: grid;
-          grid-template-columns: 1fr 320px;
-          gap: 32px;
-          margin-top: 10px;
-          width: 100%;
-        }
-        @media (max-width: 960px) {
-          .dashboard-layout { grid-template-columns: 1fr; }
-        }
-
-        .game-panel {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .start-screen {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          background: rgba(0,0,0,0.4);
-          border: 1px solid var(--rule);
-          border-radius: var(--r);
-          padding: 60px 40px;
-          width: 100%;
-          text-align: center;
-          margin-top: 20px;
-          box-shadow: inset 0 2px 10px rgba(255,255,255,0.02);
-        }
-        
-        .start-screen p { color: var(--muted); margin-bottom: 30px; font-size: 1.1rem; }
-
-        /* UNIVERSAL BUTTONS */
-        .btn-primary {
-          background: linear-gradient(90deg, var(--brand), var(--brand2));
-          color: #001016;
-          border: none;
-          padding: 16px 48px;
-          font-weight: 900;
-          border-radius: 12px;
-          cursor: pointer;
-          font-size: 1.5rem;
-          transition: all 0.2s;
-          box-shadow: 0 4px 15px rgba(34,227,177,0.3);
-        }
-        .btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(34,227,177,0.4); }
-        .btn-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 10px rgba(34,227,177,0.3); }
-        .btn-primary:disabled { background: var(--rule); color: var(--muted); cursor: not-allowed; box-shadow: none; }
-        
-        .btn-sm {
-          background: linear-gradient(90deg, var(--brand), var(--brand2));
-          color: #001016; border: none; padding: 6px 16px; border-radius: 6px; font-weight: 800; cursor: pointer; transition: opacity 0.2s;
-        }
-        .btn-sm:hover { opacity: 0.8; }
-
-        /* ACHIEVEMENTS SIDEBAR STYLING */
-        .achievements-panel {
-          background: rgba(255,255,255,.03);
-          border: 1px solid var(--rule);
-          border-radius: var(--r);
-          padding: 24px;
-          height: fit-content;
-        }
-        .achievements-panel h2 { font-size: 1.2rem; margin: 0 0 16px; display: flex; align-items: center; gap: 8px; color: var(--ink); text-shadow: none; }
-        .user-progress { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
-        .xp-bar { background: rgba(255,255,255,0.1); border-radius: 99px; height: 8px; overflow: hidden; margin-top: 6px; }
-        .xp-fill { background: linear-gradient(90deg, var(--brand), var(--brand2)); height: 100%; width: 0%; transition: width 0.5s ease-out; }
-        
-        .achievement-list { display: flex; flex-direction: column; gap: 12px; }
-        .achievement-item {
-          display: flex; align-items: center; gap: 12px;
-          background: rgba(255,255,255,.02);
-          border: 1px solid var(--rule);
-          padding: 10px; border-radius: 12px;
-          transition: all 0.3s;
-        }
-        .achievement-item.locked { opacity: 0.4; filter: grayscale(1); }
-        .achievement-badge { font-size: 1.5rem; background: rgba(255,255,255,0.05); padding: 6px; border-radius: 8px; }
-        .achievement-info { flex: 1; }
-        .achievement-info h4 { margin: 0; font-size: 0.95rem; font-weight: 800; color: var(--ink); }
-        .achievement-info p { margin: 0; font-size: 0.75rem; color: var(--muted); line-height: 1.2; }
-        .achievement-points { font-size: 0.75rem; font-weight: 900; color: var(--brand2); background: rgba(34,227,177,.1); padding: 2px 6px; border-radius: 4px; }
-        
-        /* MODALS (AUTH & ALERTS) */
-        .modal-overlay {
-          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-          background-color: rgba(0,0,0,0.8);
-          display: none; align-items: center; justify-content: center;
-          z-index: 100; backdrop-filter: blur(8px);
-        }
-        .modal {
-          background: linear-gradient(180deg, #0b131a, #07101a);
-          border: 1px solid var(--rule); padding: 40px; border-radius: 24px;
-          box-shadow: 0 20px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
-          display: flex; flex-direction: column; align-items: center; width: 360px;
-        }
-        .modal h2 { margin-top: 0; margin-bottom: 24px; letter-spacing: 1px; font-weight: 900; }
-        
-        .auth-input {
-          width: 100%; padding: 12px 16px; margin-bottom: 12px;
-          background: rgba(255,255,255,0.05); border: 1px solid var(--rule);
-          border-radius: 8px; color: var(--ink); font-size: 1rem; outline: none;
-        }
-        .auth-input:focus { border-color: var(--brand); background: rgba(255,255,255,0.08); }
-
-        /* ==========================================================================
-           GAME SPECIFIC STYLES CAN GO BELOW THIS LINE
-           ========================================================================== */
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hello World | Zeriah Labs</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <!-- Core Zeriah Labs Styles (Absolute Path) -->
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <style>
+    /* ----------------------------------------- */
+    /* MODULE SPECIFIC STYLES GO HERE            */
+    /* ----------------------------------------- */
+    .game-board {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(180deg, #1e293b, #0f172a);
+      border-radius: 24px;
+      padding: 30px;
+      border: 4px solid var(--brand);
+      box-shadow: 0 10px 40px rgba(0, 208, 255, 0.2);
+      text-align: center;
+      margin-top: 20px;
+    }
+    .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .game-title { margin: 0; font-size: 2rem; font-weight: 900; color: var(--brand2); }
+    .score-tracker { background: rgba(255, 255, 255, 0.1); padding: 10px 20px; border-radius: 99px; font-size: 1.2rem; font-weight: 900; color: #fff; }
+    
+    .primary-btn {
+      background-color: var(--brand); 
+      color: #07101a; 
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.5rem;
+      border-radius: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: transform 0.1s;
+    }
+    .primary-btn:active { transform: scale(0.95); }
+    .primary-btn:disabled { background-color: var(--rule); cursor: not-allowed; }
+  </style>
 </head>
 <body>
 
-    <!-- ZERIAH GLOBAL HEADER -->
-    <header>
-        <div class="global-header">
-            <a href="https://zeriahlabs.com" class="brand-container">
-                <span>Zeriah Labs</span>
-            </a>
-            <!-- Dynamic Auth Container -->
-            <div id="auth-container" class="user-badge" style="background: transparent; border: none; padding: 0;">
-                <!-- Content injected via checkSession() -->
+  <!-- UNIFIED ZERIAH LABS HEADER -->
+  <header>
+    <div class="wrap nav">
+      <a href="/index.html" class="brand">
+        <img src="https://assets.zeriahlabs.com/Zeriah_Labs_Vertical_Final.webp" alt="Zeriah Labs logo" style="height:36px;">
+        <span>Zeriah Labs</span>
+      </a>
+      <!-- auth.js handles the user badge injection here -->
+      <div class="user-badge" style="display: none;" id="user-badge-container">
+          <span>👤 <span id="nav-username"></span></span>
+          <span class="logout-btn" onclick="logout()" style="cursor:pointer; color:var(--brand); margin-left:10px;">[Logout]</span>
+      </div>
+      <a href="javascript:void(0)" id="login-btn" class="links primary" style="padding:8px 16px; border-radius:12px; font-weight:700; text-decoration:none;">Sign In / Register</a>
+    </div>
+  </header>
+
+  <main class="wrap dashboard-layout">
+    <section>
+      <a href="/index.html" style="color: var(--brand); text-decoration: none; font-weight: 700;">← Back to Dashboard</a>
+      
+      <!-- MAIN GAME BOARD -->
+      <div class="game-board">
+        <div class="game-header">
+          <h2 class="game-title">Hello World Module</h2>
+          <div class="score-tracker">
+            ⏱ <span id="time" style="color: var(--brand2);">60</span>s &nbsp;|&nbsp; ⭐ <span id="score" style="color: var(--brand);">0</span>
+          </div>
+        </div>
+
+        <!-- 1. START SCREEN -->
+        <div id="start-screen" style="padding: 20px 0;">
+          <h3 style="color: #eef6ff; font-size: 1.5rem; margin-bottom: 30px;">Ready to play?</h3>
+          <button id="start-btn" class="primary-btn" onclick="startGame()">Start Game</button>
+        </div>
+
+        <!-- 2. PLAY SCREEN -->
+        <div id="game-screen" style="display: none; padding: 20px 0;">
+            <h2 id="main-display" style="color: #eef6ff; font-size: 2rem; margin-bottom: 30px;">Click the button!</h2>
+            <button class="primary-btn" onclick="scorePoint()" style="background-color: var(--brand2);">Score Point</button>
+        </div>
+
+        <!-- 3. GAME OVER SCREEN -->
+        <div id="game-over-screen" style="display: none; padding: 40px 0;">
+            <h1 style="color: #fff; font-size: 3rem; margin-bottom: 10px;">Time's Up!</h1>
+            <h2 style="color: #eef6ff; margin-bottom: 20px;">Final Score: <span id="final-score" style="color: var(--brand);">0</span></h2>
+            <button class="primary-btn" onclick="startGame()">Play Again</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACHIEVEMENTS PANEL -->
+    <aside class="achievements-panel">
+        <h2>🏆 Achievements</h2>
+        <div class="user-progress">
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700;">
+            <span id="levelText">Level 1 Rookie</span>
+            <span id="xpText" style="color: var(--brand);">0 / 1000 XP</span>
+          </div>
+          <div class="xp-bar"><div class="xp-fill" id="xpBarFill" style="width: 0%;"></div></div>
+        </div>
+        
+        <div class="achievement-list" id="achievementsList">
+          <!-- Achievements will be dynamically rendered here by auth.js/engine -->
+          <div class="achievement-item locked">
+            <div class="achievement-badge">🎯</div>
+            <div class="achievement-info">
+              <h4>First Click</h4>
+              <p>Score your first point.</p>
             </div>
+            <div class="achievement-points">50 XP</div>
+          </div>
         </div>
-    </header>
+    </aside>
+  </main>
 
-    <div class="wrap">
-        <div class="breadcrumb">
-            <a href="https://zeriahlabs.com" class="back-link">← Back to Dashboard</a>
-        </div>
+  <!-- Audio Elements -->
+  <audio id="sound-correct" src="/sounds/yay.mp3"></audio>
+  <audio id="bgm" src="/sounds/bgm.mp3" loop></audio>
 
-        <div class="dashboard-layout">
-            <!-- ========================================== -->
-            <!-- LEFT: GAME PANEL                           -->
-            <!-- ========================================== -->
-            <div class="game-panel">
-                <h1 id="main-game-title">Hello World Game</h1>
-                
-                <!-- START SCREEN -->
-                <div id="start-screen" class="start-screen">
-                    <h2 style="font-size: 2.2rem; margin: 0 0 10px 0; color: var(--ink);">Ready to Play?</h2>
-                    <p>This is the baseline template for new Zeriah Labs projects.</p>
-                    <button id="play-btn" class="btn-primary">Play!</button>
-                </div>
+  <!-- Global Scripts & Module Engine -->
+  <script src="/js/auth.js"></script>
+  <script src="/js/hello-engine.js"></script>
 
-                <!-- ACTIVE GAME CONTAINER -->
-                <div id="game-container" style="display: none; width: 100%; flex-direction: column; align-items: center; background: rgba(0,0,0,0.2); border: 1px dashed var(--rule); border-radius: var(--r); padding: 60px 20px; margin-top: 20px;">
-                    <h2 style="color: var(--brand2); margin-bottom: 20px;">Game Canvas Active</h2>
-                    <p style="color: var(--muted); margin-bottom: 40px; text-align: center;">Inject your HTML canvas, React components, or DOM elements here.</p>
-                    
-                    <!-- Demo button to trigger an achievement API call -->
-                    <button id="demo-win-btn" class="btn-primary" style="font-size: 1rem; padding: 12px 32px;">Simulate Level Win</button>
-                </div> <!-- End game-container -->
-            </div> <!-- End game-panel -->
-
-            <!-- ========================================== -->
-            <!-- RIGHT: ACHIEVEMENTS SIDEBAR                -->
-            <!-- ========================================== -->
-            <div class="achievements-panel">
-                <h2>🏆 Your Progress</h2>
-                <div class="user-progress">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--ink);">
-                        <span>Current Rank</span>
-                        <span id="sidebar-xp-text">Offline</span>
-                    </div>
-                    <div class="xp-bar"><div id="sidebar-xp-fill" class="xp-fill" style="width: 0%;"></div></div>
-                </div>
-                
-                <!-- DYNAMIC ACHIEVEMENT LIST INJECTED HERE -->
-                <div class="achievement-list" id="global-achievement-list">
-                    <div style="text-align: center; color: var(--muted); padding: 10px; font-size: 0.85rem;">
-                        Fetching live achievements...
-                    </div>
-                </div>
-            </div> <!-- End achievements-panel -->
-        </div> <!-- End dashboard-layout -->
-    </div>
-
-    <!-- ========================================== -->
-    <!-- AUTHENTICATION MODAL OVERLAY               -->
-    <!-- ========================================== -->
-    <div id="auth-modal" class="modal-overlay">
-        <div class="modal">
-            <h2 id="auth-title">Welcome Back</h2>
-            <div id="auth-error" style="color: #ef4444; margin-bottom: 12px; font-size: 0.9rem; font-weight: bold; display: none;"></div>
-            
-            <form id="auth-form" style="width: 100%;" onsubmit="handleAuthSubmit(event)">
-                <input type="text" id="auth-name" placeholder="Display Name" class="auth-input" style="display: none;" />
-                <input type="email" id="auth-email" placeholder="Email Address" required class="auth-input" />
-                <input type="password" id="auth-password" placeholder="Password" required class="auth-input" />
-                <button type="submit" id="auth-submit-btn" class="btn-primary" style="width: 100%; margin-top: 10px; font-size: 1.1rem; padding: 12px;">Login</button>
-            </form>
-            
-            <p style="margin-top: 24px; font-size: 0.9rem; color: var(--muted);">
-                <span id="auth-toggle-text">Don't have an account?</span> 
-                <a href="#" onclick="toggleAuthMode(event)" style="color: var(--brand2); text-decoration: none; font-weight: bold;">Click here</a>
-            </p>
-            <button onclick="closeAuthModal()" style="margin-top: 10px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem;">Cancel</button>
-        </div>
-    </div>
-
-
-    <script>
-        /* ==========================================================================
-           1. GAME LOGIC (CUSTOMIZE FOR EACH PROJECT)
-           ========================================================================== */
-        
-        // Start Game Handler
-        document.getElementById("play-btn").onclick = () => {
-            document.getElementById("start-screen").style.display = "none";
-            document.getElementById("game-container").style.display = "flex";
-            
-            // Call your custom initGame() function here!
-            console.log("Game Started");
-        };
-
-        // Demo Win Handler (Example of triggering an achievement)
-        document.getElementById("demo-win-btn").onclick = async () => {
-            alert("Victory Simulated! Reaching out to Zeriah Labs database...");
-            
-            // Replace 'template_first_win' with your actual SQL achievement_id
-            await unlockGlobalAchievement('template_first_win', 50); 
-        };
-
-
-        /* ==========================================================================
-           2. ZERIAH LABS GLOBAL AUTH & ACHIEVEMENTS ENGINE (DO NOT EDIT)
-           ========================================================================== */
-        
-        let isLoginMode = true;
-
-        /**
-         * Checks if the user is logged in by pinging the progress.js worker.
-         * Updates the header and sidebar based on auth status.
-         */
-        async function checkSession() {
-            const token = localStorage.getItem("zeriah_token");
-            const authContainer = document.getElementById("auth-container");
-
-            if (!token) {
-                // Not logged in -> Show Login Button
-                authContainer.innerHTML = `<button class="btn-sm" onclick="showAuthModal()">Login / Register</button>`;
-                document.getElementById('sidebar-xp-text').innerText = "Not Logged In";
-                document.getElementById('sidebar-xp-fill').style.width = "0%";
-                fetchGlobalAchievements(); // Fetch badges anyway (will show offline fallback if API blocks unauth)
-                return;
-            }
-
-            try {
-                // Ping the progress.js worker to validate token and get user info
-                const response = await fetch('/api/progress', {
-                    headers: { 'X-User-Id': token }
-                });
-
-                if (!response.ok) throw new Error("Invalid session");
-
-                const user = await response.json();
-                
-                // Update header with user data
-                authContainer.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 15px; background: var(--panel); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--rule);">
-                        <span style="color: var(--brand2); font-weight: 800;">${user.name || 'Student'}</span>
-                        <span style="font-size: 0.75rem; color: var(--muted); background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px;">${user.level || 'Rookie'}</span>
-                        <button onclick="handleLogout()" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; font-weight: bold; padding: 0 4px;">Exit</button>
-                    </div>
-                `;
-
-                // Update Sidebar XP
-                const xp = user.xp || 0;
-                const nextLevelXp = 1000; // Adjust this math based on your actual XP curves
-                const xpPercent = Math.min((xp / nextLevelXp) * 100, 100);
-                document.getElementById('sidebar-xp-text').innerText = `${xp} XP`;
-                document.getElementById('sidebar-xp-fill').style.width = `${xpPercent}%`;
-
-                // Fetch their personal achievement unlocks
-                fetchGlobalAchievements();
-            } catch (err) {
-                console.warn("Session invalid or offline:", err);
-                localStorage.removeItem("zeriah_token");
-                checkSession(); // Re-run to reset to "Login" state
-            }
-        }
-
-        // --- AUTH MODAL HANDLERS ---
-        function showAuthModal() {
-            document.getElementById("auth-modal").style.display = "flex";
-            document.getElementById("auth-error").style.display = "none";
-        }
-
-        function closeAuthModal() {
-            document.getElementById("auth-modal").style.display = "none";
-            document.getElementById("auth-form").reset();
-            
-            // Reset button style in case it was left green from a successful login
-            const btn = document.getElementById("auth-submit-btn");
-            btn.style.background = "";
-            btn.style.color = "";
-        }
-
-        function toggleAuthMode(e) {
-            e.preventDefault();
-            isLoginMode = !isLoginMode;
-            document.getElementById("auth-title").innerText = isLoginMode ? "Welcome Back" : "Create Account";
-            document.getElementById("auth-name").style.display = isLoginMode ? "none" : "block";
-            document.getElementById("auth-name").required = !isLoginMode;
-            document.getElementById("auth-submit-btn").innerText = isLoginMode ? "Login" : "Sign Up";
-            document.getElementById("auth-toggle-text").innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
-            document.getElementById("auth-error").style.display = "none";
-        }
-
-        async function handleAuthSubmit(e) {
-            e.preventDefault();
-            const btn = document.getElementById("auth-submit-btn");
-            const errorBox = document.getElementById("auth-error");
-            
-            const email = document.getElementById("auth-email").value;
-            const password = document.getElementById("auth-password").value;
-            const name = document.getElementById("auth-name").value;
-
-            btn.disabled = true;
-            btn.innerText = "Processing...";
-            errorBox.style.display = "none";
-
-            const endpoint = isLoginMode ? '/api/login' : '/api/register';
-            const payload = isLoginMode ? { email, password } : { email, password, name };
-
-            try {
-                // Calls your login.js or register.js workers
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await response.json();
-
-                // Reads the specific error string passed down from your login.js script
-                if (!response.ok) throw new Error(data.error || "Authentication failed.");
-
-                // Success! Your login.js explicitly returns { token: user.id, message: '...' }
-                const token = data.token || data.userId;
-                localStorage.setItem("zeriah_token", token);
-                
-                // UX Polish: Temporarily show the success message generated by your backend
-                btn.style.background = "var(--brand2)";
-                btn.style.color = "#001016";
-                btn.innerText = data.message || "Success!";
-                
-                // Wait briefly so the user can read the success message, then proceed
-                setTimeout(() => {
-                    closeAuthModal();
-                    checkSession(); // Instantly update header and fetch badges
-                }, 800);
-
-            } catch (err) {
-                errorBox.innerText = err.message;
-                errorBox.style.display = "block";
-                
-                btn.disabled = false;
-                btn.innerText = isLoginMode ? "Login" : "Sign Up";
-            }
-        }
-
-        function handleLogout() {
-            localStorage.removeItem("zeriah_token");
-            checkSession();
-        }
-
-        /**
-         * Unlocks a specific achievement in the database and adds XP.
-         */
-        async function unlockGlobalAchievement(achievementId, xpReward = 30) {
-            try {
-                const token = localStorage.getItem("zeriah_token"); 
-                if (!token) {
-                    console.warn("User not logged in. Achievement not saved globally.");
-                    return; 
-                }
-
-                // POST to unlock-achievement.js
-                const response = await fetch('/api/unlock-achievement', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-User-Id': token },
-                    body: JSON.stringify({ userId: token, achievementId: achievementId, xpReward: xpReward })
-                });
-
-                const data = await response.json();
-
-                if (data.isLevelUp) {
-                    console.log(`Level Up! Welcome to ${data.newLevel}!`);
-                }
-
-                checkSession(); // Repaints header, XP bar, and sidebar achievements
-            } catch (error) {
-                console.error("Could not save achievement to global DB:", error);
-            }
-        }
-
-        /**
-         * Fetches the user's current progress against the master list of achievements
-         */
-        async function fetchGlobalAchievements() {
-            try {
-                const token = localStorage.getItem("zeriah_token") || ""; 
-
-                // GET from achievements.js
-                const response = await fetch('/api/achievements', {
-                    method: 'GET',
-                    headers: { 'X-User-Id': token }
-                });
-
-                if (!response.ok) throw new Error("API not ready yet");
-
-                const achievements = await response.json();
-                renderGlobalAchievements(achievements);
-            } catch (error) {
-                console.warn("Global API offline, using fallback UI for layout testing.");
-                renderFallbackAchievements();
-            }
-        }
-
-        /**
-         * Renders live database achievements into the sidebar
-         */
-        function renderGlobalAchievements(achievements) {
-            const list = document.getElementById("global-achievement-list");
-            list.innerHTML = "";
-
-            achievements.forEach(ach => {
-                const isLocked = !ach.isUnlocked;
-                const lockedClass = isLocked ? "locked" : "";
-                
-                list.innerHTML += `
-                    <div class="achievement-item ${lockedClass}">
-                        <div class="achievement-badge">${ach.icon || '🏆'}</div>
-                        <div class="achievement-info">
-                            <h4>${ach.name || ach.title}</h4>
-                            <p>${ach.description}</p>
-                        </div>
-                        <div class="achievement-points">+${ach.points || 50}</div>
-                    </div>
-                `;
-            });
-        }
-
-        /**
-         * Fallback UI renderer for local testing before the DB is connected
-         */
-        function renderFallbackAchievements() {
-            const list = document.getElementById("global-achievement-list");
-            list.innerHTML = `
-                <div class="achievement-item locked">
-                    <div class="achievement-badge">🚀</div>
-                    <div class="achievement-info">
-                        <h4>Hello World</h4>
-                        <p>Complete the first level of the new game.</p>
-                    </div>
-                    <div class="achievement-points">+50</div>
-                </div>
-                <div class="achievement-item locked">
-                    <div class="achievement-badge">🔥</div>
-                    <div class="achievement-info">
-                        <h4>On Fire</h4>
-                        <p>Win 3 times in a row.</p>
-                    </div>
-                    <div class="achievement-points">+30</div>
-                </div>
-            `;
-        }
-
-        // --- BOOT SEQUENCE ---
-        // Validate user session and build the page elements instantly on load
-        checkSession();
-
-    </script>
 </body>
 </html>
