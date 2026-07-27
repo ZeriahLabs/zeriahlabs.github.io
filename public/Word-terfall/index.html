@@ -419,30 +419,10 @@
                     <div class="xp-bar"><div id="xp-fill" class="xp-fill"></div></div>
                 </div>
                 
-                <div class="achievement-list">
-                    <div id="ach-1" class="achievement-item locked">
-                        <div class="achievement-badge">💧</div>
-                        <div class="achievement-info">
-                            <h4>First Splash</h4>
-                            <p>Play your first game.</p>
-                        </div>
-                        <div class="achievement-points">+10</div>
-                    </div>
-                    <div id="ach-2" class="achievement-item locked">
-                        <div class="achievement-badge">🌊</div>
-                        <div class="achievement-info">
-                            <h4>Waterfall Master</h4>
-                            <p>Beat all 4 levels.</p>
-                        </div>
-                        <div class="achievement-points">+50</div>
-                    </div>
-                    <div id="ach-3" class="achievement-item locked">
-                        <div class="achievement-badge">🔥</div>
-                        <div class="achievement-info">
-                            <h4>On Fire</h4>
-                            <p>Reach a 3-day streak.</p>
-                        </div>
-                        <div class="achievement-points">+30</div>
+                <!-- REPLACE THE HARDCODED LIST WITH THIS EMPTY CONTAINER -->
+                <div class="achievement-list" id="global-achievement-list">
+                    <div style="text-align: center; color: var(--muted); padding: 10px; font-size: 0.85rem;">
+                        Fetching live achievements...
                     </div>
                 </div>
             </div> <!-- End achievements-panel -->
@@ -768,6 +748,9 @@
                 stats.maxStreak = Math.max(stats.maxStreak, stats.currentStreak);
                 stats.lastEpoch = today;
                 localStorage.setItem("wordterfall_stats", JSON.stringify(stats));
+                
+                // Trigger global database check
+                evaluateUnlocks();
             }
 
             setTimeout(() => {
@@ -790,16 +773,129 @@
             
             document.getElementById('xp-fill').style.width = `${xpPercent}%`;
             document.getElementById('xp-text').innerText = `${gamesPlayed} / 10 Games`;
+        }
 
-            // Evaluate Unlocks
-            if (gamesPlayed >= 1) document.getElementById('ach-1').classList.remove('locked');
-            if (stats.wins >= 1) document.getElementById('ach-2').classList.remove('locked');
-            if (stats.maxStreak >= 3) document.getElementById('ach-3').classList.remove('locked');
+        // --- GLOBAL ACHIEVEMENTS API INTEGRATION ---
+        async function evaluateUnlocks() {
+            // Check milestones and ping the database to permanently unlock them
+            // Ensure these IDs match exactly what is inside your achievements_master SQL table!
+            if (stats.played === 1) await unlockGlobalAchievement('wordterfall_first');
+            if (stats.wins === 1) await unlockGlobalAchievement('wordterfall_master');
+            if (stats.currentStreak === 3) await unlockGlobalAchievement('wordterfall_fire');
+        }
+
+        async function unlockGlobalAchievement(achievementId) {
+            try {
+                // In your live site, this comes from your authentication system
+                const userId = localStorage.getItem("zeriah_user_id"); 
+                if (!userId) return; // Skip if user is not logged in
+
+                // Calls your unlock-achievement.js Cloudflare Worker
+                const response = await fetch('/api/unlock-achievement', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    // Send exactly what your backend expects:
+                    body: JSON.stringify({ 
+                        userId: userId,
+                        achievementId: achievementId,
+                        xpReward: 30 // You can customize XP per badge here!
+                    })
+                });
+
+                const data = await response.json();
+
+                // If your backend detects a level up, celebrate!
+                if (data.isLevelUp) {
+                    console.log(`Level Up! Welcome to ${data.newLevel}!`);
+                    // If you add a confetti library later, fire it here!
+                }
+
+                // Refresh the panel to show the badge changing from grayscale to color!
+                fetchGlobalAchievements(); 
+            } catch (error) {
+                console.warn("Could not save achievement to global DB:", error);
+            }
+        }
+
+        async function fetchGlobalAchievements() {
+            try {
+                // In your live site, this comes from your authentication system
+                const userId = localStorage.getItem("zeriah_user_id") || ""; 
+
+                // Fetching from the Cloudflare Worker you found (e.g. deployed to /api/achievements)
+                const response = await fetch('/api/achievements', {
+                    method: 'GET',
+                    headers: { 'X-User-Id': userId }
+                });
+
+                if (!response.ok) throw new Error("API not ready yet");
+
+                const achievements = await response.json();
+                renderGlobalAchievements(achievements);
+            } catch (error) {
+                console.warn("Global API not connected, using offline fallbacks.");
+                renderFallbackAchievements();
+            }
+        }
+
+        function renderGlobalAchievements(achievements) {
+            const list = document.getElementById("global-achievement-list");
+            list.innerHTML = "";
+
+            achievements.forEach(ach => {
+                const isLocked = !ach.isUnlocked;
+                const lockedClass = isLocked ? "locked" : "";
+                
+                // Maps to your SQL column names
+                list.innerHTML += `
+                    <div class="achievement-item ${lockedClass}">
+                        <div class="achievement-badge">${ach.icon || '🏆'}</div>
+                        <div class="achievement-info">
+                            <h4>${ach.name || ach.title}</h4>
+                            <p>${ach.description}</p>
+                        </div>
+                        <div class="achievement-points">+${ach.points}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderFallbackAchievements() {
+            const list = document.getElementById("global-achievement-list");
+            list.innerHTML = `
+                <div class="achievement-item ${stats.played >= 1 ? '' : 'locked'}">
+                    <div class="achievement-badge">💧</div>
+                    <div class="achievement-info">
+                        <h4>First Splash</h4>
+                        <p>Play your first game.</p>
+                    </div>
+                    <div class="achievement-points">+10</div>
+                </div>
+                <div class="achievement-item ${stats.wins >= 1 ? '' : 'locked'}">
+                    <div class="achievement-badge">🌊</div>
+                    <div class="achievement-info">
+                        <h4>Waterfall Master</h4>
+                        <p>Beat all 4 levels.</p>
+                    </div>
+                    <div class="achievement-points">+50</div>
+                </div>
+                <div class="achievement-item ${stats.maxStreak >= 3 ? '' : 'locked'}">
+                    <div class="achievement-badge">🔥</div>
+                    <div class="achievement-info">
+                        <h4>On Fire</h4>
+                        <p>Reach a 3-day streak.</p>
+                    </div>
+                    <div class="achievement-points">+30</div>
+                </div>
+            `;
         }
 
         // Trigger the fetch to kickstart everything
         updateAchievements();
         loadExternalDictionaries();
+        fetchGlobalAchievements();
     </script>
 </body>
 </html>
