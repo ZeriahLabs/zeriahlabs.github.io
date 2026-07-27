@@ -3,19 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Hello World | Zeriah Labs</title>
+  <title>[GAME_NAME] | Zeriah Labs</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
-  <!-- Core Zeriah Labs Styles (Absolute Path) -->
   <link rel="stylesheet" href="/css/style.css">
   
   <style>
-    /* ----------------------------------------- */
+    /* ========================================= */
     /* MODULE SPECIFIC STYLES GO HERE            */
-    /* ----------------------------------------- */
-    .game-board {
+    /* ========================================= */
+    .game-board-container {
       font-family: 'Nunito', sans-serif;
       background: linear-gradient(180deg, #1e293b, #0f172a);
       border-radius: 24px;
@@ -28,67 +27,52 @@
     .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     .game-title { margin: 0; font-size: 2rem; font-weight: 900; color: var(--brand2); }
     .score-tracker { background: rgba(255, 255, 255, 0.1); padding: 10px 20px; border-radius: 99px; font-size: 1.2rem; font-weight: 900; color: #fff; }
-    
+
     .primary-btn {
-      background-color: var(--brand); 
-      color: #07101a; 
-      border: none;
-      padding: 15px 40px;
-      font-size: 1.5rem;
-      border-radius: 12px;
-      font-weight: 900;
-      cursor: pointer;
-      margin-top: 20px;
-      transition: transform 0.1s;
+      background-color: var(--brand); color: #07101a; border: none; padding: 15px 40px;
+      font-size: 1.5rem; border-radius: 12px; font-weight: 900; cursor: pointer; margin-top: 20px; transition: transform 0.1s;
     }
     .primary-btn:active { transform: scale(0.95); }
     .primary-btn:disabled { background-color: var(--rule); cursor: not-allowed; }
+
+    @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+    .animate-pop { animation: popIn 0.4s ease-out forwards; }
   </style>
 </head>
 <body>
 
-  <!-- UNIFIED ZERIAH LABS HEADER -->
   <header>
     <div class="wrap nav">
-      <a href="/index.html" class="brand">
-        <img src="https://assets.zeriahlabs.com/Zeriah_Labs_Vertical_Final.webp" alt="Zeriah Labs logo" style="height:36px;">
+      <a href="/" class="brand-container" style="text-decoration: none; color: var(--ink);">
+        <img src="https://assets.zeriahlabs.com/Zeriah_Labs_Vertical_Final.webp" alt="Zeriah Labs logo" style="height:36px; object-fit: contain;">
         <span>Zeriah Labs</span>
       </a>
-      <!-- auth.js handles the user badge injection here -->
-      <div class="user-badge" style="display: none;" id="user-badge-container">
-          <span>👤 <span id="nav-username"></span></span>
-          <span class="logout-btn" onclick="logout()" style="cursor:pointer; color:var(--brand); margin-left:10px;">[Logout]</span>
-      </div>
-      <a href="javascript:void(0)" id="login-btn" class="links primary" style="padding:8px 16px; border-radius:12px; font-weight:700; text-decoration:none;">Sign In / Register</a>
+      <div id="auth-container"></div>
     </div>
   </header>
 
   <main class="wrap dashboard-layout">
     <section>
-      <a href="/index.html" style="color: var(--brand); text-decoration: none; font-weight: 700;">← Back to Dashboard</a>
+      <a href="/" style="color: var(--brand); text-decoration: none; font-weight: 700;">← Back to Dashboard</a>
       
-      <!-- MAIN GAME BOARD -->
-      <div class="game-board">
+      <div class="game-board-container">
         <div class="game-header">
-          <h2 class="game-title">Hello World Module</h2>
+          <h2 class="game-title">[GAME_NAME]</h2>
           <div class="score-tracker">
             ⏱ <span id="time" style="color: var(--brand2);">60</span>s &nbsp;|&nbsp; ⭐ <span id="score" style="color: var(--brand);">0</span>
           </div>
         </div>
 
-        <!-- 1. START SCREEN -->
         <div id="start-screen" style="padding: 20px 0;">
-          <h3 style="color: #eef6ff; font-size: 1.5rem; margin-bottom: 30px;">Ready to play?</h3>
-          <button id="start-btn" class="primary-btn" onclick="startGame()">Start Game</button>
+          <h3 style="color: #eef6ff; font-size: 1.5rem; margin-bottom: 30px;">[Insert Game Tagline Here]</h3>
+          <button id="start-btn" class="primary-btn animate-pop" onclick="startGame()">Start Game</button>
         </div>
 
-        <!-- 2. PLAY SCREEN -->
-        <div id="game-screen" style="display: none; padding: 20px 0;">
-            <h2 id="main-display" style="color: #eef6ff; font-size: 2rem; margin-bottom: 30px;">Click the button!</h2>
-            <button class="primary-btn" onclick="scorePoint()" style="background-color: var(--brand2);">Score Point</button>
+        <div id="game-screen" style="display: none;">
+            <h2 id="question-text" style="color: #eef6ff; font-size: 1.8rem; margin-bottom: 15px;">Game Active!</h2>
+            <div id="game-interactive-area" style="min-height: 200px;"></div>
         </div>
 
-        <!-- 3. GAME OVER SCREEN -->
         <div id="game-over-screen" style="display: none; padding: 40px 0;">
             <h1 style="color: #fff; font-size: 3rem; margin-bottom: 10px;">Time's Up!</h1>
             <h2 style="color: #eef6ff; margin-bottom: 20px;">Final Score: <span id="final-score" style="color: var(--brand);">0</span></h2>
@@ -97,38 +81,80 @@
       </div>
     </section>
 
-    <!-- ACHIEVEMENTS PANEL -->
-    <aside class="achievements-panel">
-        <h2>🏆 Achievements</h2>
-        <div class="user-progress">
-          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700;">
-            <span id="levelText">Level 1 Rookie</span>
-            <span id="xpText" style="color: var(--brand);">0 / 1000 XP</span>
-          </div>
-          <div class="xp-bar"><div class="xp-fill" id="xpBarFill" style="width: 0%;"></div></div>
-        </div>
-        
-        <div class="achievement-list" id="achievementsList">
-          <!-- Achievements will be dynamically rendered here by auth.js/engine -->
-          <div class="achievement-item locked">
-            <div class="achievement-badge">🎯</div>
-            <div class="achievement-info">
-              <h4>First Click</h4>
-              <p>Score your first point.</p>
+    <aside>
+        <div class="achievements-panel">
+            <h2>🏆 Global Progress</h2>
+            <div class="user-progress">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--ink);">
+                    <span>Zeriah Rank</span>
+                    <span id="sidebar-xp-text">Log in to track</span>
+                </div>
+                <div class="xp-bar"><div id="sidebar-xp-fill" class="xp-fill" style="width: 0%;"></div></div>
             </div>
-            <div class="achievement-points">50 XP</div>
-          </div>
+            
+            <div class="achievement-list" id="global-achievement-list">
+                <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 0.85rem;">
+                    Loading achievements...
+                </div>
+            </div>
+            
+            <a href="/achievements/" style="background: transparent; color: var(--brand2); border: 1px solid var(--brand2); padding: 8px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; text-decoration: none; display: block; text-align: center;">View Master Trophy Room</a>
         </div>
     </aside>
   </main>
 
-  <!-- Audio Elements -->
+  <div id="auth-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div class="modal" style="background: linear-gradient(180deg, #0b131a, #07101a); border: 1px solid var(--rule); padding: 40px; border-radius: 24px; box-shadow: 0 20px 80px rgba(0,0,0,0.8); width: 360px;">
+          <h2 id="auth-title" style="margin-top: 0;">Welcome Back</h2>
+          <div id="auth-error" style="color: #ef4444; margin-bottom: 12px; font-size: 0.9rem; font-weight: bold; display: none;"></div>
+          <p id="auth-success" style="color: var(--brand2); font-size: 0.85rem; display: none; margin-top: -10px;"></p>
+          
+          <form id="auth-form" style="width: 100%; display: flex; flex-direction: column; gap: 16px;" onsubmit="handleAuthSubmit(event)">
+              <input type="text" id="auth-name" placeholder="Display Name" style="display: none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+              <input type="email" id="email" placeholder="Email Address" required style="padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+              <input type="text" id="sec-question" placeholder="Security Question" style="display:none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);">
+              <input type="text" id="sec-answer" placeholder="Your Answer" style="display:none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);">
+              <div id="password-container" style="position: relative; display: flex; align-items: center;">
+                  <input type="password" id="password" placeholder="Password" required style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+                  <button id="toggle-password" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; font-size: 1.2rem;">👁️</button>
+              </div>
+              <button type="submit" id="auth-submit-btn" class="btn-primary" style="background: linear-gradient(90deg, var(--brand), var(--brand2)); color: #001016; padding: 12px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer;">Login</button>
+          </form>
+          
+          <div style="margin-top: 16px; text-align: center; font-size: 0.9rem; color: var(--muted); display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                  <span id="auth-switch-text">Don't have an account?</span> 
+                  <a href="#" id="auth-switch" style="color: var(--brand2); font-weight: bold; text-decoration: none;">Click here</a>
+              </div>
+              <a href="#" id="forgot-link" style="color: var(--muted); text-decoration: underline; font-size: 0.85rem;">Forgot password?</a>
+          </div>
+          <button id="close-modal" style="background: none; border: none; color: var(--muted); margin-top: 16px; width: 100%; cursor: pointer; font-weight: bold;">Cancel</button>
+      </div>
+  </div>
+
   <audio id="sound-correct" src="/sounds/yay.mp3"></audio>
+  <audio id="sound-wrong" src="/sounds/wrong.mp3"></audio>
   <audio id="bgm" src="/sounds/bgm.mp3" loop></audio>
 
-  <!-- Global Scripts & Module Engine -->
   <script src="/js/auth.js"></script>
-  <script src="/js/hello-engine.js"></script>
+  <script src="/js/ui.js"></script>
+  
+  <script src="./game-engine.js"></script>
+  
+  <script>
+      // Automatically load achievements & set filter keyword for ui.js
+      document.addEventListener("DOMContentLoaded", () => {
+          // [AI INSTRUCTION: CHANGE "keyword" TO MATCH THE D1 DB PREFIX FOR THIS GAME]
+          window.currentAchievementFilter = "keyword"; 
+          
+          if(typeof loadAchievements === 'function') {
+              loadAchievements(window.currentAchievementFilter);
+          }
+          if(typeof checkSession === 'function') {
+              checkSession();
+          }
+      });
+  </script>
 
 </body>
 </html>
