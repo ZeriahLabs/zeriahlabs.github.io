@@ -406,16 +406,21 @@
                 const token = localStorage.getItem("zeriah_token"); 
                 if (!token) return;
 
+                console.log("📡 Fetching from /api/achievements...");
                 const response = await fetch('/api/achievements', {
                     method: 'GET',
                     headers: { 'X-User-Id': token }
                 });
 
-                if (!response.ok) throw new Error("API not ready yet");
+                if (!response.ok) throw new Error("API returned status " + response.status);
 
                 globalAchievementsData = await response.json();
+                console.log("📡 Successfully loaded DB achievements:", globalAchievementsData);
+                
                 renderCategorizedTrophyRoom(globalAchievementsData);
             } catch (error) {
+                console.error("🚨 Fetch Error:", error.message);
+                console.warn("Using offline dummy data because the API connection failed.");
                 renderFallbackTrophyRoom(true);
             }
         }
@@ -424,20 +429,22 @@
             const container = document.getElementById("trophy-room-container");
             container.innerHTML = "";
 
-            if (achievements.length === 0) {
+            if (!achievements || achievements.length === 0) {
                 container.innerHTML = `<div style="text-align: center; color: var(--muted); padding: 40px; font-size: 1.2rem;">No achievements exist in the database yet.</div>`;
                 return;
             }
 
-            // We'll create some logical grouping based on the achievement IDs
-            // For example: "math", "wordterfall", "dino", etc.
+            // Helper to safely grab the ID whether it's named 'id' or 'achievement_id' in your SQL
+            const getAchId = (a) => (a.id || a.achievement_id || "").toLowerCase();
+
+            // Grouping based on the achievement IDs in your database
             const categories = {
-                "Math Junior": achievements.filter(a => a.id && a.id.toLowerCase().includes('math')),
-                "Word-terfall": achievements.filter(a => a.id && a.id.toLowerCase().includes('wordterfall')),
-                "Dino Guess": achievements.filter(a => a.id && a.id.toLowerCase().includes('dino')),
+                "Math Junior": achievements.filter(a => getAchId(a).includes('math')),
+                "Word-terfall": achievements.filter(a => getAchId(a).includes('wordterfall') || getAchId(a).includes('word')),
+                "Dino Guess": achievements.filter(a => getAchId(a).includes('dino')),
                 "Platform & General": achievements.filter(a => {
-                    const lId = a.id ? a.id.toLowerCase() : "";
-                    return !lId.includes('math') && !lId.includes('wordterfall') && !lId.includes('dino');
+                    const lId = getAchId(a);
+                    return !lId.includes('math') && !lId.includes('wordterfall') && !lId.includes('word') && !lId.includes('dino');
                 })
             };
 
@@ -464,8 +471,8 @@
                         <div class="achievement-card ${lockedClass}">
                             <div class="achievement-badge">${ach.icon || '🏆'}</div>
                             <div class="achievement-info">
-                                <h4>${ach.name || ach.title}</h4>
-                                <p>${ach.description}</p>
+                                <h4>${ach.name || ach.title || "Secret Achievement"}</h4>
+                                <p>${ach.description || "Keep playing to uncover this milestone!"}</p>
                             </div>
                             <div class="achievement-points">+${ach.points || 50} XP</div>
                         </div>
