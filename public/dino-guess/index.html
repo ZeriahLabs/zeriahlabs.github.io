@@ -10,6 +10,13 @@
     <link rel="stylesheet" href="/public/css/style.css"> 
     
     <style>
+        /* Force the navbar logo to stay small */
+        .brand-logo {
+            height: 36px !important;
+            width: auto;
+            object-fit: contain;
+        }
+
         /* Specific Game Layout */
         .game-wrapper {
             background-color: rgba(255,255,255,0.03);
@@ -117,6 +124,8 @@
             
             <div>
                 <div class="game-wrapper" id="start-screen">
+                    <img src="https://assets.zeriahlabs.com/whosthatdinosaur/dino_guess_logo.webp" alt="Dino Guess Logo" style="height: 180px; margin: 0 auto 20px auto; display: block; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    
                     <h1 style="font-size: 2.5rem; margin-bottom: 10px; color: var(--brand2);">Dino Guess</h1>
                     <p style="color: var(--muted); margin-bottom: 30px;">Can you name all of them?</p>
                     <button id="start-btn" class="primary-btn" onclick="startGame()" disabled>Loading Dinosaurs...</button>
