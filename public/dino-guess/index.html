@@ -8,11 +8,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
-  <!-- Cloudflare Pages Root Path (No /public/ prefix!) -->
   <link rel="stylesheet" href="/css/style.css">
   
   <style>
-    /* Adopted Math Junior Board Styling */
+    /* Dino Guess Board Theme */
     .dino-guess-board {
       font-family: 'Nunito', sans-serif;
       background: linear-gradient(180deg, #1e293b, #0f172a);
@@ -31,7 +30,7 @@
     .dino-img { max-height: 100%; max-width: 100%; transition: filter 0.2s ease-out, transform 0.3s ease; pointer-events: none; user-select: none; }
     .silhouette { filter: brightness(0) drop-shadow(0 0 10px rgba(0,0,0,0.5)); transform: scale(0.95); }
 
-    /* Match the Math Junior 3D Button Style */
+    /* 3D Button Style */
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .option-btn {
       font-family: 'Nunito', sans-serif;
@@ -76,22 +75,21 @@
 </head>
 <body>
 
-  <!-- UNIFIED ZERIAH LABS HEADER -->
   <header>
-    <div class="wrap nav">
-      <a href="../index.html" class="brand">
-        <img src="https://assets.zeriahlabs.com/Zeriah_Labs_Vertical_Final.webp" alt="Zeriah Labs logo" style="height:36px;">
-        <span>Zeriah Labs</span>
-      </a>
-      <a href="javascript:void(0)" id="login-btn" class="links primary" style="padding:8px 16px; border-radius:12px; font-weight:700; text-decoration:none;">Sign In / Register</a>
-    </div>
+      <div class="global-header">
+          <a href="/" class="brand-container">
+              <span style="color: var(--brand2);">⬡</span>
+              <span>Zeriah Labs</span>
+          </a>
+          <div id="auth-container">
+              </div>
+      </div>
   </header>
 
   <main class="wrap dashboard-layout">
     <section>
       <a href="../index.html" style="color: var(--brand); text-decoration: none; font-weight: 700;">← Back to Dashboard</a>
       
-      <!-- DINO GUESS BOARD -->
       <div class="dino-guess-board" style="margin-top: 20px;">
         <div class="game-header">
           <h2 class="game-title">Dino Guess</h2>
@@ -100,14 +98,12 @@
           </div>
         </div>
 
-        <!-- START SCREEN -->
         <div id="start-screen" style="padding: 20px 0;">
           <img src="https://assets.zeriahlabs.com/whosthatdinosaur/dino_guess_logo.webp" alt="Dino Guess Logo" class="animate-pop" style="height: 180px; margin: 0 auto 20px auto; display: block; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
           <h3 style="color: #eef6ff; font-size: 1.5rem; margin-bottom: 30px;">Can you name all of them?</h3>
           <button id="start-btn" class="primary-btn animate-pop" onclick="startGame()" disabled>Loading Dinosaurs...</button>
         </div>
 
-        <!-- PLAY SCREEN -->
         <div id="game-screen" style="display: none;">
             <h2 id="question-text" style="color: #eef6ff; font-size: 1.8rem; margin-bottom: 15px;">Loading...</h2>
             
@@ -118,11 +114,9 @@
             <div id="attribution-text" style="font-size: 0.75rem; color: var(--muted); margin-bottom: 20px; display: none;"></div>
 
             <div class="options-grid" id="options">
-                <!-- Buttons injected by CSV data -->
-            </div>
+                </div>
         </div>
 
-        <!-- GAME OVER SCREEN -->
         <div id="game-over-screen" style="display: none; padding: 40px 0;">
             <h1 style="color: #fff; font-size: 3rem; margin-bottom: 10px;">Time's Up!</h1>
             <h2 style="color: #eef6ff; margin-bottom: 20px;">You identified <span id="final-score" style="color: var(--brand);">0</span> Dinosaurs!</h2>
@@ -132,61 +126,75 @@
       </div>
     </section>
 
-    <!-- FULL SCROLLABLE ACHIEVEMENTS PANEL -->
-    <aside class="achievements-panel">
-        <h2>🏆 Achievements</h2>
-        <div class="user-progress">
-          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700;">
-            <span id="levelText">Level 1 Rookie</span>
-            <span id="xpText" style="color: var(--brand);">0 / 1000 XP</span>
-          </div>
-          <div class="xp-bar"><div class="xp-fill" id="xpBarFill" style="width: 0%;"></div></div>
+    <aside>
+        <div class="achievements-panel">
+            <h2>🏆 Global Progress</h2>
+            <div class="user-progress">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--ink);">
+                    <span>Zeriah Rank</span>
+                    <span id="sidebar-xp-text">Log in to track</span>
+                </div>
+                <div class="xp-bar"><div id="sidebar-xp-fill" class="xp-fill" style="width: 0%;"></div></div>
+            </div>
+            
+            <div class="achievement-list" id="global-achievement-list">
+                <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 0.85rem;">
+                    Log in to view your Zeriah Labs arcade achievements!
+                </div>
+            </div>
+            
+            <a href="/achievements/" class="btn-outline">View Master Trophy Room</a>
         </div>
-        
-        <!-- Scrollable list handled dynamically by ui.js -->
-        <div class="achievement-list" id="achievementsList"></div>
     </aside>
   </main>
 
-  <!-- AUTH MODAL -->
-  <div id="auth-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-    <div style="background: var(--bg); padding: 32px; border-radius: var(--r); border: 1px solid var(--rule); width: 100%; max-width: 400px; box-shadow: var(--shadow);">
-      <h2 id="auth-title" style="margin-top: 0; font-size: 1.5rem;">Sign In</h2>
-      <p id="auth-error" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: -10px;"></p>
-      <p id="auth-success" style="color: var(--brand2); font-size: 0.85rem; display: none; margin-top: -10px;"></p>
-      
-      <form id="auth-form" style="display: flex; flex-direction: column; gap: 16px;">
-        <input type="email" id="email" placeholder="Email Address" required style="padding: 12px; border-radius: 8px; border: 1px solid var(--rule); background: rgba(255,255,255,0.05); color: var(--ink);">
-        
-        <input type="text" id="sec-question" placeholder="Security Question (e.g. Favorite Game)" style="display:none; padding: 12px; border-radius: 8px; border: 1px solid var(--rule); background: rgba(255,255,255,0.05); color: var(--ink);">
-        <input type="text" id="sec-answer" placeholder="Your Answer" style="display:none; padding: 12px; border-radius: 8px; border: 1px solid var(--rule); background: rgba(255,255,255,0.05); color: var(--ink);">
-
-        <div id="password-container" style="position: relative; display: flex; align-items: center;">
-          <input type="password" id="password" placeholder="Password" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--rule); background: rgba(255,255,255,0.05); color: var(--ink);">
-          <button id="toggle-password" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; font-size: 1.2rem;">👁️</button>
-        </div>
-        
-        <button type="submit" style="padding: 12px; border-radius: 8px; background: linear-gradient(90deg, var(--brand), var(--brand2)); border: none; color: #001016; font-weight: 800; cursor: pointer;">Submit</button>
-      </form>
-
-      <div style="margin-top: 16px; text-align: center; font-size: 0.9rem; color: var(--muted); display: flex; flex-direction: column; gap: 10px;">
-        <div>
-          <span id="auth-switch-text">Don't have an account?</span> 
-          <a href="#" id="auth-switch" style="color: var(--brand); font-weight: bold; text-decoration: none;">Register here</a>
-        </div>
-        <a href="#" id="forgot-link" style="color: var(--muted); text-decoration: underline; font-size: 0.85rem;">Forgot password?</a>
+  <footer>
+      <div class="footer-links">
+          <a href="#">About Zeriah Labs</a>
+          <a href="#">Contact Us</a>
+          <a href="#">Disclaimer</a>
+          <a href="#">Privacy Policy</a>
       </div>
-      <button id="close-modal" style="background: none; border: none; color: var(--muted); margin-top: 16px; width: 100%; cursor: pointer; font-weight: bold;">Cancel</button>
-    </div>
+      <p>&copy; 2024 Zeriah Labs. All rights reserved. Educational tools for the next generation.</p>
+  </footer>
+
+  <div id="auth-modal" class="modal-overlay">
+      <div class="modal">
+          <h2 id="auth-title">Welcome Back</h2>
+          <div id="auth-error" style="color: #ef4444; margin-bottom: 12px; font-size: 0.9rem; font-weight: bold; display: none;"></div>
+          
+          <form id="auth-form" style="width: 100%;" onsubmit="handleAuthSubmit(event)">
+              <input type="text" id="auth-name" placeholder="Display Name" class="auth-input" style="display: none;" />
+              <input type="email" id="auth-email" placeholder="Email Address" required class="auth-input" />
+              <input type="password" id="auth-password" placeholder="Password" required class="auth-input" />
+              <button type="submit" id="auth-submit-btn" class="btn-primary" style="width: 100%; margin-top: 10px; font-size: 1.1rem; padding: 12px;">Login</button>
+          </form>
+          
+          <p style="margin-top: 24px; font-size: 0.9rem; color: var(--muted);">
+              <span id="auth-toggle-text">Don't have an account?</span> 
+              <a href="#" onclick="toggleAuthMode(event)" style="color: var(--brand2); text-decoration: none; font-weight: bold;">Click here</a>
+          </p>
+          <button onclick="closeAuthModal()" style="margin-top: 10px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem;">Cancel</button>
+      </div>
   </div>
 
-  <!-- Audio Elements & Scripts (Correct Paths) -->
   <audio id="sound-correct" src="/sounds/yay.mp3"></audio>
   <audio id="sound-wrong" src="/sounds/wrong.mp3"></audio>
   <audio id="bgm" src="/sounds/bgm.mp3" loop></audio>
 
   <script src="/js/auth.js"></script>
   <script src="/js/dino-engine.js"></script>
+  
+  <script>
+      // Automatically load the achievements, filtered for this specific game
+      // The keyword "dino" ensures badges like dino_expert load at the top
+      document.addEventListener("DOMContentLoaded", () => {
+          if (typeof window.checkSession === 'function') {
+              // Pass the filter keyword into the auth.js loading function
+              window.checkSession("dino");
+          }
+      });
+  </script>
 
 </body>
 </html>
