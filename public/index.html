@@ -1,592 +1,245 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zeriah Labs | Educational Arcade</title>
-    <style>
-        /* ==========================================================================
-           ZERIAH LABS GLOBAL STYLES
-           ========================================================================== */
-        :root {
-          --bg:#07131c;
-          --panel:rgba(255,255,255,.05);
-          --panel2:rgba(255,255,255,.035);
-          --ink:#eef6ff;
-          --muted:#a9bfd2;
-          --rule:rgba(255,255,255,.10);
-          --brand:#00d0ff;
-          --brand2:#22e3b1;
-          --purple:#a855f7;
-          --max:1200px;
-          --r:16px;
-          --shadow:0 18px 70px rgba(0,0,0,.55);
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zeriah Labs | Educational Arcade</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <style>
+    /* ========================================= */
+    /* MAIN DASHBOARD SPECIFIC STYLES            */
+    /* ========================================= */
+    
+    /* Netflix Style Game Rows */
+    .category-section { margin-bottom: 40px; }
+    .category-title { 
+        font-size: 1.5rem; font-weight: 900; margin-bottom: 20px; 
+        color: var(--ink); border-bottom: 1px solid var(--rule); 
+        padding-bottom: 10px; font-family: 'Nunito', sans-serif;
+    }
+    
+    .game-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+        gap: 24px; 
+    }
 
-        *{box-sizing:border-box}
-        html, body { min-height: 100%; margin: 0; }
+    .game-card {
+      background: var(--panel); border: 1px solid var(--rule); border-radius: var(--r);
+      overflow: hidden; display: flex; flex-direction: column; text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); height: 320px;
+      font-family: 'Nunito', sans-serif;
+    }
+    .game-card:hover { transform: translateY(-8px); border-color: var(--brand); box-shadow: 0 15px 35px rgba(0,208,255,0.2); }
 
-        body {
-          font:16px/1.6 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;
-          color:var(--ink);
-          background-color: #07101a;
-          background-image:
-            radial-gradient(900px 520px at 20% 0%, rgba(34,227,177,.14), transparent 55%),
-            radial-gradient(900px 520px at 85% 10%, rgba(0,208,255,.12), transparent 55%),
-            linear-gradient(180deg, #061018 0%, #07131c 55%, #07101a 100%);
-          background-repeat: no-repeat;
-          background-attachment: fixed;
-          display: flex;
-          flex-direction: column;
-        }
+    .game-img {
+      height: 55%; display: flex; align-items: center; justify-content: center;
+      font-size: 4rem; border-bottom: 1px solid var(--rule);
+    }
 
-        .wrap {
-          max-width: var(--max);
-          margin: 0 auto;
-          padding: 0 24px;
-          width: 100%;
-          flex: 1;
-        }
+    .game-info { padding: 16px; flex: 1; display: flex; flex-direction: column; }
+    .game-title { font-weight: 900; font-size: 1.2rem; color: var(--ink); margin: 0 0 4px 0; }
+    .game-desc { font-size: 0.85rem; color: var(--muted); margin: 0; line-height: 1.4; flex: 1; }
+    .play-tag { font-size: 0.8rem; font-weight: 800; color: var(--brand2); margin-top: auto; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* HEADER */
-        header {
-          position: sticky; 
-          top: 0; 
-          z-index: 50;
-          backdrop-filter: saturate(150%) blur(10px);
-          background: rgba(7,19,28,.72);
-          border-bottom: 1px solid var(--rule);
-          width: 100%;
-        }
+    /* Scrollable Achievements Sidebar */
+    .achievements-panel {
+      font-family: 'Nunito', sans-serif;
+      background: rgba(255,255,255,.03); border: 1px solid var(--rule);
+      border-radius: var(--r); padding: 24px; height: fit-content;
+    }
+    .achievements-panel h2 { font-size: 1.2rem; margin: 0 0 16px; display: flex; align-items: center; gap: 8px; color: var(--ink); }
+    .user-progress { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
+    .xp-bar { background: rgba(255,255,255,0.1); border-radius: 99px; height: 8px; overflow: hidden; margin-top: 6px; }
+    .xp-fill { background: linear-gradient(90deg, var(--brand), var(--brand2)); height: 100%; width: 0%; transition: width 0.5s ease-out; }
+    
+    .achievement-list { 
+        display: flex; flex-direction: column; gap: 12px; 
+        max-height: 550px; overflow-y: auto; padding-right: 8px; margin-bottom: 20px;
+    }
+    .achievement-list::-webkit-scrollbar { width: 6px; }
+    .achievement-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 8px; }
+    .achievement-list::-webkit-scrollbar-thumb { background: rgba(34,227,177,0.5); border-radius: 8px; }
 
-        .global-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          max-width: var(--max);
-          margin: 0 auto;
-          padding: 15px 24px;
-        }
+    .achievement-item {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,.02); border: 1px solid var(--rule);
+      padding: 12px; border-radius: 12px; transition: all 0.3s;
+    }
+    .achievement-item.locked { opacity: 0.4; filter: grayscale(1); }
+    .achievement-badge { font-size: 1.8rem; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 10px; flex-shrink: 0; }
+    .achievement-info { flex: 1; min-width: 0; text-align: left;}
+    .achievement-info h4 { margin: 0; font-size: 0.95rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .achievement-info p { margin: 0; font-size: 0.75rem; color: var(--muted); line-height: 1.2; }
+    .achievement-points { font-size: 0.8rem; font-weight: 900; color: var(--brand2); background: rgba(34,227,177,.1); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
 
-        .brand-container { 
-          display: flex; 
-          align-items: center; 
-          gap: 15px; 
-          font-size: 1.5rem; 
-          font-weight: 900; 
-          color: var(--ink);
-          text-decoration: none;
-          letter-spacing: 0.5px;
-        }
-
-        .btn-primary {
-          background: linear-gradient(90deg, var(--brand), var(--brand2));
-          color: #001016; border: none; padding: 12px 32px; font-weight: 900;
-          border-radius: 12px; cursor: pointer; font-size: 1.1rem; transition: all 0.2s;
-        }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(34,227,177,0.4); }
-        .btn-sm {
-          background: linear-gradient(90deg, var(--brand), var(--brand2));
-          color: #001016; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: opacity 0.2s;
-        }
-        .btn-sm:hover { opacity: 0.8; }
-        
-        .btn-outline {
-          background: transparent; color: var(--brand2); border: 1px solid var(--brand2);
-          padding: 8px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: all 0.2s;
-          text-decoration: none; display: block; text-align: center;
-        }
-        .btn-outline:hover { background: rgba(34,227,177,0.1); box-shadow: 0 4px 15px rgba(34,227,177,0.2); }
-
-        /* DASHBOARD LAYOUT */
-        .dashboard-layout {
-          display: grid;
-          grid-template-columns: 1fr 320px;
-          gap: 40px;
-          margin-top: 40px;
-          width: 100%;
-        }
-        @media (max-width: 960px) {
-          .dashboard-layout { grid-template-columns: 1fr; }
-        }
-
-        /* NETFLIX STYLE GAME ROWS */
-        .category-section { margin-bottom: 40px; }
-        .category-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 20px; color: var(--ink); border-bottom: 1px solid var(--rule); padding-bottom: 10px; }
-        
-        .game-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: 24px;
-        }
-
-        .game-card {
-          background: var(--panel);
-          border: 1px solid var(--rule);
-          border-radius: var(--r);
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          text-decoration: none;
-          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-          height: 320px;
-        }
-
-        .game-card:hover {
-          transform: translateY(-8px);
-          border-color: var(--brand);
-          box-shadow: 0 15px 35px rgba(0,208,255,0.2);
-        }
-
-        .game-img {
-          height: 60%;
-          background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 4rem;
-          border-bottom: 1px solid var(--rule);
-        }
-
-        .game-info { padding: 16px; flex: 1; display: flex; flex-direction: column; }
-        .game-title { font-weight: 900; font-size: 1.1rem; color: var(--ink); margin: 0 0 4px 0; }
-        .game-desc { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; flex: 1; }
-        .play-tag { font-size: 0.75rem; font-weight: 800; color: var(--brand2); margin-top: auto; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* SCROLLABLE ACHIEVEMENTS SIDEBAR */
-        .achievements-panel {
-          background: rgba(255,255,255,.03); border: 1px solid var(--rule);
-          border-radius: var(--r); padding: 24px; height: fit-content;
-        }
-        .achievements-panel h2 { font-size: 1.2rem; margin: 0 0 16px; display: flex; align-items: center; gap: 8px; color: var(--ink); }
-        .user-progress { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
-        .xp-bar { background: rgba(255,255,255,0.1); border-radius: 99px; height: 8px; overflow: hidden; margin-top: 6px; }
-        .xp-fill { background: linear-gradient(90deg, var(--brand), var(--brand2)); height: 100%; width: 0%; transition: width 0.5s ease-out; }
-        
-        .achievement-list { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-            max-height: 380px; /* Locks the height */
-            overflow-y: auto;  /* Makes it scrollable */
-            padding-right: 8px;
-            margin-bottom: 20px;
-        }
-        
-        /* Sleek Custom Scrollbar */
-        .achievement-list::-webkit-scrollbar { width: 6px; }
-        .achievement-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 8px; }
-        .achievement-list::-webkit-scrollbar-thumb { background: rgba(34,227,177,0.5); border-radius: 8px; }
-        .achievement-list::-webkit-scrollbar-thumb:hover { background: var(--brand2); }
-
-        .achievement-item {
-          display: flex; align-items: center; gap: 12px;
-          background: rgba(255,255,255,.02); border: 1px solid var(--rule);
-          padding: 12px; border-radius: 12px; transition: all 0.3s;
-        }
-        .achievement-item.locked { opacity: 0.4; filter: grayscale(1); }
-        .achievement-badge { font-size: 1.8rem; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 10px; flex-shrink: 0; }
-        .achievement-info { flex: 1; min-width: 0; }
-        .achievement-info h4 { margin: 0; font-size: 0.95rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .achievement-info p { margin: 0; font-size: 0.75rem; color: var(--muted); line-height: 1.2; }
-        .achievement-points { font-size: 0.8rem; font-weight: 900; color: var(--brand2); background: rgba(34,227,177,.1); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
-        
-        /* FOOTER */
-        footer {
-          margin-top: 60px; padding: 40px 24px; border-top: 1px solid var(--rule);
-          background: rgba(0,0,0,0.4); text-align: center; color: var(--muted); font-size: 0.85rem;
-        }
-        .footer-links { display: flex; justify-content: center; gap: 20px; margin-bottom: 16px; }
-        .footer-links a { color: var(--brand); text-decoration: none; transition: color 0.2s; }
-        .footer-links a:hover { color: var(--brand2); }
-
-        /* AUTH MODAL */
-        .modal-overlay {
-          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-          background-color: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center;
-          z-index: 100; backdrop-filter: blur(8px);
-        }
-        .modal {
-          background: linear-gradient(180deg, #0b131a, #07101a);
-          border: 1px solid var(--rule); padding: 40px; border-radius: 24px;
-          box-shadow: 0 20px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
-          display: flex; flex-direction: column; align-items: center; width: 360px;
-        }
-        .modal h2 { margin-top: 0; margin-bottom: 24px; letter-spacing: 1px; font-weight: 900; }
-        .auth-input {
-          width: 100%; padding: 12px 16px; margin-bottom: 12px;
-          background: rgba(255,255,255,0.05); border: 1px solid var(--rule);
-          border-radius: 8px; color: var(--ink); font-size: 1rem; outline: none;
-        }
-        .auth-input:focus { border-color: var(--brand); background: rgba(255,255,255,0.08); }
-    </style>
+    .primary-btn {
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      color: #001016; border: none; padding: 10px 20px;
+      font-size: 1rem; border-radius: 12px; font-weight: 800; cursor: pointer; text-decoration: none;
+      display: inline-block; transition: transform 0.1s;
+    }
+    .primary-btn:active { transform: scale(0.95); }
+  </style>
 </head>
 <body>
 
-    <!-- ZERIAH GLOBAL HEADER -->
-    <header>
-        <div class="global-header">
-            <a href="/" class="brand-container">
-                <span style="color: var(--brand2);">⬡</span>
-                <span>Zeriah Labs</span>
-            </a>
-            <!-- Dynamic Auth Container -->
-            <div id="auth-container">
-                <!-- Content injected via checkSession() -->
+  <header>
+    <div class="wrap nav" style="display: flex; justify-content: space-between; align-items: center; height: 64px;">
+      <a href="/" class="brand-container" style="text-decoration: none; color: var(--ink); display: flex; align-items: center; gap: 15px; font-weight: 900; font-size: 1.5rem; font-family: 'Nunito', sans-serif;">
+        <img src="https://assets.zeriahlabs.com/Zeriah_Labs_Vertical_Final.webp" alt="Zeriah Labs logo" style="height:36px; object-fit: contain;">
+        <span>Zeriah Labs</span>
+      </a>
+      <a href="javascript:void(0)" id="login-btn" class="primary-btn" style="font-family: 'Nunito', sans-serif; margin-top: 0;">Sign In / Register</a>
+    </div>
+  </header>
+
+  <main class="wrap dashboard-layout" style="margin-top: 40px;">
+    <section>
+        <div class="category-section">
+            <h2 class="category-title">🧠 Educational Games</h2>
+            <div class="game-grid">
+                
+                <a href="/math-junior/" class="game-card">
+                    <div class="game-img" style="background: linear-gradient(135deg, #a855f722, #000);">🍉</div>
+                    <div class="game-info">
+                        <h3 class="game-title">Math Junior</h3>
+                        <p class="game-desc">A fun, fruity introduction to basic addition and math concepts.</p>
+                        <span class="play-tag">Play Now →</span>
+                    </div>
+                </a>
+
+                <a href="/word-terfall/" class="game-card">
+                    <div class="game-img" style="background: linear-gradient(135deg, #00d0ff22, #000);">
+                        <img src="https://assets.zeriahlabs.com/word-terfall/word-terfall-icon.webp" alt="Word-terfall Icon" style="width: 120px; height: 120px; object-fit: contain;">
+                    </div>
+                    <div class="game-info">
+                        <h3 class="game-title">Word-terfall</h3>
+                        <p class="game-desc">Cascading word puzzles. Solve 4, 5, 6, and 7 letter words before time runs out.</p>
+                        <span class="play-tag">Play Now →</span>
+                    </div>
+                </a>
+
+                <a href="/dino-guess/" class="game-card">
+                    <div class="game-img" style="background: linear-gradient(135deg, #22e3b122, #000);">
+                        <img src="https://assets.zeriahlabs.com/whosthatdinosaur/dino_guess_logo.webp" alt="Dino Guess Icon" style="width: 120px; height: 120px; object-fit: contain;">
+                    </div>
+                    <div class="game-info">
+                        <h3 class="game-title">Dino Guess</h3>
+                        <p class="game-desc">Dino flashcard training. Can you identify the dinosaur from its silhouette?</p>
+                        <span class="play-tag">Play Now →</span>
+                    </div>
+                </a>
+
+                <a href="/equation-defense/" class="game-card">
+                    <div class="game-img" style="background: linear-gradient(135deg, #00f3ff22, #000);">🛡️</div>
+                    <div class="game-info">
+                        <h3 class="game-title">Equation Defense</h3>
+                        <p class="game-desc">Defend your base by solving rapid-fire, scaling math equations.</p>
+                        <span class="play-tag" style="color: #00f3ff;">Play Now →</span>
+                    </div>
+                </a>
+
             </div>
         </div>
-    </header>
 
-    <div class="wrap">
-        <div class="dashboard-layout">
-            
-            <!-- LEFT: NETFLIX STYLE GAME SELECTION -->
-            <main>
-                <div class="category-section">
-                    <h2 class="category-title">🧠 Educational Games</h2>
-                    <div class="game-grid">
-                        
-                        <!-- Game 1 -->
-                        <a href="/math-junior/" class="game-card">
-                            <div class="game-img" style="background: linear-gradient(135deg, #a855f722, #000);">🍉</div>
-                            <div class="game-info">
-                                <h3 class="game-title">Math Junior</h3>
-                                <p class="game-desc">A fun, fruity introduction to basic addition and math concepts.</p>
-                                <span class="play-tag">Play Now →</span>
-                            </div>
-                        </a>
-
-                        <!-- Game 2 -->
-                        <a href="/word-terfall/" class="game-card">
-                            <div class="game-img" style="background: linear-gradient(135deg, #00d0ff22, #000);">
-                                <img src="https://assets.zeriahlabs.com/word-terfall/word-terfall-icon.webp" alt="Math Junior Icon" style="width: 120px; height: 120px; object-fit: contain;">
-                            </div>
-                            <div class="game-info">
-                                <h3 class="game-title">Word-terfall</h3>
-                                <p class="game-desc">Cascading word puzzles. Solve the 4, 5, 6, and 7 letter words before time runs out.</p>
-                                <span class="play-tag">Play Now →</span>
-                            </div>
-                        </a>
-
-                        <!-- Game 3 -->
-                        <a href="/dino-guess/" class="game-card">
-                            <div class="game-img" style="background: linear-gradient(135deg, #22e3b122, #000);">
-                                <img src="https://assets.zeriahlabs.com/whosthatdinosaur/dino_guess_logo.webp" alt="Math Junior Icon" style="width: 120px; height: 120px; object-fit: contain;">
-                            </div>
-                            <div class="game-info">
-                                <h3 class="game-title">Dino Guess</h3>
-                                <p class="game-desc">Dino flashcard training. Can you identify the dinosaur from its silhouette?</p>
-                                <span class="play-tag">Play Now →</span>
-                            </div>
-                        </a>
-
+        <div class="category-section">
+            <h2 class="category-title">🚀 Upcoming Projects</h2>
+            <div class="game-grid">
+                <div class="game-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="game-img" style="background: linear-gradient(135deg, #facc1522, #000);">🏰</div>
+                    <div class="game-info">
+                        <h3 class="game-title">Math Catapult</h3>
+                        <p class="game-desc">Solve physics equations to destroy the enemy trebuchet. Coming soon!</p>
+                        <span class="play-tag" style="color: var(--muted);">In Development</span>
                     </div>
                 </div>
-
-                <div class="category-section">
-                    <h2 class="category-title">🚀 Upcoming Projects</h2>
-                    <div class="game-grid">
-                        <!-- Upcoming Game -->
-                        <div class="game-card" style="opacity: 0.6; cursor: not-allowed;">
-                            <div class="game-img" style="background: linear-gradient(135deg, #facc1522, #000);">🏰</div>
-                            <div class="game-info">
-                                <h3 class="game-title">Math Catapult</h3>
-                                <p class="game-desc">Solve physics equations to destroy the enemy trebuchet. Coming soon!</p>
-                                <span class="play-tag" style="color: var(--muted);">In Development</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-
-            <!-- RIGHT: ACHIEVEMENTS SIDEBAR -->
-            <aside>
-                <div class="achievements-panel">
-                    <h2>🏆 Global Progress</h2>
-                    <div class="user-progress">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--ink);">
-                            <span>Zeriah Rank</span>
-                            <span id="sidebar-xp-text">Log in to track</span>
-                        </div>
-                        <div class="xp-bar"><div id="sidebar-xp-fill" class="xp-fill" style="width: 0%;"></div></div>
-                    </div>
-                    
-                    <!-- DYNAMIC SCROLLABLE ACHIEVEMENT LIST -->
-                    <div class="achievement-list" id="global-achievement-list">
-                        <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 0.85rem;">
-                            Log in to view your Zeriah Labs arcade achievements!
-                        </div>
-                    </div>
-                    
-                    <!-- SEE ALL BUTTON -->
-                    <a href="/achievements/" class="btn-outline">View Master Trophy Room</a>
-                </div>
-            </aside>
-
-        </div> <!-- End dashboard-layout -->
-    </div>
-
-    <!-- FOOTER -->
-    <footer>
-        <div class="footer-links">
-            <a href="#">About Zeriah Labs</a>
-            <a href="#">Contact Us</a>
-            <a href="#">Disclaimer</a>
-            <a href="#">Privacy Policy</a>
+            </div>
         </div>
-        <p>&copy; 2024 Zeriah Labs. All rights reserved. Educational tools for the next generation.</p>
-    </footer>
+    </section>
 
-    <!-- AUTHENTICATION MODAL -->
-    <div id="auth-modal" class="modal-overlay">
-        <div class="modal">
-            <h2 id="auth-title">Welcome Back</h2>
-            <div id="auth-error" style="color: #ef4444; margin-bottom: 12px; font-size: 0.9rem; font-weight: bold; display: none;"></div>
-            
-            <form id="auth-form" style="width: 100%;" onsubmit="handleAuthSubmit(event)">
-                <input type="text" id="auth-name" placeholder="Display Name" class="auth-input" style="display: none;" />
-                <input type="email" id="auth-email" placeholder="Email Address" required class="auth-input" />
-                <input type="password" id="auth-password" placeholder="Password" required class="auth-input" />
-                <button type="submit" id="auth-submit-btn" class="btn-primary" style="width: 100%; margin-top: 10px; font-size: 1.1rem; padding: 12px;">Login</button>
-            </form>
-            
-            <p style="margin-top: 24px; font-size: 0.9rem; color: var(--muted);">
-                <span id="auth-toggle-text">Don't have an account?</span> 
-                <a href="#" onclick="toggleAuthMode(event)" style="color: var(--brand2); text-decoration: none; font-weight: bold;">Click here</a>
-            </p>
-            <button onclick="closeAuthModal()" style="margin-top: 10px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem;">Cancel</button>
-        </div>
-    </div>
-
-
-    <script>
-        /* ==========================================================================
-           ZERIAH LABS GLOBAL AUTH & ACHIEVEMENTS ENGINE
-           ========================================================================== */
-        
-        let isLoginMode = true;
-
-        async function checkSession() {
-            const token = localStorage.getItem("zeriah_token");
-            const authContainer = document.getElementById("auth-container");
-
-            if (!token) {
-                authContainer.innerHTML = `<button class="btn-sm" onclick="showAuthModal()">Login / Register</button>`;
-                document.getElementById('sidebar-xp-text').innerText = "Log in to track";
-                document.getElementById('sidebar-xp-fill').style.width = "0%";
-                renderFallbackAchievements(false); 
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/progress', {
-                    headers: { 'X-User-Id': token }
-                });
-
-                if (!response.ok) throw new Error("Invalid session");
-
-                const user = await response.json();
-                renderLoggedInHeader(user.name, user.level, user.xp);
-                
-            } catch (err) {
-                if (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    renderLoggedInHeader("Test User", "Level 4 Rookie", 850);
-                } else {
-                    localStorage.removeItem("zeriah_token");
-                    checkSession(); 
-                }
-            }
-        }
-
-        function renderLoggedInHeader(name, level, xp) {
-            const authContainer = document.getElementById("auth-container");
-            authContainer.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 15px; background: var(--panel); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--rule);">
-                    <span style="color: var(--brand2); font-weight: 800;">${name || 'Student'}</span>
-                    <span style="font-size: 0.75rem; color: var(--muted); background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px;">${level || 'Rookie'}</span>
-                    <button onclick="handleLogout()" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; font-weight: bold; padding: 0 4px;">Exit</button>
+    <aside>
+        <div class="achievements-panel">
+            <h2>🏆 Global Progress</h2>
+            <div class="user-progress">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--ink);">
+                    <span>Zeriah Rank</span>
+                    <span id="sidebar-xp-text">Log in to track</span>
                 </div>
-            `;
-
-            const nextLevelXp = 1000; 
-            const currentXp = xp || 0;
-            const xpPercent = Math.min((currentXp / nextLevelXp) * 100, 100);
+                <div class="xp-bar"><div id="sidebar-xp-fill" class="xp-fill" style="width: 0%;"></div></div>
+            </div>
             
-            document.getElementById('sidebar-xp-text').innerText = `${currentXp} / ${nextLevelXp} XP`;
-            document.getElementById('sidebar-xp-fill').style.width = `${xpPercent}%`;
+            <div class="achievement-list" id="global-achievement-list">
+                <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 0.85rem;">
+                    Loading achievements...
+                </div>
+            </div>
+        </div>
+    </aside>
+  </main>
 
-            fetchGlobalAchievements();
-        }
+  <footer style="margin-top: 60px; padding: 40px 24px; border-top: 1px solid var(--rule); background: rgba(0,0,0,0.4); text-align: center; color: var(--muted); font-size: 0.85rem; font-family: 'Nunito', sans-serif;">
+      <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 16px;">
+          <a href="/about.html" style="color: var(--brand); text-decoration: none; font-weight: 900;">About Zeriah Labs</a>
+          <a href="#" style="color: var(--brand); text-decoration: none; font-weight: 900;">Contact Us</a>
+          <a href="#" style="color: var(--brand); text-decoration: none; font-weight: 900;">Privacy Policy</a>
+      </div>
+      <p>&copy; <span id="y">2024</span> Zeriah Labs. All rights reserved. Educational tools for the next generation.</p>
+  </footer>
 
-        // --- AUTH LOGIC ---
-        function showAuthModal() {
-            document.getElementById("auth-modal").style.display = "flex";
-            document.getElementById("auth-error").style.display = "none";
-        }
+  <div id="auth-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div class="modal" style="background: linear-gradient(180deg, #0b131a, #07101a); font-family: 'Nunito', sans-serif; border: 1px solid var(--rule); padding: 40px; border-radius: 24px; box-shadow: 0 20px 80px rgba(0,0,0,0.8); width: 360px;">
+          <h2 id="auth-title" style="margin-top: 0; color: #fff;">Welcome Back</h2>
+          <div id="auth-error" style="color: #ef4444; margin-bottom: 12px; font-size: 0.9rem; font-weight: bold; display: none;"></div>
+          <p id="auth-success" style="color: var(--brand2); font-size: 0.85rem; display: none; margin-top: -10px;"></p>
+          
+          <form id="auth-form" style="width: 100%; display: flex; flex-direction: column; gap: 16px;" onsubmit="handleAuthSubmit(event)">
+              <input type="text" id="auth-name" placeholder="Display Name" style="display: none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+              <input type="email" id="email" placeholder="Email Address" required style="padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+              <input type="text" id="sec-question" placeholder="Security Question" style="display:none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);">
+              <input type="text" id="sec-answer" placeholder="Your Answer" style="display:none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);">
+              <div id="password-container" style="position: relative; display: flex; align-items: center;">
+                  <input type="password" id="password" placeholder="Password" required style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+                  <button id="toggle-password" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; font-size: 1.2rem;">👁️</button>
+              </div>
+              <button type="submit" id="auth-submit-btn" class="primary-btn" style="margin-top: 0; background: linear-gradient(90deg, var(--brand), var(--brand2)); color: #001016; padding: 12px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer;">Login</button>
+          </form>
+          
+          <div style="margin-top: 16px; text-align: center; font-size: 0.9rem; color: var(--muted); display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                  <span id="auth-switch-text">Don't have an account?</span> 
+                  <a href="#" id="auth-switch" style="color: var(--brand2); font-weight: bold; text-decoration: none;">Click here</a>
+              </div>
+              <a href="#" id="forgot-link" style="color: var(--muted); text-decoration: underline; font-size: 0.85rem;">Forgot password?</a>
+          </div>
+          <button id="close-modal" style="background: none; border: none; color: var(--muted); margin-top: 16px; width: 100%; cursor: pointer; font-weight: bold;">Cancel</button>
+      </div>
+  </div>
 
-        function closeAuthModal() {
-            document.getElementById("auth-modal").style.display = "none";
-            document.getElementById("auth-form").reset();
-            const btn = document.getElementById("auth-submit-btn");
-            btn.style.background = ""; btn.style.color = "";
-        }
+  <script src="/js/auth.js"></script>
+  <script src="/js/ui.js"></script>
+  
+  <script>
+      // Automatically set the year in the footer
+      document.getElementById('y').textContent = new Date().getFullYear();
 
-        function toggleAuthMode(e) {
-            e.preventDefault();
-            isLoginMode = !isLoginMode;
-            document.getElementById("auth-title").innerText = isLoginMode ? "Welcome Back" : "Create Account";
-            document.getElementById("auth-name").style.display = isLoginMode ? "none" : "block";
-            document.getElementById("auth-name").required = !isLoginMode;
-            document.getElementById("auth-submit-btn").innerText = isLoginMode ? "Login" : "Sign Up";
-            document.getElementById("auth-toggle-text").innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
-            document.getElementById("auth-error").style.display = "none";
-        }
+      // Load ALL achievements dynamically on the main dashboard
+      document.addEventListener("DOMContentLoaded", () => {
+          // Setting the filter to null tells ui.js to load EVERYTHING without filtering a specific game
+          window.currentAchievementFilter = null; 
+          
+          if(typeof loadAchievements === 'function') {
+              loadAchievements(window.currentAchievementFilter);
+          }
+          if(typeof checkSession === 'function') {
+              checkSession();
+          }
+      });
+  </script>
 
-        async function handleAuthSubmit(e) {
-            e.preventDefault();
-            const btn = document.getElementById("auth-submit-btn");
-            const errorBox = document.getElementById("auth-error");
-            
-            const email = document.getElementById("auth-email").value;
-            const password = document.getElementById("auth-password").value;
-            const name = document.getElementById("auth-name").value;
-
-            btn.disabled = true; btn.innerText = "Processing..."; errorBox.style.display = "none";
-
-            const endpoint = isLoginMode ? '/api/login' : '/api/register';
-            const payload = isLoginMode ? { email, password } : { email, password, name };
-
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || "Authentication failed.");
-
-                localStorage.setItem("zeriah_token", data.token || data.userId);
-                
-                btn.style.background = "var(--brand2)"; btn.style.color = "#001016"; btn.innerText = data.message || "Success!";
-                setTimeout(() => { closeAuthModal(); checkSession(); }, 800);
-
-            } catch (err) {
-                if (err.message.includes("Failed to fetch") && (window.location.protocol === 'file:' || window.location.hostname === 'localhost')) {
-                    localStorage.setItem("zeriah_token", "local_test_token_123");
-                    btn.style.background = "var(--brand2)"; btn.style.color = "#001016"; btn.innerText = "Local Bypass Success!";
-                    setTimeout(() => { closeAuthModal(); checkSession(); }, 800);
-                    return;
-                }
-                errorBox.innerText = err.message; errorBox.style.display = "block";
-                btn.disabled = false; btn.innerText = isLoginMode ? "Login" : "Sign Up";
-            }
-        }
-
-        function handleLogout() {
-            localStorage.removeItem("zeriah_token");
-            checkSession();
-        }
-
-        /**
-         * Dynamic Fetch: Can filter achievements by a specific keyword!
-         */
-        async function fetchGlobalAchievements(gameFilterKeyword = null) {
-            try {
-                const token = localStorage.getItem("zeriah_token"); 
-                if (!token) return;
-
-                const response = await fetch('/api/achievements', {
-                    method: 'GET',
-                    headers: { 'X-User-Id': token }
-                });
-
-                if (!response.ok) throw new Error("API not ready yet");
-
-                let achievements = await response.json();
-
-                // If a gameFilterKeyword is provided, only show matching achievements
-                if (gameFilterKeyword) {
-                    achievements = achievements.filter(ach => 
-                        (ach.id && ach.id.toLowerCase().includes(gameFilterKeyword)) || 
-                        (ach.achievement_id && ach.achievement_id.toLowerCase().includes(gameFilterKeyword))
-                    );
-                }
-
-                renderGlobalAchievements(achievements);
-            } catch (error) {
-                renderFallbackAchievements(true, gameFilterKeyword);
-            }
-        }
-
-        function renderGlobalAchievements(achievements) {
-            const list = document.getElementById("global-achievement-list");
-            list.innerHTML = "";
-
-            if (achievements.length === 0) {
-                list.innerHTML = `<div style="text-align: center; color: var(--muted); padding: 10px; font-size: 0.85rem;">No achievements found.</div>`;
-                return;
-            }
-
-            achievements.forEach(ach => {
-                const isLocked = !ach.isUnlocked;
-                const lockedClass = isLocked ? "locked" : "";
-                
-                list.innerHTML += `
-                    <div class="achievement-item ${lockedClass}">
-                        <div class="achievement-badge">${ach.icon || '🏆'}</div>
-                        <div class="achievement-info">
-                            <h4>${ach.name || ach.title}</h4>
-                            <p>${ach.description}</p>
-                        </div>
-                        <div class="achievement-points">+${ach.points || 50}</div>
-                    </div>
-                `;
-            });
-        }
-
-        function renderFallbackAchievements(isLoggedIn, gameFilterKeyword = null) {
-            const list = document.getElementById("global-achievement-list");
-            if (!isLoggedIn) {
-                list.innerHTML = `
-                    <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 0.85rem; border: 1px dashed var(--rule); border-radius: 12px;">
-                        Sign in to track your global progress and earn rewards across all Zeriah Labs games!
-                    </div>
-                `;
-                return;
-            }
-
-            // Dummy Data
-            let dummyData = [
-                { id: "math_basket", icon: "🍉", title: "Fruit Basket", desc: "Complete Math Junior.", pts: 50, locked: false },
-                { id: "wordterfall_master", icon: "🌊", title: "Waterfall Master", desc: "Beat all 4 levels.", pts: 50, locked: true },
-                { id: "dino_expert", icon: "🦖", title: "Paleontologist", desc: "Identify 10 dinos.", pts: 100, locked: true },
-                { id: "wordterfall_first", icon: "💧", title: "First Splash", desc: "Play your first word game.", pts: 10, locked: false }
-            ];
-
-            // Filter dummy data if needed
-            if (gameFilterKeyword) {
-                dummyData = dummyData.filter(d => d.id.includes(gameFilterKeyword));
-            }
-
-            list.innerHTML = "";
-            dummyData.forEach(ach => {
-                list.innerHTML += `
-                    <div class="achievement-item ${ach.locked ? 'locked' : ''}">
-                        <div class="achievement-badge">${ach.icon}</div>
-                        <div class="achievement-info">
-                            <h4>${ach.title}</h4>
-                            <p>${ach.desc}</p>
-                        </div>
-                        <div class="achievement-points">+${ach.pts}</div>
-                    </div>
-                `;
-            });
-        }
-
-        // --- BOOT SEQUENCE ---
-        // Calling it with NO parameters loads the full global list for the main dashboard!
-        checkSession();
-
-    </script>
 </body>
 </html>
