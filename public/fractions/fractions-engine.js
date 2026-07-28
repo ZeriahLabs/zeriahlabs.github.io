@@ -2,6 +2,14 @@ const visualArea = document.getElementById('visual-area');
 const questionText = document.getElementById('question-text');
 const choicesArea = document.getElementById('choices-area');
 const scoreDisplay = document.getElementById('score');
+// Map these to your CSS variables for a cohesive look
+const COLORS = {
+    blue: '#00d0ff',    // Matches var(--brand)
+    orange: '#a855f7',  // Matches var(--purple)
+    line: '#eef6ff',    // Matches var(--ink) so lines show on dark bg
+    cross: '#07101a',   // Cut-out look using your body background color
+    empty: 'rgba(255, 255, 255, 0.05)' // Faint glass fill for empty slices
+};
 
 let score = 0;
 let correctAnswer = "";
@@ -88,8 +96,9 @@ function drawPizza(numerator, denominator, color, crossOutCount) {
         const slicesToColor = Math.min(remainingNumerator, denominator);
         remainingNumerator -= slicesToColor;
 
+        // UPDATE the inside of your drawPizza function's 'for' loop to this:
         for (let j = 0; j < denominator; j++) {
-            const startAngle = j * sliceAngle - Math.PI / 2; // Start at top (12 o'clock)
+            const startAngle = j * sliceAngle - Math.PI / 2;
             const endAngle = startAngle + sliceAngle;
 
             ctx.beginPath();
@@ -97,13 +106,15 @@ function drawPizza(numerator, denominator, color, crossOutCount) {
             ctx.arc(cx, cy, radius, startAngle, endAngle);
             ctx.closePath();
 
-            // Fill color if it's an active slice
+            // Fill active slices with color, empty slices with faint glass
             if (j < slicesToColor) {
                 ctx.fillStyle = color;
-                ctx.fill();
+            } else {
+                ctx.fillStyle = COLORS.empty; 
+            }
+            ctx.fill();
 
-                // Calculate if this specific slice needs an 'X'
-                // The crosses apply to the LAST 'crossOutCount' slices of the total numerator
+            if (j < slicesToColor) {
                 const globalSliceIndex = (i * denominator) + j;
                 const startIndexForCrosses = numerator - crossOutCount;
 
@@ -112,7 +123,6 @@ function drawPizza(numerator, denominator, color, crossOutCount) {
                 }
             }
 
-            // Draw the slice border
             ctx.strokeStyle = COLORS.line;
             ctx.lineWidth = 2;
             ctx.stroke();
