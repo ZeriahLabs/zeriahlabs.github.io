@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Fractions Game</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            color: #333;
+        }
+        #game-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+        #question-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+        }
+        #visual-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .math-symbol {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #555;
+        }
+        #choices-area {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        button.choice-btn {
+            font-size: 1.5rem;
+            padding: 10px 25px;
+            cursor: pointer;
+            border: 2px solid #0088cc;
+            background-color: white;
+            color: #0088cc;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        button.choice-btn:hover {
+            background-color: #0088cc;
+            color: white;
+        }
+        #score-board {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="question-text">2/6 + 2/6 = ?</div>
+        <div id="visual-area"></div>
+        <div id="choices-area"></div>
+        <div id="score-board">Score: <span id="score">0</span></div>
+    </div>
+
+    <script src="fractions-engine.js"></script>
+</body>
+</html>
