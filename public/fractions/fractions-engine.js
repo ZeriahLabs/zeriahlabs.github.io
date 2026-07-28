@@ -14,13 +14,6 @@ const COLORS = {
 let score = 0;
 let correctAnswer = "";
 
-const COLORS = {
-    blue: '#0088cc',
-    orange: '#f26d21',
-    line: '#000000',
-    cross: '#2c3e50'
-};
-
 // Start the game loop
 generateQuestion();
 
