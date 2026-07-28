@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeriah Labs: Math Ladders Prototype</title>
+    <style>
+        body { font-family: 'Nunito', sans-serif; background-color: #f8fafc; color: #334155; text-align: center; padding: 50px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h1 { color: #8b5cf6; }
+        .stats { display: flex; justify-content: space-around; background: #e2e8f0; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 1.2rem; margin-bottom: 20px;}
+        button { background: #3b82f6; color: white; border: none; padding: 12px 24px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #2563eb; }
+        .log { margin-top: 20px; height: 200px; overflow-y: auto; background: #f1f5f9; padding: 15px; border-radius: 8px; text-align: left; font-size: 0.95rem; }
+        #math-section { display: none; margin-top: 20px; padding: 20px; background: #fef08a; border-radius: 12px; }
+        input { padding: 10px; font-size: 1.1rem; width: 80px; text-align: center; border: 2px solid #cbd5e1; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Math Ladders</h1>
+    
+    <div class="stats">
+        <div>Square: <span id="position">1</span> / 100</div>
+        <div>Brain Power: <span id="bp">0</span></div>
+    </div>
+
+    <button id="roll-btn" onclick="rollDice()">Roll Dice 🎲</button>
+
+    <div id="math-section">
+        <h3 id="math-question">What is 5 + 3?</h3>
+        <input type="number" id="math-answer" onkeypress="if(event.key === 'Enter') checkMath()">
+        <button onclick="checkMath()" style="background: #eab308;">Submit Answer</button>
+    </div>
+
+    <div class="log" id="game-log">
+        <div>Welcome to Math Ladders! Roll the dice to start.</div>
+    </div>
+</div>
+
+<script>
+    let position = 1;
+    let brainPower = 0;
+    let currentMathAnswer = 0;
+    
+    // Simple mock board: key is square, value is [type, size, destination]
+    const board = {
+        14: ['ladder', 5, 18],   // Small ladder (costs 5 BP)
+        28: ['ladder', 10, 36],  // Medium ladder (costs 10 BP)
+        45: ['snake', 5, 41],    // Small snake (costs 5 BP to fend off)
+        62: ['snake', 10, 50]    // Medium snake (costs 10 BP to fend off)
+    };
+
+    function logMessage(msg) {
+        const log = document.getElementById('game-log');
+        log.innerHTML = `<div>${msg}</div>` + log.innerHTML;
+    }
+
+    function updateUI() {
+        document.getElementById('position').innerText = position;
+        document.getElementById('bp').innerText = brainPower;
+    }
+
+    function rollDice() {
+        const roll = Math.floor(Math.random() * 6) + 1;
+        position += roll;
+        if (position > 100) position = 100;
+        
+        logMessage(`🎲 You rolled a ${roll}! Moved to square ${position}.`);
+        updateUI();
+
+        if (position === 100) {
+            logMessage("🎉 YOU WIN! You reached square 100!");
+            document.getElementById('roll-btn').style.display = 'none';
+            return;
+        }
+
+        checkSquare();
+    }
+
+    function checkSquare() {
+        document.getElementById('roll-btn').style.display = 'none';
+        
+        if (board[position]) {
+            let event = board[position];
+            let type = event[0];
+            let cost = event[1];
+            let destination = event[2];
+
+            if (type === 'ladder') {
+                if (brainPower >= cost) {
+                    brainPower -= cost;
+                    position = destination;
+                    logMessage(`🪜 Found a ladder! You spent ${cost} Brain Power to climb to square ${position}!`);
+                } else {
+                    logMessage(`🪜 Found a ladder, but you need ${cost} Brain Power to climb it. You only have ${brainPower}. You stay put.`);
+                }
+            } else if (type === 'snake') {
+                if (brainPower >= cost) {
+                    brainPower -= cost;
+                    logMessage(`🐍 A snake tried to bite you! You spent ${cost} Brain Power to fend it off and stayed on square ${position}.`);
+                } else {
+                    position = destination;
+                    logMessage(`🐍 Oh no! A snake got you. You didn't have ${cost} Brain Power to fend it off. Slide down to square ${position}.`);
+                }
+            }
+            updateUI();
+            document.getElementById('roll-btn').style.display = 'inline-block';
+        } else {
+            // Empty square -> Math Question
+            triggerMathQuestion();
+        }
+    }
+
+    function triggerMathQuestion() {
+        let num1 = Math.floor(Math.random() * 10) + 1;
+        let num2 = Math.floor(Math.random() * 10) + 1;
+        currentMathAnswer = num1 + num2; // Keeping it to addition for the prototype
+        
+        document.getElementById('math-question').innerText = `What is ${num1} + ${num2}?`;
+        document.getElementById('math-answer').value = '';
+        document.getElementById('math-section').style.display = 'block';
+    }
+
+    function checkMath() {
+        let userAnswer = parseInt(document.getElementById('math-answer').value);
+        if (userAnswer === currentMathAnswer) {
+            brainPower += 1;
+            logMessage(`✅ Correct! You gained 1 Brain Power.`);
+        } else {
+            logMessage(`❌ Incorrect! The answer was ${currentMathAnswer}. No Brain Power gained.`);
+        }
+        
+        updateUI();
+        document.getElementById('math-section').style.display = 'none';
+        document.getElementById('roll-btn').style.display = 'inline-block';
+    }
+</script>
+
+</body>
+</html>
