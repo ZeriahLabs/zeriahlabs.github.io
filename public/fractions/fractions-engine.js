@@ -1,7 +1,21 @@
+// DOM Elements
+const startScreen = document.getElementById('start-screen');
+const startBtn = document.getElementById('start-btn');
+const gameContainer = document.getElementById('game-container');
 const visualArea = document.getElementById('visual-area');
 const questionText = document.getElementById('question-text');
 const choicesArea = document.getElementById('choices-area');
 const scoreDisplay = document.getElementById('score');
+
+// Audio Setup
+// Ensure these paths match your folder structure (add ../ if needed)
+const bgm = new Audio('/public/sounds/bgm.mp3');
+bgm.loop = true;
+bgm.volume = 0.3; // Keeps the BGM slightly quieter so it doesn't overpower sound effects
+
+const sfxYay = new Audio('/public/sounds/yay.mp3');
+const sfxWrong = new Audio('/public/sounds/wrong.mp3');
+
 // Map these to your CSS variables for a cohesive look
 const COLORS = {
     blue: '#00d0ff',    // Matches var(--brand)
@@ -14,8 +28,18 @@ const COLORS = {
 let score = 0;
 let correctAnswer = "";
 
-// Start the game loop
-generateQuestion();
+// Start Game Flow
+startBtn.addEventListener('click', () => {
+    // Hide start screen, show game
+    startScreen.style.display = 'none';
+    gameContainer.style.display = 'block';
+    
+    // Start background music
+    bgm.play().catch(error => console.log("Audio blocked by browser:", error));
+    
+    // Generate the very first question
+    generateQuestion();
+});
 
 function generateQuestion() {
     visualArea.innerHTML = '';
@@ -89,7 +113,6 @@ function drawPizza(numerator, denominator, color, crossOutCount) {
         const slicesToColor = Math.min(remainingNumerator, denominator);
         remainingNumerator -= slicesToColor;
 
-        // UPDATE the inside of your drawPizza function's 'for' loop to this:
         for (let j = 0; j < denominator; j++) {
             const startAngle = j * sliceAngle - Math.PI / 2;
             const endAngle = startAngle + sliceAngle;
@@ -172,10 +195,17 @@ function generateChoices(correctNum, denominator) {
 
 function handleChoice(selected) {
     if (selected === correctAnswer) {
+        // Resetting currentTime to 0 allows rapid consecutive clicks to play properly
+        sfxYay.currentTime = 0;
+        sfxYay.play();
+        
         score += 10;
         scoreDisplay.textContent = score;
         generateQuestion();
     } else {
+        sfxWrong.currentTime = 0;
+        sfxWrong.play();
+        
         // Simple visual feedback for wrong answer
         visualArea.style.opacity = '0.5';
         setTimeout(() => visualArea.style.opacity = '1', 300);
