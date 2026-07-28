@@ -9,12 +9,12 @@ const scoreDisplay = document.getElementById('score');
 
 // Audio Setup
 // Ensure these paths match your folder structure (add ../ if needed)
-const bgm = new Audio('./public/sounds/bgm.mp3');
+const bgm = new Audio('/sounds/bgm.mp3');
 bgm.loop = true;
 bgm.volume = 0.3; // Keeps the BGM slightly quieter so it doesn't overpower sound effects
 
-const sfxYay = new Audio('./public/sounds/yay.mp3');
-const sfxWrong = new Audio('./public/sounds/wrong.mp3');
+const sfxYay = new Audio('/sounds/yay.mp3');
+const sfxWrong = new Audio('/sounds/wrong.mp3');
 
 // Map these to your CSS variables for a cohesive look
 const COLORS = {
