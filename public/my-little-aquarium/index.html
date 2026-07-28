@@ -3,140 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zeriah Labs: Math Ladders Prototype</title>
+    <title>Zeriah Labs: Sandbox Aquarium</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
     <style>
-        body { font-family: 'Nunito', sans-serif; background-color: #f8fafc; color: #334155; text-align: center; padding: 50px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h1 { color: #8b5cf6; }
-        .stats { display: flex; justify-content: space-around; background: #e2e8f0; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 1.2rem; margin-bottom: 20px;}
-        button { background: #3b82f6; color: white; border: none; padding: 12px 24px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        button:hover { background: #2563eb; }
-        .log { margin-top: 20px; height: 200px; overflow-y: auto; background: #f1f5f9; padding: 15px; border-radius: 8px; text-align: left; font-size: 0.95rem; }
-        #math-section { display: none; margin-top: 20px; padding: 20px; background: #fef08a; border-radius: 12px; }
-        input { padding: 10px; font-size: 1.1rem; width: 80px; text-align: center; border: 2px solid #cbd5e1; border-radius: 8px; }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a2e;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { margin-top: 20px; font-weight: 300; }
+        
+        /* The Game Canvas Wrapper */
+        #game-container {
+            border: 4px solid #4a4e69;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+
+        /* The Drawing Modal */
+        #draw-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+        }
+        #drawing-pad {
+            background: white;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+        .btn {
+            background: #00b4d8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #0096c7; }
+        .controls { display: flex; gap: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Math Ladders</h1>
+    <h1>🐠 Zeriah Labs: Zen Aquarium</h1>
     
-    <div class="stats">
-        <div>Square: <span id="position">1</span> / 100</div>
-        <div>Brain Power: <span id="bp">0</span></div>
+    <div class="controls">
+        <button class="btn" onclick="openDrawPad()">🎨 Draw an Object</button>
+        <button class="btn" onclick="clearTank()" style="background: #ef233c;">🗑️ Clear Tank</button>
     </div>
 
-    <button id="roll-btn" onclick="rollDice()">Roll Dice 🎲</button>
+    <div id="game-container"></div>
 
-    <div id="math-section">
-        <h3 id="math-question">What is 5 + 3?</h3>
-        <input type="number" id="math-answer" onkeypress="if(event.key === 'Enter') checkMath()">
-        <button onclick="checkMath()" style="background: #eab308;">Submit Answer</button>
+    <div id="draw-modal">
+        <h2>Draw a solid object for your tank!</h2>
+        <canvas id="drawing-pad" width="150" height="150"></canvas>
+        <div class="controls">
+            <button class="btn" onclick="saveDrawing()">Drop into Tank!</button>
+            <button class="btn" onclick="closeDrawPad()" style="background: #8d99ae;">Cancel</button>
+        </div>
     </div>
 
-    <div class="log" id="game-log">
-        <div>Welcome to Math Ladders! Roll the dice to start.</div>
-    </div>
-</div>
+    <script>
+        // ==========================================
+        // 1. THE PHASER GAME ENGINE (The Aquarium)
+        // ==========================================
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 500,
+            parent: 'game-container',
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 200 }, // Gravity for dropped items
+                    debug: false
+                }
+            },
+            scene: { preload, create, update }
+        };
 
-<script>
-    let position = 1;
-    let brainPower = 0;
-    let currentMathAnswer = 0;
-    
-    // Simple mock board: key is square, value is [type, size, destination]
-    const board = {
-        14: ['ladder', 5, 18],   // Small ladder (costs 5 BP)
-        28: ['ladder', 10, 36],  // Medium ladder (costs 10 BP)
-        45: ['snake', 5, 41],    // Small snake (costs 5 BP to fend off)
-        62: ['snake', 10, 50]    // Medium snake (costs 10 BP to fend off)
-    };
+        const game = new Phaser.Game(config);
+        let fish;
+        let mainScene;
 
-    function logMessage(msg) {
-        const log = document.getElementById('game-log');
-        log.innerHTML = `<div>${msg}</div>` + log.innerHTML;
-    }
-
-    function updateUI() {
-        document.getElementById('position').innerText = position;
-        document.getElementById('bp').innerText = brainPower;
-    }
-
-    function rollDice() {
-        const roll = Math.floor(Math.random() * 6) + 1;
-        position += roll;
-        if (position > 100) position = 100;
-        
-        logMessage(`🎲 You rolled a ${roll}! Moved to square ${position}.`);
-        updateUI();
-
-        if (position === 100) {
-            logMessage("🎉 YOU WIN! You reached square 100!");
-            document.getElementById('roll-btn').style.display = 'none';
-            return;
+        function preload() {
+            // We use standard Phaser shapes for the prototype to avoid needing external images!
         }
 
-        checkSquare();
-    }
+        function create() {
+            mainScene = this;
+            
+            // Draw Water Background
+            this.add.rectangle(400, 250, 800, 500, 0x0077b6);
+            
+            // Create a procedural "Fish" (Orange rectangle for prototype)
+            fish = this.add.rectangle(400, 250, 60, 30, 0xf77f00);
+            this.physics.add.existing(fish);
+            fish.body.allowGravity = false; // Fish float!
+            fish.body.collideWorldBounds = true;
+            fish.body.setBounce(1);
+            
+            // Give the fish a lazy swimming velocity
+            fish.body.setVelocity(50, 20);
 
-    function checkSquare() {
-        document.getElementById('roll-btn').style.display = 'none';
-        
-        if (board[position]) {
-            let event = board[position];
-            let type = event[0];
-            let cost = event[1];
-            let destination = event[2];
+            // Add boundaries to the bottom so items don't fall forever
+            this.physics.world.setBoundsCollision(true, true, true, true);
 
-            if (type === 'ladder') {
-                if (brainPower >= cost) {
-                    brainPower -= cost;
-                    position = destination;
-                    logMessage(`🪜 Found a ladder! You spent ${cost} Brain Power to climb to square ${position}!`);
-                } else {
-                    logMessage(`🪜 Found a ladder, but you need ${cost} Brain Power to climb it. You only have ${brainPower}. You stay put.`);
-                }
-            } else if (type === 'snake') {
-                if (brainPower >= cost) {
-                    brainPower -= cost;
-                    logMessage(`🐍 A snake tried to bite you! You spent ${cost} Brain Power to fend it off and stayed on square ${position}.`);
-                } else {
-                    position = destination;
-                    logMessage(`🐍 Oh no! A snake got you. You didn't have ${cost} Brain Power to fend it off. Slide down to square ${position}.`);
-                }
+            // Load saved drawings from LocalStorage
+            loadSavedItems();
+        }
+
+        function update() {
+            // Simple AI: If fish hits a wall, gently reverse direction
+            if (fish.body.velocity.x === 0) fish.body.setVelocityX(Phaser.Math.Between(-60, 60));
+            if (fish.body.velocity.y === 0) fish.body.setVelocityY(Phaser.Math.Between(-30, 30));
+        }
+
+        // --- Custom Logic: Injecting Drawings into the Engine ---
+        function spawnCustomItem(base64String) {
+            let img = new Image();
+            img.src = base64String;
+            img.onload = () => {
+                let textureKey = 'custom_' + Date.now();
+                // Add the loaded image as a Phaser texture
+                mainScene.textures.addImage(textureKey, img);
+                
+                // Spawn it at the top of the tank
+                let item = mainScene.physics.add.sprite(Phaser.Math.Between(100, 700), -50, textureKey);
+                item.setCollideWorldBounds(true);
+                item.setBounce(0.2);
+                item.setDrag(50); // Water resistance
+                
+                // Make the fish gently bump into drawn items
+                mainScene.physics.add.collider(fish, item);
+            };
+        }
+
+        // ==========================================
+        // 2. THE HTML5 CANVAS (The Drawing Pad)
+        // ==========================================
+        const modal = document.getElementById('draw-modal');
+        const canvas = document.getElementById('drawing-pad');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        // Mouse Events for drawing
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing) {
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.strokeStyle = '#2b2d42'; // Dark color for drawing
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.stroke();
             }
-            updateUI();
-            document.getElementById('roll-btn').style.display = 'inline-block';
-        } else {
-            // Empty square -> Math Question
-            triggerMathQuestion();
+        });
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+
+        function openDrawPad() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear pad
+            modal.style.display = 'flex';
         }
-    }
 
-    function triggerMathQuestion() {
-        let num1 = Math.floor(Math.random() * 10) + 1;
-        let num2 = Math.floor(Math.random() * 10) + 1;
-        currentMathAnswer = num1 + num2; // Keeping it to addition for the prototype
-        
-        document.getElementById('math-question').innerText = `What is ${num1} + ${num2}?`;
-        document.getElementById('math-answer').value = '';
-        document.getElementById('math-section').style.display = 'block';
-    }
-
-    function checkMath() {
-        let userAnswer = parseInt(document.getElementById('math-answer').value);
-        if (userAnswer === currentMathAnswer) {
-            brainPower += 1;
-            logMessage(`✅ Correct! You gained 1 Brain Power.`);
-        } else {
-            logMessage(`❌ Incorrect! The answer was ${currentMathAnswer}. No Brain Power gained.`);
+        function closeDrawPad() {
+            modal.style.display = 'none';
         }
-        
-        updateUI();
-        document.getElementById('math-section').style.display = 'none';
-        document.getElementById('roll-btn').style.display = 'inline-block';
-    }
-</script>
 
+        // ==========================================
+        // 3. LOCAL STORAGE SAVING & LOADING
+        // ==========================================
+        function saveDrawing() {
+            // Convert canvas drawing to Base64 Text String
+            const base64Data = canvas.toDataURL('image/png');
+            
+            // Save to LocalStorage
+            let savedItems = JSON.parse(localStorage.getItem('zeriah_tank')) || [];
+            savedItems.push(base64Data);
+            localStorage.setItem('zeriah_tank', JSON.stringify(savedItems));
+
+            // Tell Phaser to spawn it instantly
+            spawnCustomItem(base64Data);
+            closeDrawPad();
+        }
+
+        function loadSavedItems() {
+            let savedItems = JSON.parse(localStorage.getItem('zeriah_tank')) || [];
+            savedItems.forEach(base64Data => {
+                spawnCustomItem(base64Data);
+            });
+        }
+
+        function clearTank() {
+            localStorage.removeItem('zeriah_tank');
+            location.reload(); // Quick refresh to clear the engine
+        }
+    </script>
 </body>
 </html>
