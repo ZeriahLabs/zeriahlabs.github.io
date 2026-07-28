@@ -47,14 +47,19 @@ function generateQuestion() {
         drawPizza(num2, denominator, COLORS.orange, 0);
 
     } else {
-        // Subtraction (ensure num1 > num2 to avoid negative fractions for now)
-        num1 = Math.floor(Math.random() * (denominator * 2 - 2)) + 2; // up to ~2 wholes
+        // Subtraction (capped at 1 whole max)
+        
+        // num1 is between 2 and the denominator (max 1 whole)
+        num1 = Math.floor(Math.random() * (denominator - 1)) + 2; 
+        
+        // num2 is strictly less than num1 so we never hit 0 or negative
         num2 = Math.floor(Math.random() * (num1 - 1)) + 1; 
+        
         correctNum = num1 - num2;
         
         questionText.textContent = `${num1}/${denominator} - ${num2}/${denominator} = ?`;
         
-        // Draw one set of pizzas, coloring num1 slices, crossing out num2 slices
+        // Draw one pizza, coloring num1 slices, crossing out num2 slices
         drawPizza(num1, denominator, COLORS.blue, num2);
     }
 
