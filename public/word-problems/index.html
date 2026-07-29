@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeriah Labs - Word Problem Engine</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        #generate-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #read-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        .problem-text {
+            font-size: 22px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            color: #333;
+            min-height: 100px; /* Keeps layout from jumping */
+        }
+        .visual-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            font-size: 30px;
+            font-weight: bold;
+        }
+        .emoji-img {
+            width: 40px;
+            height: 40px;
+            vertical-align: middle;
+        }
+        /* MOE Stacked Math Styling */
+        .moe-math {
+            display: inline-block;
+            font-size: 40px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            text-align: right;
+        }
+        .math-row {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+        }
+        .operator {
+            margin-right: auto; /* Pushes operator to the left */
+        }
+        .answer-line {
+            border-bottom: 3px solid #333;
+            margin: 5px 0;
+            width: 100%;
+        }
+        .double-line {
+            border-bottom: 1px solid #333;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="btn-group">
+        <button id="generate-btn">🔄 Generate New Problem</button>
+        <button id="read-btn">🔊 Read Question</button>
+    </div>
+
+    <div id="problem-text" class="problem-text">
+        Click generate to start!
+    </div>
+
+    <div id="visual-container" class="visual-container">
+        </div>
+
+    <div id="math-container" class="moe-math" style="display: none;">
+        <div class="math-row"><span id="math-num1"></span></div>
+        <div class="math-row"><span id="math-op" class="operator"></span><span id="math-num2"></span></div>
+        <div class="answer-line"></div>
+        <div class="math-row"><span id="math-ans">?</span></div>
+        <div class="double-line"></div>
+    </div>
+</div>
+
+<script src="word-problems-engine.js"></script>
+</body>
+</html>
