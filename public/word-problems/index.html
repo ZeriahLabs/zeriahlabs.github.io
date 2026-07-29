@@ -41,20 +41,15 @@
         button:active {
             transform: scale(0.95);
         }
-        #generate-btn {
-            background-color: #4CAF50;
-            color: white;
-        }
-        #read-btn {
-            background-color: #2196F3;
-            color: white;
-        }
+        #generate-btn { background-color: #4CAF50; color: white; }
+        #read-btn { background-color: #2196F3; color: white; }
+        
         .problem-text {
             font-size: 22px;
             line-height: 1.5;
             margin-bottom: 30px;
             color: #333;
-            min-height: 100px; /* Keeps layout from jumping */
+            min-height: 100px; 
         }
         .visual-container {
             display: flex;
@@ -70,32 +65,37 @@
             height: 40px;
             vertical-align: middle;
         }
-        /* MOE Stacked Math Styling */
+
+        /* MOE Stacked Math */
         .moe-math {
             display: inline-block;
             font-size: 40px;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
             text-align: right;
+            margin-bottom: 30px;
         }
-        .math-row {
+        .math-row { display: flex; justify-content: flex-end; align-items: center; gap: 15px; }
+        .operator { margin-right: auto; }
+        .answer-line { border-bottom: 3px solid #333; margin: 5px 0; width: 100%; }
+        .double-line { border-bottom: 1px solid #333; margin-top: 3px; }
+
+        /* Multiple Choice Buttons */
+        .answers-group {
             display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 15px;
+            justify-content: center;
+            gap: 20px;
         }
-        .operator {
-            margin-right: auto; /* Pushes operator to the left */
+        .ans-btn {
+            background-color: #ff9800;
+            color: white;
+            font-size: 28px;
+            padding: 15px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .answer-line {
-            border-bottom: 3px solid #333;
-            margin: 5px 0;
-            width: 100%;
-        }
-        .double-line {
-            border-bottom: 1px solid #333;
-            margin-top: 3px;
-        }
+        .ans-btn:hover { background-color: #f57c00; transform: translateY(-2px); }
+        .ans-btn:active { transform: translateY(2px); }
     </style>
 </head>
 <body>
@@ -106,12 +106,9 @@
         <button id="read-btn">🔊 Read Question</button>
     </div>
 
-    <div id="problem-text" class="problem-text">
-        Click generate to start!
-    </div>
+    <div id="problem-text" class="problem-text">Loading data from Zeriah Cloud...</div>
 
-    <div id="visual-container" class="visual-container">
-        </div>
+    <div id="visual-container" class="visual-container"></div>
 
     <div id="math-container" class="moe-math" style="display: none;">
         <div class="math-row"><span id="math-num1"></span></div>
@@ -120,6 +117,8 @@
         <div class="math-row"><span id="math-ans">?</span></div>
         <div class="double-line"></div>
     </div>
+
+    <div id="answers-container" class="answers-group" style="display: none;"></div>
 </div>
 
 <script src="word-problems-engine.js"></script>
