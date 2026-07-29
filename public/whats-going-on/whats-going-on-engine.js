@@ -1,22 +1,65 @@
+/*
+  =============================================================================
+  ZERIAH LABS ENGINE: What's Going On? (Photographic Memory)
+  =============================================================================
+*/
+
+// ==========================================
+// CORE: Achievement Engine (Baseline Standard)
+// ==========================================
+async function triggerAchievement(achievementId, xpReward) {
+    const userId = localStorage.getItem('zeriah_token');
+    
+    if (!userId || userId === "local_test_token_123") {
+        console.log(`[TESTING] Unlocked: [${achievementId}] for ${xpReward}XP`);
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/unlock-achievement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, achievementId, xpReward })
+        });
+        
+        const result = await response.json();
+        
+        if (result.isLevelUp || result.success) {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, zIndex: 9999 });
+        }
+        
+        if (typeof window.renderAchievements === 'function') {
+            window.renderAchievements();
+        }
+    } catch (err) {
+        console.error("Achievement API failed:", err);
+    }
+}
+
 // --- 1. SETUP AUDIO ---
-// Moving up one folder (../) to access the public/sounds folder
-const sndCorrect = new Audio('../sounds/yay.mp3');
-const sndWrong = new Audio('../sounds/wrong.mp3');
-const bgm = new Audio('../sounds/bgm.mp3');
+// Converted to absolute paths
+const sndCorrect = new Audio('/sounds/yay.mp3');
+const sndWrong = new Audio('/sounds/wrong.mp3');
+const bgm = new Audio('/sounds/bgm.mp3');
 
 // Configure Background Music
-bgm.loop = true;      // Make it loop forever
-bgm.volume = 0.2;     // Keep it at 20% volume so it's pleasant background noise
+bgm.loop = true;      
+bgm.volume = 0.2;     
 
 // --- 2. GAME DATA ---
 const CSV_URL = 'https://assets.zeriahlabs.com/whats-going-on/whats_going_on.csv';
 let gameDatabase = {}; 
 let imageList = [];
-let unplayedImages = []; // <--- ADD THIS NEW LINE
+let unplayedImages = [];
 let currentQuestions = [];
 let currentQuestionIndex = 0;
+let isTransitioningImage = false;
 
-// Helper function: Parses CSV safely, ignoring commas inside quotation marks
+// Tracking
+let score = 0;
+let sessionAchievements = new Set();
+
+// Helper function: Parses CSV safely
 function parseCSVRow(row) {
     const result = [];
     let current = '';
@@ -40,155 +83,161 @@ function parseCSVRow(row) {
 // Fetches the CSV from R2 and structures it
 async function initGame() {
     const btn = document.getElementById('start-btn');
-    btn.innerText = "Downloading Assets...";
+    btn.innerText = "Loading data...";
     btn.disabled = true;
 
-    // START BGM HERE: The user just clicked the button, so the browser allows audio!
-    bgm.play().catch(e => console.log("Audio play prevented by browser:", e));
-
     try {
-        // Cache-buster appended to bypass old CORS blocks
-        const response = await fetch(CSV_URL + '?v=' + new Date().getTime());
-        const csvText = await response.text();
+        const response = await fetch(CSV_URL);
+        const text = await response.text();
         
-        // Parse CSV data
-        const rows = csvText.trim().split('\n').slice(1); 
-        rows.forEach(row => {
-            if (!row.trim()) return;
+        const lines = text.split('\n');
+        
+        // Loop starts at 1 to skip header row
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue; // Skip empty lines
             
-            const [img, question, opt0, opt1, opt2, correct] = parseCSVRow(row);
+            const cols = parseCSVRow(lines[i]);
+            const imageURL = cols[0];
             
-            if (!gameDatabase[img]) {
-                gameDatabase[img] = [];
-                imageList.push(img);
+            if (!gameDatabase[imageURL]) {
+                gameDatabase[imageURL] = [];
+                imageList.push(imageURL);
             }
             
-            gameDatabase[img].push({
-                question: question,
-                options: [opt0, opt1, opt2],
-                correct: parseInt(correct)
+            gameDatabase[imageURL].push({
+                question: cols[1],
+                options: [cols[2], cols[3], cols[4]],
+                correct: parseInt(cols[5], 10)
             });
-        });
-
+        }
+        
+        // Populate deck
+        unplayedImages = [...imageList];
+        
         document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-image').style.display = 'block';
+        
+        bgm.play().catch(e => console.log(e));
+        
         startRound();
         
     } catch (error) {
-        console.error("Failed to load game data:", error);
-        btn.innerText = "Network Error!";
+        console.error("Error loading CSV:", error);
+        btn.innerText = "Error loading. Try again.";
+        btn.disabled = false;
     }
 }
 
-// Starts the 2-second prep phase, then the 7-second observation phase
 function startRound() {
-    // --- NEW DECK OF CARDS LOGIC ---
-    // If the unplayed deck is empty, refill it with all available images
     if (unplayedImages.length === 0) {
-        unplayedImages = [...imageList]; 
+        // Reshuffle if deck is empty
+        unplayedImages = [...imageList];
     }
-    
-    // Pick a random index from the UNPLAYED deck
-    const randomIndex = Math.floor(Math.random() * unplayedImages.length);
-    const randomImage = unplayedImages[randomIndex];
-    
-    // Remove that specific image from the unplayed deck so it won't repeat
-    unplayedImages.splice(randomIndex, 1);
-    // ---------------------------------
 
-    currentQuestions = gameDatabase[randomImage];
+    // Pick random image from unplayed
+    const randomIdx = Math.floor(Math.random() * unplayedImages.length);
+    const selectedImage = unplayedImages[randomIdx];
+    
+    // Remove it from the unplayed pool
+    unplayedImages.splice(randomIdx, 1);
+    
+    currentQuestions = gameDatabase[selectedImage];
     currentQuestionIndex = 0;
     
-    // Setup the image for observation
-    const imgElement = document.getElementById('game-image');
-    imgElement.src = randomImage; 
+    const imgEl = document.getElementById('game-image');
+    const prepScreen = document.getElementById('prep-screen');
     
-    // 1. THE PREP PHASE (Blurred & Dimmed)
-    imgElement.style.filter = "brightness(30%) blur(8px)";
-    document.getElementById('question-container').style.display = 'none';
-    document.getElementById('prep-screen').style.display = 'flex'; // Show the warning
+    // 1. Initial State: Blurred with prep text
+    imgEl.src = selectedImage;
+    imgEl.style.filter = 'blur(10px) brightness(0.3)';
+    prepScreen.style.display = 'flex';
     
-    // 2. WAIT 2 SECONDS, THEN REVEAL
+    // 2. Clear picture after 2 seconds
     setTimeout(() => {
+        prepScreen.style.display = 'none';
+        imgEl.style.filter = 'none';
         
-        // Hide the warning text
-        document.getElementById('prep-screen').style.display = 'none';
-        
-        // Snap the picture into perfect clarity!
-        imgElement.style.filter = "brightness(100%) blur(0px)";
-        
-        // 3. START THE 7-SECOND MEMORY TIMER
+        // 3. Darken picture after 7 seconds of clarity
         setTimeout(() => {
-            dimImageAndAsk();
+            imgEl.style.filter = 'brightness(0.15) blur(3px)';
+            showQuestion(currentQuestions[currentQuestionIndex]);
         }, 7000);
         
     }, 2000);
 }
 
-// Dims the image and shows the first question
-function dimImageAndAsk() {
-    document.getElementById('game-image').style.filter = "brightness(25%) blur(4px)";
-    showQuestion(currentQuestions[currentQuestionIndex]);
-}
-
-// Populates the UI with question data
 function showQuestion(qData) {
-    document.getElementById('question-container').style.display = 'block';
     document.getElementById('question-text').innerText = qData.question;
     
-    document.getElementById('opt-0').innerText = qData.options[0];
-    document.getElementById('opt-1').innerText = qData.options[1];
-    document.getElementById('opt-2').innerText = qData.options[2];
+    // Update buttons safely
+    for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById(`opt-${i}`);
+        if(btn) btn.innerText = qData.options[i];
+    }
+    
+    document.getElementById('question-container').style.display = 'block';
 }
 
-// Variables to track our game flow state
-let isTransitioningImage = false;
-
-// Validates the answer and calls the custom alert
 function checkAnswer(selectedIndex) {
     const currentQ = currentQuestions[currentQuestionIndex];
     
     if (selectedIndex === currentQ.correct) {
-        // Play correct sound
         sndCorrect.currentTime = 0; 
         sndCorrect.play();
+        
+        // Update Score
+        score += 10;
+        document.getElementById('score').innerText = score;
+        
+        // Milestone checks
+        checkMilestones();
+
         showCustomAlert("Correct! Great memory."); 
     } else {
-        // Play wrong sound
         sndWrong.currentTime = 0; 
         sndWrong.play();
         showCustomAlert("Oops! The correct answer was:\n" + currentQ.options[currentQ.correct]);
     }
 }
 
+// Check score against D1 milestones
+function checkMilestones() {
+    if (score >= 50 && !sessionAchievements.has('memory_apprentice')) {
+        sessionAchievements.add('memory_apprentice');
+        triggerAchievement('memory_apprentice', 50);
+    }
+    if (score >= 150 && !sessionAchievements.has('memory_photographic')) {
+        sessionAchievements.add('memory_photographic');
+        triggerAchievement('memory_photographic', 100);
+    }
+    if (score >= 300 && !sessionAchievements.has('memory_master')) {
+        sessionAchievements.add('memory_master');
+        triggerAchievement('memory_master', 200);
+    }
+}
+
 // Shows our fancy centered popup instead of the browser default
 function showCustomAlert(message) {
-    // Hide the question so the UI isn't cluttered
     document.getElementById('question-container').style.display = 'none';
-    
-    // Inject the message and show the box
     document.getElementById('custom-alert-text').innerText = message;
     document.getElementById('custom-alert').style.display = 'block';
 }
 
 // Triggered when the user clicks "Next" on our popup
-function handleAlertClick() {
-    // Hide the alert box
+window.handleAlertClick = function() {
     document.getElementById('custom-alert').style.display = 'none';
 
-    // Are we transitioning to a brand new picture?
     if (isTransitioningImage) {
         isTransitioningImage = false;
         startRound();
         return;
     }
     
-    // Otherwise, move to the next question for the CURRENT image
     currentQuestionIndex++;
     
     if (currentQuestionIndex < currentQuestions.length) {
         showQuestion(currentQuestions[currentQuestionIndex]);
     } else {
-        // Out of questions for this picture, set up the transition state
         isTransitioningImage = true;
         showCustomAlert("Picture complete! Loading the next one...");
     }
