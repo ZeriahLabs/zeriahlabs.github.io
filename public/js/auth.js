@@ -22,58 +22,71 @@ let resetToken = null;
 const API_URL = '/api';
 
 // Show/Hide Password Logic
-togglePasswordBtn.addEventListener('click', (e) => {
-  e.preventDefault(); 
-  const isPassword = passwordInput.getAttribute('type') === 'password';
-  passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-  togglePasswordBtn.textContent = isPassword ? '🙈' : '👁️';
-});
+if (togglePasswordBtn) {
+  togglePasswordBtn.addEventListener('click', (e) => {
+    e.preventDefault(); 
+    const isPassword = passwordInput.getAttribute('type') === 'password';
+    passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+    togglePasswordBtn.textContent = isPassword ? '🙈' : '👁️';
+  });
+}
 
 // Helper Function to Switch UI Modes
 function setAuthMode(mode) {
   authMode = mode;
-  authError.style.display = 'none';
-  authSuccess.style.display = 'none';
+  if (authError) authError.style.display = 'none';
+  if (authSuccess) authSuccess.style.display = 'none';
 
   const q = document.getElementById('sec-question');
   const a = document.getElementById('sec-answer');
   
   if (mode === 'register') {
-    q.style.display = 'block'; a.style.display = 'block'; q.required = true; a.required = true;
+    if (q) { q.style.display = 'block'; q.required = true; }
+    if (a) { a.style.display = 'block'; a.required = true; }
   } else if (mode === 'forgot') {
-    passwordContainer.style.display = 'none';
-    a.style.display = 'block'; a.placeholder = 'Answer your security question';
+    if (passwordContainer) passwordContainer.style.display = 'none';
+    if (a) { a.style.display = 'block'; a.placeholder = 'Answer your security question'; }
   } else {
-    q.style.display = 'none'; a.style.display = 'none';
+    if (q) q.style.display = 'none'; 
+    if (a) a.style.display = 'none';
   }
 }
 
 // 3. Modal Toggles
-loginBtn.addEventListener('click', (e) => {
-  e.preventDefault();
-  if(localStorage.getItem('zeriah_token')) {
-    localStorage.removeItem('zeriah_token');
-    window.location.reload();
-    return;
-  }
-  setAuthMode('login');
-  authModal.style.display = 'flex';
-});
+if (loginBtn) {
+  loginBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if(localStorage.getItem('zeriah_token')) {
+      localStorage.removeItem('zeriah_token');
+      window.location.reload();
+      return;
+    }
+    setAuthMode('login');
+    if (authModal) authModal.style.display = 'flex';
+  });
+}
 
-document.getElementById('close-modal').addEventListener('click', () => {
-  authModal.style.display = 'none';
-  if(authMode === 'reset') window.location.search = ''; // clear token if canceled
-});
+const closeModalBtn = document.getElementById('close-modal');
+if (closeModalBtn) {
+  closeModalBtn.addEventListener('click', () => {
+    if (authModal) authModal.style.display = 'none';
+    if(authMode === 'reset') window.location.search = ''; // clear token if canceled
+  });
+}
 
-authSwitch.addEventListener('click', (e) => {
-  e.preventDefault();
-  setAuthMode(authMode === 'login' ? 'register' : 'login');
-});
+if (authSwitch) {
+  authSwitch.addEventListener('click', (e) => {
+    e.preventDefault();
+    setAuthMode(authMode === 'login' ? 'register' : 'login');
+  });
+}
 
-forgotLink.addEventListener('click', (e) => {
-  e.preventDefault();
-  setAuthMode(authMode === 'login' ? 'forgot' : 'login');
-});
+if (forgotLink) {
+  forgotLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    setAuthMode(authMode === 'login' ? 'forgot' : 'login');
+  });
+}
 
 // Detect Reset Token in URL on Page Load
 window.addEventListener('DOMContentLoaded', () => {
@@ -81,62 +94,70 @@ window.addEventListener('DOMContentLoaded', () => {
   if (urlParams.has('token')) {
     resetToken = urlParams.get('token');
     setAuthMode('reset');
-    authModal.style.display = 'flex';
+    if (authModal) authModal.style.display = 'flex';
   }
 });
 
 // 4. Handle Form Submission
-authForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  authError.style.display = 'none';
-  authSuccess.style.display = 'none';
+if (authForm) {
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (authError) authError.style.display = 'none';
+    if (authSuccess) authSuccess.style.display = 'none';
 
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const question = document.getElementById('sec-question').value;
-  const answer = document.getElementById('sec-answer').value;
-  
-  let endpoint = '';
-  let payload = {};
-
-  if (authMode === 'login') { endpoint = '/login'; payload = { email, password }; }
-  if (authMode === 'register') { endpoint = '/register'; payload = { email, password, question, answer }; }
-  if (authMode === 'forgot') { endpoint = '/get-question'; payload = { email }; } 
-  if (authMode === 'reset') { endpoint = '/reset-password'; payload = { email, answer, newPassword: password }; }
-
-  try {
-    const response = await fetch(API_URL + endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      authError.textContent = data.error || 'An error occurred';
-      authError.style.display = 'block';
-      return;
-    }
-
-    if (authMode === 'login' || authMode === 'register') {
-      localStorage.setItem('zeriah_token', data.token);
-      authModal.style.display = 'none';
-      checkSession(); 
-    } else if (authMode === 'forgot') {
-       authTitle.textContent = "Answer: " + data.question; 
-       setAuthMode('reset');
-    } else if (authMode === 'reset') {
-      authSuccess.textContent = 'Password reset successful! Redirecting...';
-      authSuccess.style.display = 'block';
-      setTimeout(() => { window.location.href = '/'; }, 2000);
-    }
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const question = document.getElementById('sec-question').value;
+    const answer = document.getElementById('sec-answer').value;
     
-  } catch (err) {
-    authError.textContent = 'Server is currently offline.';
-    authError.style.display = 'block';
-  }
-});
+    let endpoint = '';
+    let payload = {};
+
+    if (authMode === 'login') { endpoint = '/login'; payload = { email, password }; }
+    if (authMode === 'register') { endpoint = '/register'; payload = { email, password, question, answer }; }
+    if (authMode === 'forgot') { endpoint = '/get-question'; payload = { email }; } 
+    if (authMode === 'reset') { endpoint = '/reset-password'; payload = { email, answer, newPassword: password }; }
+
+    try {
+      const response = await fetch(API_URL + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (authError) {
+          authError.textContent = data.error || 'An error occurred';
+          authError.style.display = 'block';
+        }
+        return;
+      }
+
+      if (authMode === 'login' || authMode === 'register') {
+        localStorage.setItem('zeriah_token', data.token);
+        if (authModal) authModal.style.display = 'none';
+        checkSession(); 
+      } else if (authMode === 'forgot') {
+         if (authTitle) authTitle.textContent = "Answer: " + data.question; 
+         setAuthMode('reset');
+      } else if (authMode === 'reset') {
+        if (authSuccess) {
+          authSuccess.textContent = 'Password reset successful! Redirecting...';
+          authSuccess.style.display = 'block';
+        }
+        setTimeout(() => { window.location.href = '/'; }, 2000);
+      }
+      
+    } catch (err) {
+      if (authError) {
+        authError.textContent = 'Server is currently offline.';
+        authError.style.display = 'block';
+      }
+    }
+  });
+}
 
 // 5. Verify Session on Page Load
 async function checkSession() {
@@ -154,7 +175,7 @@ async function checkSession() {
             // 1. Update the Navigation Bar
             updateNavToLoggedIn(data.email);
 
-            // 2. Update the Sidebar Stats (Notice we use 'data' instead of 'user')
+            // 2. Update the Sidebar Stats
             if (levelText) levelText.textContent = data.level;
             if (xpText) xpText.textContent = `${data.xp} / 1000 XP`;
             
@@ -170,26 +191,22 @@ async function checkSession() {
         console.error("Session check failed", err);
     }
 }
+
 // --- NEW: UI Update Logic ---
 function updateNavToLoggedIn(email) {
     const loginBtn = document.getElementById('login-btn');
     if (loginBtn) {
-        // Extract the name from the email (e.g. "timothy" from "timothy@email.com")
         const name = email.split('@')[0];
         
-        // Remove the glowing primary class so it blends in better
         loginBtn.classList.remove('primary');
         loginBtn.style.background = 'rgba(255,255,255,0.05)';
         loginBtn.style.color = 'var(--ink)';
         loginBtn.style.border = '1px solid var(--rule)';
         
-        // Change the text to show a user icon, their name, and a logout button
         loginBtn.innerHTML = `👤 ${name} <span id="logout-btn" style="color: #ef4444; margin-left: 12px; font-weight: 900; cursor: pointer;">[Logout]</span>`;
         
-        // Remove the click event that opens the login modal
         loginBtn.onclick = null;
         
-        // Attach the logout logic
         setTimeout(() => {
             const logoutBtn = document.getElementById('logout-btn');
             if (logoutBtn) {
@@ -197,10 +214,11 @@ function updateNavToLoggedIn(email) {
                     e.preventDefault(); 
                     e.stopPropagation();
                     localStorage.removeItem('zeriah_token');
-                    window.location.reload(); // Refresh the page to clear states
+                    window.location.reload(); 
                 });
             }
-        }, 100); // Tiny delay to ensure the DOM has updated
+        }, 100); 
     }
 }
+
 checkSession();
