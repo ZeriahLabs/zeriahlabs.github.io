@@ -32,7 +32,7 @@ async function initGame() {
     btn.disabled = true;
 
     try {
-        const response = await fetch(CSV_URL);
+        const response = await fetch(CSV_URL + '?v=' + new Date().getTime());
         const csvText = await response.text();
         
         // Parse CSV data
