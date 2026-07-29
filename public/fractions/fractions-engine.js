@@ -172,29 +172,68 @@ function generateChoices(correctNum, denominator) {
 }
 
 function renderVisuals(val1, val2, den, isAdd) {
-    // Add logic here to draw circles based on val1, val2 and denominator
-    // Placeholder rendering logic
     const cvs = document.createElement('canvas');
-    cvs.width = 200; cvs.height = 200;
+    cvs.width = 200; 
+    cvs.height = 200;
     const ctx = cvs.getContext('2d');
     visualArea.appendChild(cvs);
     
-    ctx.beginPath();
-    ctx.arc(100, 100, 90, 0, 2 * Math.PI);
-    ctx.fillStyle = COLORS.empty;
-    ctx.fill();
+    const centerX = 100;
+    const centerY = 100;
+    const radius = 90;
+    
     ctx.lineWidth = 4;
     ctx.strokeStyle = COLORS.line;
-    ctx.stroke();
     
     const sliceAngle = (2 * Math.PI) / den;
-    
-    // Draw filled slices
-    ctx.beginPath();
-    ctx.moveTo(100, 100);
-    ctx.arc(100, 100, 90, -Math.PI / 2, -Math.PI / 2 + (val1 * sliceAngle));
-    ctx.lineTo(100, 100);
-    ctx.fillStyle = COLORS.blue;
-    ctx.fill();
-    ctx.stroke();
+    let startAngle = -Math.PI / 2; // Start at the top (12 o'clock)
+
+    // Iterate and draw each slice individually
+    for (let i = 0; i < den; i++) {
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+        ctx.lineTo(centerX, centerY);
+        
+        // 1. Fill the base fraction slices
+        if (i < val1) {
+            ctx.fillStyle = COLORS.blue;
+        } else {
+            ctx.fillStyle = COLORS.empty;
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        // 2. Draw the 'X' if it's subtraction
+        // We target the last `val2` slices of the filled `val1` slices
+        if (!isAdd && i >= (val1 - val2) && i < val1) {
+            // Find the center angle of the current slice to position the X
+            const midAngle = startAngle + (sliceAngle / 2);
+            
+            // Position the X about 60% of the way toward the edge
+            const xCenterDist = radius * 0.6; 
+            const crossX = centerX + Math.cos(midAngle) * xCenterDist;
+            const crossY = centerY + Math.sin(midAngle) * xCenterDist;
+            const crossSize = 12; // Size of the X
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.lineCap = "round";
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = COLORS.cross; // Uses the cut-out color defined in your palette
+            
+            // Draw the \ line
+            ctx.moveTo(crossX - crossSize, crossY - crossSize);
+            ctx.lineTo(crossX + crossSize, crossY + crossSize);
+            // Draw the / line
+            ctx.moveTo(crossX + crossSize, crossY - crossSize);
+            ctx.lineTo(crossX - crossSize, crossY + crossSize);
+            
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // Move the angle forward for the next slice
+        startAngle += sliceAngle;
+    }
 }
