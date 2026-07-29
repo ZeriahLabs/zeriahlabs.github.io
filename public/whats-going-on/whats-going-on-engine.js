@@ -1,4 +1,15 @@
 const CSV_URL = 'https://assets.zeriahlabs.com/whats-going-on/whats_going_on.csv';
+// --- 1. SETUP AUDIO (Updated for BGM and Yay) ---
+const sndCorrect = new Audio('../sounds/yay.mp3');
+const sndWrong = new Audio('../sounds/wrong.mp3');
+const bgm = new Audio('../sounds/bgm.mp3');
+
+// Configure Background Music
+bgm.loop = true;      // Make it loop forever
+bgm.volume = 0.2;     // Keep it at 20% volume so it's pleasant background noise
+
+// --- 2. GAME DATA ---
+const CSV_URL = 'https://assets.zeriahlabs.com/whats-going-on/whats_going_on.csv';
 let gameDatabase = {}; 
 let imageList = [];
 let currentQuestions = [];
@@ -13,7 +24,7 @@ function parseCSVRow(row) {
     for (let i = 0; i < row.length; i++) {
         const char = row[i];
         if (char === '"') {
-            inQuotes = !inQuotes; // Toggle quote state
+            inQuotes = !inQuotes; 
         } else if (char === ',' && !inQuotes) {
             result.push(current.trim());
             current = '';
@@ -31,18 +42,21 @@ async function initGame() {
     btn.innerText = "Downloading Assets...";
     btn.disabled = true;
 
+    // START BGM HERE: The user just clicked the button, so the browser allows audio!
+    bgm.play().catch(e => console.log("Audio play prevented by browser:", e));
+
     try {
+        // Cache-buster appended to bypass old CORS blocks
         const response = await fetch(CSV_URL + '?v=' + new Date().getTime());
         const csvText = await response.text();
         
         // Parse CSV data
-        const rows = csvText.trim().split('\n').slice(1); // Skip the header row
+        const rows = csvText.trim().split('\n').slice(1); 
         rows.forEach(row => {
             if (!row.trim()) return;
             
             const [img, question, opt0, opt1, opt2, correct] = parseCSVRow(row);
             
-            // Group by the full R2 image URL
             if (!gameDatabase[img]) {
                 gameDatabase[img] = [];
                 imageList.push(img);
@@ -55,7 +69,6 @@ async function initGame() {
             });
         });
 
-        // Hide start screen and kick off the game
         document.getElementById('start-screen').style.display = 'none';
         startRound();
         
@@ -64,6 +77,8 @@ async function initGame() {
         btn.innerText = "Network Error!";
     }
 }
+
+// ... Keep the rest of your startRound, dimImageAndAsk, showQuestion, and checkAnswer functions exactly the same below here! ...
 
 // Starts the 7-second observation phase
 function startRound() {
