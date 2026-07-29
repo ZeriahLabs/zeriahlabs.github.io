@@ -1,8 +1,8 @@
-const CSV_URL = 'https://assets.zeriahlabs.com/whats-going-on/whats_going_on.csv';
-// --- 1. SETUP AUDIO (Updated for BGM and Yay) ---
-const sndCorrect = new Audio('./sounds/yay.mp3');
-const sndWrong = new Audio('./sounds/wrong.mp3');
-const bgm = new Audio('./sounds/bgm.mp3');
+// --- 1. SETUP AUDIO ---
+// Moving up one folder (../) to access the public/sounds folder
+const sndCorrect = new Audio('../sounds/yay.mp3');
+const sndWrong = new Audio('../sounds/wrong.mp3');
+const bgm = new Audio('../sounds/bgm.mp3');
 
 // Configure Background Music
 bgm.loop = true;      // Make it loop forever
@@ -78,8 +78,6 @@ async function initGame() {
     }
 }
 
-// ... Keep the rest of your startRound, dimImageAndAsk, showQuestion, and checkAnswer functions exactly the same below here! ...
-
 // Starts the 7-second observation phase
 function startRound() {
     // Pick a random image category
@@ -123,9 +121,14 @@ function checkAnswer(selectedIndex) {
     const currentQ = currentQuestions[currentQuestionIndex];
     
     if (selectedIndex === currentQ.correct) {
-        // Here is where you can hook in your Cloudflare D1 Achievements!
+        // Play correct sound
+        sndCorrect.currentTime = 0; 
+        sndCorrect.play();
         alert("Correct! Great memory."); 
     } else {
+        // Play wrong sound
+        sndWrong.currentTime = 0; 
+        sndWrong.play();
         alert("Oops! The correct answer was: " + currentQ.options[currentQ.correct]);
     }
     
