@@ -1,126 +1,200 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zeriah Labs - Word Problem Engine</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
-        }
-        .btn-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
-        }
-        button:active {
-            transform: scale(0.95);
-        }
-        #generate-btn { background-color: #4CAF50; color: white; }
-        #read-btn { background-color: #2196F3; color: white; }
-        
-        .problem-text {
-            font-size: 22px;
-            line-height: 1.5;
-            margin-bottom: 30px;
-            color: #333;
-            min-height: 100px; 
-        }
-        .visual-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            font-size: 30px;
-            font-weight: bold;
-        }
-        .emoji-img {
-            width: 40px;
-            height: 40px;
-            vertical-align: middle;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Math Word Problems | Zeriah Labs</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <style>
+    /* ========================================= */
+    /* WORD PROBLEMS SPECIFIC STYLES             */
+    /* ========================================= */
+    .game-board-container {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(180deg, #1e293b, #0f172a);
+      border-radius: 24px;
+      padding: 30px;
+      border: 4px solid var(--brand);
+      box-shadow: 0 10px 40px rgba(0, 208, 255, 0.2);
+      text-align: center;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    
+    .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; width: 100%; }
+    .game-title { margin: 0; font-size: 2rem; font-weight: 900; color: var(--brand2); }
+    .score-tracker { background: rgba(255, 255, 255, 0.1); padding: 10px 20px; border-radius: 99px; font-size: 1.2rem; font-weight: 900; color: #fff; }
 
-        /* MOE Stacked Math */
-        .moe-math {
-            display: inline-block;
-            font-size: 40px;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            text-align: right;
-            margin-bottom: 30px;
-        }
-        .math-row { display: flex; justify-content: flex-end; align-items: center; gap: 15px; }
-        .operator { margin-right: auto; }
-        .answer-line { border-bottom: 3px solid #333; margin: 5px 0; width: 100%; }
-        .double-line { border-bottom: 1px solid #333; margin-top: 3px; }
+    .primary-btn {
+      background-color: var(--brand); color: #07101a; border: none; padding: 15px 40px;
+      font-size: 1.5rem; border-radius: 12px; font-weight: 900; cursor: pointer; transition: transform 0.1s;
+    }
+    .primary-btn:active { transform: scale(0.95); }
+    .primary-btn:disabled { background-color: var(--rule); cursor: not-allowed; opacity: 0.5; }
+    
+    .secondary-btn {
+      background-color: transparent; color: var(--brand2); border: 2px solid var(--brand2); 
+      padding: 10px 20px; font-size: 1.2rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all 0.1s;
+    }
+    .secondary-btn:active { transform: scale(0.95); }
+    .secondary-btn:hover { background-color: rgba(34,227,177,0.1); }
 
-        /* Multiple Choice Buttons */
-        .answers-group {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-        .ans-btn {
-            background-color: #ff9800;
-            color: white;
-            font-size: 28px;
-            padding: 15px 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .ans-btn:hover { background-color: #f57c00; transform: translateY(-2px); }
-        .ans-btn:active { transform: translateY(2px); }
-    </style>
+    /* Game Specific Elements */
+    .problem-text { font-size: 1.6rem; color: var(--ink); margin-bottom: 25px; line-height: 1.5; font-weight: 800; }
+    .visual-container { font-size: 3.5rem; margin-bottom: 25px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    
+    /* MOE Vertical Math Stack */
+    .moe-math { display: inline-block; font-size: 3rem; font-weight: 900; color: #fff; margin-bottom: 30px; text-align: right; }
+    .math-row { display: flex; justify-content: flex-end; align-items: center; gap: 15px; }
+    .operator { color: var(--brand2); }
+    .moe-math hr { border: none; border-bottom: 4px solid var(--rule); margin: 10px 0; }
+
+    .answers-group { display: flex; justify-content: center; gap: 15px; width: 100%; flex-wrap: wrap; }
+    .ans-btn {
+      background: rgba(255,255,255,0.05); color: var(--ink); border: 2px solid var(--rule);
+      font-size: 2rem; padding: 15px 30px; border-radius: 16px; font-weight: 900; cursor: pointer; transition: all 0.1s; flex: 1; min-width: 100px;
+    }
+    .ans-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--brand); transform: translateY(-3px); }
+    .ans-btn:active { transform: translateY(2px); }
+
+    @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+    .animate-pop { animation: popIn 0.4s ease-out forwards; }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="btn-group">
-        <button id="generate-btn">🔄 Generate New Problem</button>
-        <button id="read-btn">🔊 Read Question</button>
+  <header>
+    <div class="wrap nav" style="display: flex; justify-content: space-between; align-items: center; height: 64px;">
+      <a href="/" class="brand-container" style="text-decoration: none; color: var(--ink); display: flex; align-items: center; gap: 15px; font-weight: 900; font-size: 1.5rem;">
+        <img src="https://assets.zeriahlabs.com/Zeriah_Labs_Vertical_Final.webp" alt="Zeriah Labs logo" style="height:36px; object-fit: contain;">
+        <span>Zeriah Labs</span>
+      </a>
+      <div id="auth-container"></div>
     </div>
+  </header>
 
-    <div id="problem-text" class="problem-text">Loading data from Zeriah Cloud...</div>
+  <main class="wrap dashboard-layout">
+    <section>
+      <a href="/" style="color: var(--brand); text-decoration: none; font-weight: 700;">← Back to Dashboard</a>
+      
+      <div class="game-board-container">
+        <div class="game-header">
+          <h2 class="game-title">Word Problems</h2>
+          <div class="score-tracker" style="display: flex; align-items: center; gap: 10px;">
+             ⭐ <span id="score">0</span>
+          </div>
+        </div>
 
-    <div id="visual-container" class="visual-container"></div>
+        <div id="start-screen" style="padding: 40px 0; width: 100%;">
+          <div class="visual-container animate-pop">🍎 🥑 🏀</div>
+          <h2 style="font-size: 2.2rem; margin: 0 0 10px 0; color: var(--ink);">Story Math!</h2>
+          <p style="color: var(--muted); font-size: 1.1rem; margin-bottom: 30px;">Listen, read, and solve the math mysteries!</p>
+          <button id="start-btn" class="primary-btn animate-pop" disabled>Loading Dictionary...</button>
+        </div>
 
-    <div id="math-container" class="moe-math" style="display: none;">
-        <div class="math-row"><span id="math-num1"></span></div>
-        <div class="math-row"><span id="math-op" class="operator"></span><span id="math-num2"></span></div>
-        <div class="answer-line"></div>
-        <div class="math-row"><span id="math-ans">?</span></div>
-        <div class="double-line"></div>
-    </div>
+        <div id="game-container" style="display: none; width: 100%; flex-direction: column; align-items: center;">
+            
+            <div style="width: 100%; display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <button id="read-btn" class="secondary-btn">🔊 Read Aloud</button>
+            </div>
 
-    <div id="answers-container" class="answers-group" style="display: none;"></div>
-</div>
+            <div id="problem-text" class="problem-text">Loading...</div>
+            <div id="visual-container" class="visual-container"></div>
 
-<script src="word-problems-engine.js"></script>
+            <div id="math-container" class="moe-math" style="display: none;">
+                <div class="math-row"><span id="math-num1"></span></div>
+                <div class="math-row"><span id="math-op" class="operator"></span><span id="math-num2"></span></div>
+                <hr>
+                <div class="math-row" style="justify-content: center; color: var(--brand);"><span id="math-ans">?</span></div>
+            </div>
+
+            <div id="answers-container" class="answers-group"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <aside>
+        <div class="achievements-panel">
+            <h2>🏆 Global Progress</h2>
+            <div class="user-progress">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--ink);">
+                    <span>Zeriah Rank</span>
+                    <span id="sidebar-xp-text">Log in to track</span>
+                </div>
+                <div class="xp-bar"><div id="sidebar-xp-fill" class="xp-fill" style="width: 0%;"></div></div>
+            </div>
+            
+            <div class="achievement-list" id="global-achievement-list">
+                <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 0.85rem;">
+                    Loading achievements...
+                </div>
+            </div>
+            
+            <a href="/achievements/" style="background: transparent; color: var(--brand2); border: 1px solid var(--brand2); padding: 8px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; text-decoration: none; display: block; text-align: center;">View Master Trophy Room</a>
+        </div>
+    </aside>
+  </main>
+
+  <div id="auth-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div class="modal" style="background: linear-gradient(180deg, #0b131a, #07101a); border: 1px solid var(--rule); padding: 40px; border-radius: 24px; box-shadow: 0 20px 80px rgba(0,0,0,0.8); width: 360px;">
+          <h2 id="auth-title" style="margin-top: 0; color: #fff;">Welcome Back</h2>
+          <div id="auth-error" style="color: #ef4444; margin-bottom: 12px; font-size: 0.9rem; font-weight: bold; display: none;"></div>
+          <p id="auth-success" style="color: var(--brand2); font-size: 0.85rem; display: none; margin-top: -10px;"></p>
+          
+          <form id="auth-form" style="width: 100%; display: flex; flex-direction: column; gap: 16px;" onsubmit="handleAuthSubmit(event)">
+              <input type="text" id="auth-name" placeholder="Display Name" style="display: none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+              <input type="email" id="email" placeholder="Email Address" required style="padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+              <input type="text" id="sec-question" placeholder="Security Question" style="display:none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);">
+              <input type="text" id="sec-answer" placeholder="Your Answer" style="display:none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);">
+              <div id="password-container" style="position: relative; display: flex; align-items: center;">
+                  <input type="password" id="password" placeholder="Password" required style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+                  <button id="toggle-password" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; font-size: 1.2rem;">👁️</button>
+              </div>
+              <button type="submit" id="auth-submit-btn" class="primary-btn" style="margin-top: 0; background: linear-gradient(90deg, var(--brand), var(--brand2)); color: #001016; padding: 12px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer;">Login</button>
+          </form>
+          
+          <div style="margin-top: 16px; text-align: center; font-size: 0.9rem; color: var(--muted); display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                  <span id="auth-switch-text">Don't have an account?</span> 
+                  <a href="#" id="auth-switch" style="color: var(--brand2); font-weight: bold; text-decoration: none;">Click here</a>
+              </div>
+              <a href="#" id="forgot-link" style="color: var(--muted); text-decoration: underline; font-size: 0.85rem;">Forgot password?</a>
+          </div>
+          <button id="close-modal" style="background: none; border: none; color: var(--muted); margin-top: 16px; width: 100%; cursor: pointer; font-weight: bold;">Cancel</button>
+      </div>
+  </div>
+
+  <audio id="sound-correct" src="/sounds/yay.mp3"></audio>
+  <audio id="sound-wrong" src="/sounds/wrong.mp3"></audio>
+  <audio id="bgm" src="/sounds/bgm.mp3" loop></audio>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/ui.js"></script>
+
+  <script src="word-problems-engine.js"></script>
+  
+  <script>
+      // Load achievements dynamically and sort "wordproblem" to the top
+      document.addEventListener("DOMContentLoaded", () => {
+          window.currentAchievementFilter = "wordproblem"; 
+          
+          if(typeof loadAchievements === 'function') {
+              loadAchievements(window.currentAchievementFilter);
+          }
+          if(typeof checkSession === 'function') {
+              checkSession();
+          }
+      });
+  </script>
+
 </body>
 </html>
