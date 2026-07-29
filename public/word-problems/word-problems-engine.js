@@ -44,11 +44,10 @@ const startBtn = document.getElementById('start-btn');
 const gameContainer = document.getElementById('game-container');
 const scoreDisplay = document.getElementById('score');
 
-// Audio Setup via HTML Elements
+// Audio Setup
 const bgm = document.getElementById('bgm');
 if(bgm) bgm.volume = 0.2; 
 let bgmStarted = false;
-
 const sfxYay = document.getElementById('sound-correct');
 const sfxWrong = document.getElementById('sound-wrong');
 
@@ -57,7 +56,6 @@ let objects = [];
 let actions = [];
 let currentProblemText = "";
 let isDataLoaded = false;
-
 let score = 0;
 let correctAnswer = 0;
 let sessionAchievements = new Set();
@@ -84,21 +82,23 @@ function parseCSV(csvData) {
     rows.forEach(row => {
         const cleanRow = row.replace('\r', '');
         const cols = cleanRow.split(',');
+        
+        // Restore correct column mappings!
         if (cols[0] && cols[1]) names.push({ name: cols[0], gender: cols[1] });
-        if (cols[2] && cols[3]) objects.push({ emoji: cols[2], plural: cols[3] });
-        if (cols[4] && cols[5]) actions.push({ type: cols[4], text: cols[5] });
+        if (cols[2] && cols[3] && cols[4]) objects.push({ item: cols[2], emojiUrl: cols[3], objClass: cols[4] });
+        if (cols[5] && cols[6] && cols[7]) actions.push({ actClass: cols[5], verb: cols[6], operator: cols[7], preposition: cols[8] || '' });
     });
 }
+
+const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // Start Game Flow
 startBtn.addEventListener('click', () => {
     startScreen.style.display = 'none';
     gameContainer.style.display = 'flex';
-    
     score = 0;
     scoreDisplay.textContent = score;
     sessionAchievements.clear();
-    
     generateProblem();
 });
 
@@ -106,62 +106,98 @@ startBtn.addEventListener('click', () => {
 function generateProblem() {
     if (!isDataLoaded) return;
 
-    // Reset UI for new question
+    // Reset UI
     document.getElementById('answers-container').style.display = 'flex';
     document.getElementById('math-ans').innerText = '?';
 
-    const person = names[Math.floor(Math.random() * names.length)];
-    const obj = objects[Math.floor(Math.random() * objects.length)];
-    const action = actions[Math.floor(Math.random() * actions.length)];
+    // 1. Pick Variables intelligently based on Class
+    const selectedObj = getRandom(objects);
+    const validActions = actions.filter(a => a.actClass === selectedObj.objClass);
+    const selectedAction = validActions.length > 0 ? getRandom(validActions) : actions[0];
+    
+    const person1 = getRandom(names);
+    let person2 = getRandom(names);
+    while(person1.name === person2.name) { person2 = getRandom(names); }
+    
+    const pronoun = person1.gender === 'm' ? 'He' : 'She';
 
-    const num1 = Math.floor(Math.random() * 5) + 3; // 3 to 7
-    let num2 = Math.floor(Math.random() * 4) + 2;   // 2 to 5 (Ensures plural!)
+    // 2. Generate Numbers
+    let num1 = Math.floor(Math.random() * 5) + 3; // 3 to 7
+    let num2 = Math.floor(Math.random() * 4) + 2; // 2 to 5
 
-    let mathOp = "+";
-    if (action.type === "subtraction") {
+    let mathOp = selectedAction.operator;
+    
+    // Ensure no negative numbers for kids
+    if (mathOp === "-") {
         if (num2 > num1) {
             let temp = num1;
             num1 = num2;
             num2 = temp;
         }
         correctAnswer = num1 - num2;
-        mathOp = "-";
     } else {
         correctAnswer = num1 + num2;
     }
 
-    const pronoun = person.gender === "M" ? "He" : "She";
-    const actionText = action.text.replace("{pronoun}", pronoun);
-
-    currentProblemText = `${person.name} has ${num1} ${obj.plural}. ${actionText} ${num2} more ${obj.plural}. How many ${obj.plural} does ${person.name} have now?`;
-
-    document.getElementById('problem-text').innerText = currentProblemText;
+    // 3. Construct the Sentence
+    let sentence = `${person1.name} has ${num1} ${selectedObj.item}. `;
+    if (selectedAction.preposition !== '') {
+        sentence += `${pronoun} ${selectedAction.verb} ${num2} ${selectedObj.item} ${selectedAction.preposition} ${person2.name}. `;
+    } else {
+        sentence += `${pronoun} ${selectedAction.verb} ${num2} of them. `;
+    }
     
-    renderVisuals(obj.emoji, num1, num2, action.type);
+    if (mathOp === '+') {
+        sentence += `How many ${selectedObj.item} does ${person1.name} have in total?`;
+    } else {
+        sentence += `How many ${selectedObj.item} does ${person1.name} have left?`;
+    }
+    currentProblemText = sentence;
+
+    // 4. Update the DOM
+    document.getElementById('problem-text').innerText = sentence;
+    renderVisuals(selectedObj.emojiUrl, num1, num2, mathOp);
     renderMath(num1, num2, mathOp);
     generateOptions(correctAnswer);
     
     readQuestion();
 }
 
-function renderVisuals(emoji, num1, num2, type) {
+function renderVisuals(emojiUrl, num1, num2, type) {
     const container = document.getElementById('visual-container');
     container.innerHTML = "";
 
-    const group1 = document.createElement('div');
-    group1.innerText = emoji.repeat(num1);
-    group1.className = 'animate-pop';
-    container.appendChild(group1);
+    // Generate actual <img> tags instead of repeating text
+    const createImgGroup = (count) => {
+        const group = document.createElement('div');
+        group.className = 'animate-pop';
+        group.style.display = 'flex';
+        group.style.flexWrap = 'wrap';
+        group.style.justifyContent = 'center';
+        group.style.gap = '5px';
+        
+        for (let i = 0; i < count; i++) {
+            const img = document.createElement('img');
+            img.src = emojiUrl;
+            img.style.width = '60px'; // Made them nice and big
+            img.style.height = '60px';
+            img.style.objectFit = 'contain';
+            group.appendChild(img);
+        }
+        return group;
+    };
+
+    container.appendChild(createImgGroup(num1));
 
     const symbol = document.createElement('div');
-    symbol.innerText = type === "addition" ? "➕" : "➖";
+    symbol.innerText = type; 
     symbol.style.margin = "0 15px";
+    symbol.style.color = "var(--brand2)";
+    symbol.style.display = "flex";
+    symbol.style.alignItems = "center";
     container.appendChild(symbol);
 
-    const group2 = document.createElement('div');
-    group2.innerText = emoji.repeat(num2);
-    group2.className = 'animate-pop';
-    container.appendChild(group2);
+    container.appendChild(createImgGroup(num2));
 }
 
 function renderMath(num1, num2, op) {
@@ -180,7 +216,7 @@ function generateOptions(correct) {
     let options = [correct];
     while (options.length < 3) {
         let wrong = correct + (Math.floor(Math.random() * 5) - 2);
-        if (wrong > 0 && !options.includes(wrong)) {
+        if (wrong >= 0 && !options.includes(wrong)) {
             options.push(wrong);
         }
     }
@@ -226,7 +262,7 @@ function checkAnswer(selected, correct) {
         }
 
         // Auto-advance after celebration
-        setTimeout(generateProblem, 2000);
+        setTimeout(generateProblem, 2500);
     } else {
         if(sfxWrong) { sfxWrong.currentTime = 0; sfxWrong.play(); }
     }
