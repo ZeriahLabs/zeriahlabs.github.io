@@ -94,6 +94,27 @@
             font-weight: bold;
         }
         #custom-alert-btn:hover { background: #1976D2; }
+        /* --- NEW PREP SCREEN CSS --- */
+        #prep-screen { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.4); /* Adds a nice dark tint over the blurred image */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 15; 
+            text-align: center;
+        }
+        #prep-screen h1 {
+            color: white;
+            font-size: 2.5rem;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            padding: 0 40px;
+        }
+        
     </style>
 </head>
 <body>
@@ -105,6 +126,10 @@
             <p>Take a mental snapshot! You have 7 seconds.</p>
             <button id="start-btn" onclick="initGame()">Load Game</button>
         </div>
+
+        <div id="prep-screen" style="display: none;">
+            <h1>Please take 7 seconds to memorise the picture.</h1>
+        </div>        
 
         <div id="question-container" style="display: none;">
             <h2 id="question-text">Question goes here</h2>
