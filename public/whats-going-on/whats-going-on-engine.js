@@ -12,6 +12,7 @@ bgm.volume = 0.2;     // Keep it at 20% volume so it's pleasant background noise
 const CSV_URL = 'https://assets.zeriahlabs.com/whats-going-on/whats_going_on.csv';
 let gameDatabase = {}; 
 let imageList = [];
+let unplayedImages = []; // <--- ADD THIS NEW LINE
 let currentQuestions = [];
 let currentQuestionIndex = 0;
 
@@ -80,9 +81,20 @@ async function initGame() {
 
 // Starts the 2-second prep phase, then the 7-second observation phase
 function startRound() {
-    // Pick a random image category
-    const randomImage = imageList[Math.floor(Math.random() * imageList.length)];
+    // --- NEW DECK OF CARDS LOGIC ---
+    // If the unplayed deck is empty, refill it with all available images
+    if (unplayedImages.length === 0) {
+        unplayedImages = [...imageList]; 
+    }
     
+    // Pick a random index from the UNPLAYED deck
+    const randomIndex = Math.floor(Math.random() * unplayedImages.length);
+    const randomImage = unplayedImages[randomIndex];
+    
+    // Remove that specific image from the unplayed deck so it won't repeat
+    unplayedImages.splice(randomIndex, 1);
+    // ---------------------------------
+
     currentQuestions = gameDatabase[randomImage];
     currentQuestionIndex = 0;
     
