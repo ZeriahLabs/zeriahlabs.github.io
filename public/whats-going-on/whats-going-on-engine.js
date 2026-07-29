@@ -78,7 +78,7 @@ async function initGame() {
     }
 }
 
-// Starts the 7-second observation phase
+// Starts the 2-second prep phase, then the 7-second observation phase
 function startRound() {
     // Pick a random image category
     const randomImage = imageList[Math.floor(Math.random() * imageList.length)];
@@ -90,14 +90,26 @@ function startRound() {
     const imgElement = document.getElementById('game-image');
     imgElement.src = randomImage; 
     
-    // Reset filters to fully visible
-    imgElement.style.filter = "brightness(100%) blur(0px)";
+    // 1. THE PREP PHASE (Blurred & Dimmed)
+    imgElement.style.filter = "brightness(30%) blur(8px)";
     document.getElementById('question-container').style.display = 'none';
+    document.getElementById('prep-screen').style.display = 'flex'; // Show the warning
     
-    // 7-Second Flash Timer
+    // 2. WAIT 2 SECONDS, THEN REVEAL
     setTimeout(() => {
-        dimImageAndAsk();
-    }, 7000);
+        
+        // Hide the warning text
+        document.getElementById('prep-screen').style.display = 'none';
+        
+        // Snap the picture into perfect clarity!
+        imgElement.style.filter = "brightness(100%) blur(0px)";
+        
+        // 3. START THE 7-SECOND MEMORY TIMER
+        setTimeout(() => {
+            dimImageAndAsk();
+        }, 7000);
+        
+    }, 2000);
 }
 
 // Dims the image and shows the first question
