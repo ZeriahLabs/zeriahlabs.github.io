@@ -62,8 +62,8 @@ function generateProblem() {
     const pronoun = person1.gender === 'm' ? 'He' : 'She';
 
     // Generate Numbers (Fixed to prevent '1' for plurals)
-    const num1 = Math.floor(Math.random() * 7) + 6; // 6 to 12
-    const num2 = Math.floor(Math.random() * 4) + 2; // 2 to 5
+    const num1 = Math.floor(Math.random() * 9) + 7; // 6 to 12
+    const num2 = Math.floor(Math.random() * 6) + 2; // 2 to 5
 
     // Construct the Sentence
     let sentence = `${person1.name} has ${num1} ${selectedObj.item}. `;
