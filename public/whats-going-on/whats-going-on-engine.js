@@ -1,8 +1,8 @@
 const CSV_URL = 'https://assets.zeriahlabs.com/whats-going-on/whats_going_on.csv';
 // --- 1. SETUP AUDIO (Updated for BGM and Yay) ---
-const sndCorrect = new Audio('../sounds/yay.mp3');
-const sndWrong = new Audio('../sounds/wrong.mp3');
-const bgm = new Audio('../sounds/bgm.mp3');
+const sndCorrect = new Audio('./sounds/yay.mp3');
+const sndWrong = new Audio('./sounds/wrong.mp3');
+const bgm = new Audio('./sounds/bgm.mp3');
 
 // Configure Background Music
 bgm.loop = true;      // Make it loop forever
