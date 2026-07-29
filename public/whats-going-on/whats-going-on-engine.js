@@ -116,7 +116,10 @@ function showQuestion(qData) {
     document.getElementById('opt-2').innerText = qData.options[2];
 }
 
-// Validates the answer and progresses the loop
+// Variables to track our game flow state
+let isTransitioningImage = false;
+
+// Validates the answer and calls the custom alert
 function checkAnswer(selectedIndex) {
     const currentQ = currentQuestions[currentQuestionIndex];
     
@@ -124,22 +127,45 @@ function checkAnswer(selectedIndex) {
         // Play correct sound
         sndCorrect.currentTime = 0; 
         sndCorrect.play();
-        alert("Correct! Great memory."); 
+        showCustomAlert("Correct! Great memory."); 
     } else {
         // Play wrong sound
         sndWrong.currentTime = 0; 
         sndWrong.play();
-        alert("Oops! The correct answer was: " + currentQ.options[currentQ.correct]);
+        showCustomAlert("Oops! The correct answer was:\n" + currentQ.options[currentQ.correct]);
+    }
+}
+
+// Shows our fancy centered popup instead of the browser default
+function showCustomAlert(message) {
+    // Hide the question so the UI isn't cluttered
+    document.getElementById('question-container').style.display = 'none';
+    
+    // Inject the message and show the box
+    document.getElementById('custom-alert-text').innerText = message;
+    document.getElementById('custom-alert').style.display = 'block';
+}
+
+// Triggered when the user clicks "Next" on our popup
+function handleAlertClick() {
+    // Hide the alert box
+    document.getElementById('custom-alert').style.display = 'none';
+
+    // Are we transitioning to a brand new picture?
+    if (isTransitioningImage) {
+        isTransitioningImage = false;
+        startRound();
+        return;
     }
     
-    // Move to the next question for this image
+    // Otherwise, move to the next question for the CURRENT image
     currentQuestionIndex++;
     
     if (currentQuestionIndex < currentQuestions.length) {
         showQuestion(currentQuestions[currentQuestionIndex]);
     } else {
-        // Out of questions for this picture, load a new one
-        alert("You finished this picture! Loading the next one...");
-        startRound();
+        // Out of questions for this picture, set up the transition state
+        isTransitioningImage = true;
+        showCustomAlert("Picture complete! Loading the next one...");
     }
 }
