@@ -1,74 +1,209 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculus Junior | Zeriah Labs</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calculus Junior | Zeriah Labs</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <style>
+    /* ========================================= */
+    /* CALCULUS JUNIOR SPECIFIC STYLES           */
+    /* ========================================= */
+    .game-board-container {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(180deg, #1e293b, #0f172a);
+      border-radius: 24px;
+      padding: 30px;
+      border: 4px solid var(--brand);
+      box-shadow: 0 10px 40px rgba(0, 208, 255, 0.2);
+      text-align: center;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
     
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; width: 100%; }
+    .game-title { margin: 0; font-size: 2rem; font-weight: 900; color: var(--brand2); }
+    .score-tracker { background: rgba(255, 255, 255, 0.1); padding: 10px 20px; border-radius: 99px; font-size: 1.2rem; font-weight: 900; color: #fff; }
+
+    .primary-btn {
+      background-color: var(--brand); color: #07101a; border: none; padding: 15px 40px;
+      font-size: 1.5rem; border-radius: 12px; font-weight: 900; cursor: pointer; transition: transform 0.1s;
+    }
+    .primary-btn:active { transform: scale(0.95); }
+    .primary-btn:disabled { background-color: var(--rule); cursor: not-allowed; opacity: 0.5; }
+
+    /* Calculus Math Render Layout */
+    .problem-prompt { font-size: 1.2rem; color: var(--muted); margin-bottom: 10px; }
+    #math-container { font-size: 3rem; margin-bottom: 30px; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 16px; border: 1px solid var(--rule); }
+
+    .mcq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 600px; margin-bottom: 20px; }
+    .btn-option {
+        background: rgba(255,255,255,0.05); color: var(--ink); border: 2px solid var(--rule);
+        padding: 15px; border-radius: 12px; font-size: 1.2rem; cursor: pointer; transition: all 0.2s;
+        display: flex; justify-content: center; align-items: center; min-height: 80px;
+    }
+    .btn-option:hover:not(:disabled) { background: rgba(255,255,255,0.1); border-color: var(--brand); transform: translateY(-2px); }
+    .btn-option:disabled { cursor: not-allowed; opacity: 0.5; }
     
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    .btn-correct { background: var(--brand2) !important; color: #07101a !important; border-color: var(--brand2) !important; font-weight: 900; }
+    .btn-wrong { background: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
 
-    <style>
-        /* Baseline Zeriah Labs Arcade UI styling */
-        body { background-color: #0f172a; color: #f8fafc; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-        .game-card { background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 18px 70px rgba(0,0,0,.55); width: 90%; max-width: 600px; text-align: center; }
-        .header-stats { display: flex; justify-content: space-between; margin-bottom: 20px; color: #94a3b8; font-weight: bold; }
-        .streak-counter { color: #34d399; }
-        
-        #math-container { font-size: 2.5rem; margin: 30px 0; min-height: 80px; }
-        
-        /* New MCQ Grid */
-        .mcq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .mcq-btn { background: #334155; border: 2px solid #475569; color: white; padding: 15px; font-size: 1.5rem; border-radius: 12px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; }
-        .mcq-btn:hover { background: #475569; border-color: #00d0ff; transform: translateY(-2px); }
-        .mcq-btn:disabled { cursor: default; transform: none; }
-        .mcq-btn.correct { background: #10b981; border-color: #059669; color: #fff; }
-        .mcq-btn.wrong { background: #ef4444; border-color: #b91c1c; color: #fff; opacity: 0.7; }
-        
-        /* Post-Answer Action Buttons */
-        #action-buttons { display: none; flex-direction: column; gap: 10px; margin-top: 10px; }
-        .action-btn { padding: 12px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 10px; cursor: pointer; border: none; transition: 0.2s; }
-        .btn-primary { background: #00d0ff; color: #0f172a; }
-        .btn-primary:hover { background: #22e3b1; }
-        .btn-secondary { background: #475569; color: white; }
-        .btn-secondary:hover { background: #64748b; }
-        .btn-upgrade { background: #a855f7; color: white; }
-        .btn-upgrade:hover { background: #c084fc; box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); }
+    .action-buttons { display: flex; gap: 10px; justify-content: center; width: 100%; margin-top: 15px; }
+    
+    .btn-secondary {
+      background: transparent; color: var(--brand); border: 2px solid var(--brand);
+      padding: 12px 30px; font-size: 1.1rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all 0.1s;
+    }
+    .btn-secondary:hover { background: rgba(0, 208, 255, 0.1); }
+    
+    .btn-upgrade { background: var(--purple); color: white; border: none; padding: 12px 30px; font-size: 1.1rem; border-radius: 12px; font-weight: 900; cursor: pointer; transition: all 0.2s; animation: pulse-purple 2s infinite; }
+    .btn-upgrade:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(168, 85, 247, 0.5); }
+    @keyframes pulse-purple { 0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); } 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); } }
 
-        /* Steps UI */
-        #steps-container { margin-top: 25px; text-align: left; display: none; background: #0f172a; padding: 20px; border-radius: 10px; border-left: 4px solid #00d0ff; }
-        .step { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.5s forwards; }
-        .step-instruction { font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px; }
-        .step-math { font-size: 1.3rem; }
-        
-        @keyframes fadeIn { to { opacity: 1; } }
-    </style>
+    /* Steps UI */
+    #steps-container { margin-top: 25px; text-align: left; display: none; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 16px; border-left: 4px solid var(--brand); width: 100%; max-width: 600px; }
+    .step { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.5s forwards; }
+    .step-instruction { font-size: 0.95rem; color: var(--muted); margin-bottom: 5px; }
+    .step-math { font-size: 1.4rem; color: var(--ink); }
+    
+    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+    .animate-pop { animation: popIn 0.4s ease-out forwards; }
+  </style>
 </head>
 <body>
 
-    <div class="game-card">
-        <div class="header-stats">
-            <span id="level-title">Level 1: Power Rule</span>
-            <span class="streak-counter">Streak: <span id="streak">0</span></span>
+  <header>
+    <div class="wrap nav" style="display: flex; justify-content: space-between; align-items: center; height: 64px;">
+      <a href="/" class="brand-container" style="text-decoration: none; color: var(--ink); display: flex; align-items: center; gap: 15px; font-weight: 900; font-size: 1.5rem;">
+        <img src="https://assets.zeriahlabs.com/Zeriah_Labs_Vertical_Final.webp" alt="Zeriah Labs logo" style="height:36px; object-fit: contain;">
+        <span>Zeriah Labs</span>
+      </a>
+      <div id="auth-container"></div>
+    </div>
+  </header>
+
+  <main class="wrap dashboard-layout">
+    <section>
+      <a href="/" style="color: var(--brand); text-decoration: none; font-weight: 700;">← Back to Dashboard</a>
+      
+      <div class="game-board-container">
+        <div class="game-header">
+          <h2 class="game-title" id="level-title">Level 1: Power Rule</h2>
+          <div class="score-tracker" style="display: flex; align-items: center; gap: 10px;">
+             🔥 <span id="streak">0</span>
+          </div>
         </div>
 
-        <p>Find the derivative, f'(x), of:</p>
-        <div id="math-container"></div> 
+        <div id="start-screen" style="padding: 40px 0; width: 100%;">
+          <div class="animate-pop" style="font-size: 5rem; margin-bottom: 20px;">∫</div>
+          <h2 style="font-size: 2.2rem; margin: 0 0 10px 0; color: var(--ink);">Calculus Junior</h2>
+          <p style="color: var(--muted); font-size: 1.1rem; margin-bottom: 30px;">Master the rules of differentiation, step by step.</p>
+          <button id="start-btn" class="primary-btn animate-pop">Start Training</button>
+        </div>
 
-        <div id="mcq-container" class="mcq-grid">
+        <div id="game-container" style="display: none; width: 100%; flex-direction: column; align-items: center;">
+            <p class="problem-prompt">Find the derivative, f'(x), of:</p>
+            <div id="math-container"></div> 
+
+            <div id="mcq-container" class="mcq-grid"></div>
+
+            <div id="action-buttons" class="action-buttons">
+                <button id="show-steps-btn" class="btn-secondary" style="display: none;">Show Steps</button>
+                <button id="next-q-btn" class="primary-btn" style="display: none; padding: 12px 30px; font-size: 1.1rem;">Next Question →</button>
+                <button id="upgrade-btn" class="btn-upgrade" style="display: none;">🚀 Boss Defeated: Next Level</button>
             </div>
 
-        <div id="action-buttons">
-            <button id="show-steps-btn" class="action-btn btn-secondary">🔍 Show Me How</button>
-            <button id="next-q-btn" class="action-btn btn-primary">Try Another One 🎲</button>
-            <button id="upgrade-btn" class="action-btn btn-upgrade" style="display: none;">🚀 Level Up!</button>
+            <div id="steps-container"></div>
         </div>
 
-        <div id="steps-container"></div>
-    </div>
+      </div>
+    </section>
 
-    <script src="calculus-junior-engine.js"></script>
+    <aside>
+        <div class="achievements-panel">
+            <h2>🏆 Global Progress</h2>
+            <div class="user-progress">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--ink);">
+                    <span>Zeriah Rank</span>
+                    <span id="sidebar-xp-text">Log in to track</span>
+                </div>
+                <div class="xp-bar"><div id="sidebar-xp-fill" class="xp-fill" style="width: 0%;"></div></div>
+            </div>
+            
+            <div class="achievement-list" id="global-achievement-list">
+                <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 0.85rem;">
+                    Loading achievements...
+                </div>
+            </div>
+            
+            <a href="/achievements/" style="background: transparent; color: var(--brand2); border: 1px solid var(--brand2); padding: 8px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; text-decoration: none; display: block; text-align: center;">View Master Trophy Room</a>
+        </div>
+    </aside>
+  </main>
+
+  <div id="auth-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div class="modal" style="background: linear-gradient(180deg, #0b131a, #07101a); border: 1px solid var(--rule); padding: 40px; border-radius: 24px; box-shadow: 0 20px 80px rgba(0,0,0,0.8); width: 360px;">
+          <h2 id="auth-title" style="margin-top: 0; color: #fff;">Welcome Back</h2>
+          <div id="auth-error" style="color: #ef4444; margin-bottom: 12px; font-size: 0.9rem; font-weight: bold; display: none;"></div>
+          <p id="auth-success" style="color: var(--brand2); font-size: 0.85rem; display: none; margin-top: -10px;"></p>
+          
+          <form id="auth-form" style="width: 100%; display: flex; flex-direction: column; gap: 16px;" onsubmit="handleAuthSubmit(event)">
+              <input type="text" id="auth-name" placeholder="Display Name" style="display: none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+              <input type="email" id="email" placeholder="Email Address" required style="padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+              <input type="text" id="sec-question" placeholder="Security Question" style="display:none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);">
+              <input type="text" id="sec-answer" placeholder="Your Answer" style="display:none; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);">
+              <div id="password-container" style="position: relative; display: flex; align-items: center;">
+                  <input type="password" id="password" placeholder="Password" required style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--rule);" />
+                  <button id="toggle-password" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; font-size: 1.2rem;">👁️</button>
+              </div>
+              <button type="submit" id="auth-submit-btn" class="primary-btn" style="margin-top: 0; background: linear-gradient(90deg, var(--brand), var(--brand2)); color: #001016; padding: 12px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer;">Login</button>
+          </form>
+          
+          <div style="margin-top: 16px; text-align: center; font-size: 0.9rem; color: var(--muted); display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                  <span id="auth-switch-text">Don't have an account?</span> 
+                  <a href="#" id="auth-switch" style="color: var(--brand2); font-weight: bold; text-decoration: none;">Click here</a>
+              </div>
+              <a href="#" id="forgot-link" style="color: var(--muted); text-decoration: underline; font-size: 0.85rem;">Forgot password?</a>
+          </div>
+          <button id="close-modal" style="background: none; border: none; color: var(--muted); margin-top: 16px; width: 100%; cursor: pointer; font-weight: bold;">Cancel</button>
+      </div>
+  </div>
+
+  <audio id="sound-correct" src="/sounds/yay.mp3"></audio>
+  <audio id="sound-wrong" src="/sounds/wrong.mp3"></audio>
+  <audio id="bgm" src="/sounds/bgm.mp3" loop></audio>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/ui.js"></script>
+
+  <script src="calculus-junior-engine.js"></script>
+  
+  <script>
+      document.addEventListener("DOMContentLoaded", () => {
+          // Set the keyword so Calculus badges float to the top
+          window.currentAchievementFilter = "calculus"; 
+          
+          if(typeof loadAchievements === 'function') {
+              loadAchievements(window.currentAchievementFilter);
+          }
+          if(typeof checkSession === 'function') {
+              checkSession();
+          }
+      });
+  </script>
+
 </body>
 </html>

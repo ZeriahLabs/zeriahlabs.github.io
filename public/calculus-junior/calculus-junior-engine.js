@@ -1,39 +1,68 @@
-/* ============================================================================= 
-ZERIAH LABS ENGINE: Calculus Junior (Audio + Boss Stage Edition)
-============================================================================= 
+/*
+  =============================================================================
+  ZERIAH LABS ENGINE: Calculus Junior
+  =============================================================================
 */
 
+// ==========================================
+// CORE: Achievement Engine (Baseline Standard)
+// ==========================================
+async function triggerAchievement(achievementId, xpReward) {
+    const userId = localStorage.getItem('zeriah_token');
+    
+    if (!userId || userId === "local_test_token_123") {
+        console.log(`[TESTING] Unlocked: [${achievementId}] for ${xpReward}XP`);
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/unlock-achievement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, achievementId, xpReward })
+        });
+        
+        const result = await response.json();
+        
+        if (result.isLevelUp || result.success) {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, zIndex: 9999 });
+        }
+        
+        if (typeof window.renderAchievements === 'function') {
+            window.renderAchievements();
+        }
+    } catch (err) {
+        console.error("Achievement API failed:", err);
+    }
+}
+
+// Game State
 let currentQuestion = null;
 let currentStreak = 0;
 let hasAnswered = false;
 let currentLevel = 1; 
+let sessionAchievements = new Set();
 
-// ==========================================
-// 🎵 Audio Engine (Updated Paths)
-// ==========================================
-
-// Use relative root paths so Cloudflare/GitHub maps them correctly
-const bgm = new Audio('/sounds/bgm.mp3');
-bgm.loop = true;
-bgm.volume = 0.3; 
-
-const yaySound = new Audio('/sounds/yay.mp3');
-yaySound.volume = 0.6;
-
-const wrongSound = new Audio('/sounds/wrong.mp3');
-wrongSound.volume = 0.5;
+// Audio Engine (Using HTML elements for cleaner mobile playback)
+const bgm = document.getElementById('bgm');
+if(bgm) bgm.volume = 0.3; 
+const yaySound = document.getElementById('sound-correct');
+if(yaySound) yaySound.volume = 0.6;
+const wrongSound = document.getElementById('sound-wrong');
+if(wrongSound) wrongSound.volume = 0.5;
 
 let bgmStarted = false;
-
-// Helper to start BGM on first interaction (Browser Autoplay Policy Fix)
 function initializeAudio() {
-    if (!bgmStarted) {
+    if (!bgmStarted && bgm) {
         bgm.play().catch(e => console.log("BGM playback prevented by browser:", e));
         bgmStarted = true;
     }
 }
 
 // DOM Elements
+const startScreen = document.getElementById('start-screen');
+const startBtn = document.getElementById('start-btn');
+const gameContainer = document.getElementById('game-container');
 const mathContainer = document.getElementById('math-container');
 const mcqContainer = document.getElementById('mcq-container');
 const actionButtons = document.getElementById('action-buttons');
@@ -44,522 +73,202 @@ const stepsContainer = document.getElementById('steps-container');
 const streakDisplay = document.getElementById('streak');
 const levelTitle = document.getElementById('level-title');
 
-// Helper: Shuffle Array
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+// Boot Sequence
+startBtn.addEventListener('click', () => {
+    startScreen.style.display = 'none';
+    gameContainer.style.display = 'flex';
+    initializeAudio();
+    startRound();
+});
+
+function generateQuestion() {
+    const qTypesLevel1 = [
+        { type: "power", title: "Power Rule (Basic)" },
+        { type: "constant", title: "Constant Rule" }
+    ];
+    const qTypesLevel2 = [
+        { type: "sum", title: "Sum/Difference Rule" },
+        { type: "power_advanced", title: "Power Rule (Negative/Fractions)" }
+    ];
+    const qTypesLevel3 = [
+        { type: "product", title: "Product Rule" },
+        { type: "chain_basic", title: "Chain Rule (Basic)" }
+    ];
+
+    let pool = qTypesLevel1;
+    if (currentLevel === 2) pool = qTypesLevel2;
+    if (currentLevel === 3) pool = qTypesLevel3;
+    
+    let qType = pool[Math.floor(Math.random() * pool.length)];
+
+    // BOSS LOGIC
+    if (currentStreak === 4 && currentLevel === 1) qType = { type: "boss_chain", title: "BOSS STAGE: The Chain Rule" };
+    if (currentStreak === 9 && currentLevel === 2) qType = { type: "boss_product", title: "BOSS STAGE: The Product Rule" };
+    if (currentStreak === 14 && currentLevel === 3) qType = { type: "boss_quotient", title: "BOSS STAGE: The Quotient Rule" };
+
+    levelTitle.innerText = `Level ${Math.floor(currentLevel)}: ${qType.title}`;
+    
+    // Generate Math based on Type
+    if (qType.type === "power") {
+        const c = Math.floor(Math.random() * 8) + 2; 
+        const p = Math.floor(Math.random() * 5) + 2; 
+        const ansC = c * p;
+        const ansP = p - 1;
+        const ans = ansP === 1 ? `${ansC}x` : `${ansC}x^{${ansP}}`;
+        return {
+            level: 1,
+            equation: `f(x) = ${c}x^{${p}}`,
+            correctAnswer: ans,
+            wrongAnswers: [`${c}x^{${p-1}}`, `${ansC}x^{${p}}`, `${c*p+1}x^{${p-1}}`],
+            steps: [
+                { instruction: "Identify the coefficient and exponent.", math: `c = ${c}, n = ${p}` },
+                { instruction: "Multiply the coefficient by the exponent.", math: `${c} \\times ${p} = ${ansC}` },
+                { instruction: "Subtract 1 from the exponent.", math: `${p} - 1 = ${ansP}` },
+                { instruction: "Combine for the final derivative.", math: `f'(x) = ${ans}` }
+            ]
+        };
+    } else if (qType.type === "constant") {
+        const c = Math.floor(Math.random() * 100) + 1;
+        return {
+            level: 1,
+            equation: `f(x) = ${c}`,
+            correctAnswer: "0",
+            wrongAnswers: ["1", `${c}`, "x"],
+            steps: [
+                { instruction: "Identify that the function is a constant (no x terms).", math: `f(x) = c` },
+                { instruction: "The derivative of any constant is always 0.", math: `\\frac{d}{dx}[c] = 0` }
+            ]
+        };
+    } else if (qType.type === "sum") {
+        return {
+            level: 2,
+            equation: `f(x) = 3x^3 - 2x^2 + 5x - 7`,
+            correctAnswer: `9x^2 - 4x + 5`,
+            wrongAnswers: [`9x^2 - 4x`, `3x^2 - 2x + 5`, `9x^3 - 4x^2 + 5x`],
+            steps: [
+                { instruction: "Take the derivative of each term separately.", math: `\\frac{d}{dx}[3x^3] - \\frac{d}{dx}[2x^2] + \\frac{d}{dx}[5x] - \\frac{d}{dx}[7]` },
+                { instruction: "Apply Power Rule to terms 1 and 2.", math: `9x^2 - 4x` },
+                { instruction: "Apply Power Rule to term 3, Constant Rule to term 4.", math: `5 - 0` },
+                { instruction: "Combine.", math: `f'(x) = 9x^2 - 4x + 5` }
+            ]
+        };
+    } else if (qType.type === "boss_chain") {
+        return {
+            level: 1.5, 
+            equation: `f(x) = (3x^2 + 2)^4`,
+            correctAnswer: `24x(3x^2 + 2)^3`,
+            wrongAnswers: [`4(3x^2 + 2)^3`, `12x(3x^2 + 2)^3`, `24x(6x)^3`],
+            steps: [
+                { instruction: "Identify the 'outside' and 'inside' functions.", math: `u = 3x^2 + 2` },
+                { instruction: "Take derivative of the outside (Power Rule), leave inside alone.", math: `4(3x^2 + 2)^3` },
+                { instruction: "Take derivative of the inside.", math: `u' = 6x` },
+                { instruction: "Multiply them together (Chain Rule).", math: `4(3x^2 + 2)^3 \\cdot 6x = 24x(3x^2 + 2)^3` }
+            ]
+        };
+    } else if (qType.type === "boss_product") {
+         return {
+            level: 2.5, 
+            equation: `f(x) = x^2 \\sin(x)`,
+            correctAnswer: `x^2 \\cos(x) + 2x \\sin(x)`,
+            wrongAnswers: [`2x \\cos(x)`, `x^2 \\cos(x) - 2x \\sin(x)`, `2x \\sin(x)`],
+            steps: [
+                { instruction: "Identify u and v.", math: `u = x^2, v = \\sin(x)` },
+                { instruction: "Find u' and v'.", math: `u' = 2x, v' = \\cos(x)` },
+                { instruction: "Apply Product Rule: u v' + v u'", math: `x^2 \\cos(x) + \\sin(x)(2x)` }
+            ]
+        };
     }
-    return array;
-}
-
-// Helper: Formats terms cleanly
-function formatTerm(coeff, exponent) {
-    if (exponent === 1) return `${coeff}x`;
-    if (exponent === 0) return `${coeff}`; 
-    return `${coeff}x^{${exponent}}`;
-}
-
-// ==========================================
-// 🧩 The Transcendental Term Generator
-// ==========================================
-function getRandomTerm() {
-    const a = Math.floor(Math.random() * 4) + 2; 
-    const types = ['poly', 'exp', 'log', 'cos', 'tan'];
-    const type = types[Math.floor(Math.random() * types.length)];
-
-    switch(type) {
-        case 'poly': return { math: `${a}x^2`, deriv: `${a * 2}x` };
-        case 'exp':  return { math: `e^{${a}x}`, deriv: `${a}e^{${a}x}` };
-        case 'log':  
-            // The derivative of ln(ax) is (1/ax)*a, which simplifies perfectly to 1/x!
-            return { math: `\\ln(${a}x)`, deriv: `\\frac{1}{x}` };
-        case 'cos':  return { math: `\\cos(${a}x)`, deriv: `-${a}\\sin(${a}x)` };
-        case 'tan':  return { math: `\\tan(${a}x)`, deriv: `${a}\\sec^2(${a}x)` };
-    }
-}
-
-// ==========================================
-// ⚙️ Procedural Engines
-// ==========================================
-
-// 1A. Standard Power Rule
-function generatePowerRule() {
-    const a = Math.floor(Math.random() * 8) + 2; 
-    const b = Math.floor(Math.random() * 4) + 2; 
     
-    const correctAnswer = formatTerm(a * b, b - 1);
-    
-    const wrong1 = formatTerm(a * b, b);       
-    const wrong2 = formatTerm(a * b, b + 1);   
-    const wrong3 = formatTerm(b, b - 1);       
-    
-    let choices = [
-        { math: correctAnswer, isCorrect: true },
-        { math: wrong1, isCorrect: false },
-        { math: wrong2, isCorrect: false },
-        { math: wrong3, isCorrect: false }
-    ];
-
+    // Fallback if missing
     return {
-        level: 1,
-        title: "Level 1: Power Rule",
-        concept: "Power Rule",
-        question_latex: `f(x) = ${a}x^{${b}}`,
-        choices: shuffle(choices),
-        steps: [
-            { instruction: "1. Identify the coefficient and the exponent.", math: `a = ${a}, \\quad n = ${b}` },
-            { instruction: "2. Multiply the exponent by the coefficient.", math: `${a} \\times ${b} = ${a * b}` },
-            { instruction: "3. Subtract 1 from the original exponent.", math: `${b} - 1 = ${b - 1}` },
-            { instruction: "4. Combine them for your final derivative.", math: `f'(x) = ${correctAnswer}` }
-        ]
+        level: 1, equation: `f(x) = x^2`, correctAnswer: `2x`, wrongAnswers: [`x`, `2x^2`, `2`],
+        steps: [{ instruction: "Power rule.", math: `2x^{2-1}` }]
     };
 }
-
-// 1B. Level 1 Boss (Invisible Exponent)
-function generateLinearRule() {
-    const a = Math.floor(Math.random() * 8) + 2; 
-    
-    const correctAnswer = `${a}`; 
-    
-    const wrong1 = `${a}x`; 
-    const wrong2 = `x`;     
-    const wrong3 = `0`;     
-    
-    let choices = [
-        { math: correctAnswer, isCorrect: true },
-        { math: wrong1, isCorrect: false },
-        { math: wrong2, isCorrect: false },
-        { math: wrong3, isCorrect: false }
-    ];
-
-    return {
-        level: 1.5,
-        title: "Level 1 Boss: The Invisible Exponent! 👾",
-        concept: "Linear Power Rule",
-        question_latex: `f(x) = ${a}x`,
-        choices: shuffle(choices),
-        steps: [
-            { instruction: "1. Identify the hidden exponent! An 'x' by itself means x^1.", math: `a = ${a}, \\quad n = 1` },
-            { instruction: "2. Multiply the exponent by the coefficient.", math: `${a} \\times 1 = ${a}` },
-            { instruction: "3. Subtract 1 from the exponent. Remember: x^0 always equals 1!", math: `1 - 1 = 0 \\quad \\rightarrow \\quad x^0 = 1` },
-            { instruction: "4. The 'x' vanishes, leaving only the coefficient.", math: `f'(x) = ${correctAnswer}` }
-        ]
-    };
-}
-
-// 1C. Level 2: Chain Rule
-function generateChainRule() {
-    const a = Math.floor(Math.random() * 4) + 2; 
-    const b = Math.floor(Math.random() * 8) + 1; 
-    const n = Math.floor(Math.random() * 4) + 3; 
-
-    const u = `${a}x^2 + ${b}`;
-    const uPrime = `${a * 2}x`; 
-    const outerDeriv = `${n}(${u})^{${n - 1}}`;
-
-    const finalCoeff = n * a * 2;
-    const correctAnswer = `${finalCoeff}x(${u})^{${n - 1}}`;
-
-    const wrong1 = `${n}(${u})^{${n - 1}}`;       
-    const wrong2 = `${finalCoeff}x(${u})^{${n}}`; 
-    const wrong3 = `${n * a}x(${u})^{${n - 1}}`;  
-
-    let choices = [
-        { math: correctAnswer, isCorrect: true },
-        { math: wrong1, isCorrect: false },
-        { math: wrong2, isCorrect: false },
-        { math: wrong3, isCorrect: false }
-    ];
-
-    return {
-        level: 2,
-        title: "Level 2: Chain Rule 🔗",
-        concept: "Chain Rule",
-        question_latex: `f(x) = (${u})^{${n}}`,
-        choices: shuffle(choices),
-        steps: [
-            { instruction: "1. Identify the 'Inside' and 'Outside' functions.", math: `\\text{Inside } (u) = ${u} \\quad \\text{Outside} = u^{${n}}` },
-            { instruction: "2. Find the derivative of the Inside function (u').", math: `u' = ${uPrime}` },
-            { instruction: "3. Find the derivative of the Outside function, leaving 'u' untouched.", math: `${n}(u)^{${n - 1}} \\rightarrow ${outerDeriv}` },
-            { instruction: "4. Multiply the Outside derivative by the Inside derivative (u').", math: `${outerDeriv} \\cdot ${uPrime}` },
-            { instruction: "5. Combine the coefficients for your final answer!", math: `f'(x) = ${correctAnswer}` }
-        ]
-    };
-}
-
-// 1D. Level 2 Boss: Trig Chain Rule
-function generateTrigChainRule() {
-    const a = Math.floor(Math.random() * 4) + 2; 
-    const b = Math.floor(Math.random() * 8) + 1; 
-
-    const u = `${a}x^2 + ${b}`;
-    const uPrime = `${a * 2}x`; 
-    
-    const correctAnswer = `${uPrime} \\cos(${u})`;
-
-    const wrong1 = `\\cos(${u})`;                   
-    const wrong2 = `-${uPrime} \\cos(${u})`;        
-    const wrong3 = `${uPrime} \\cos(${uPrime})`;    
-
-    let choices = [
-        { math: correctAnswer, isCorrect: true },
-        { math: wrong1, isCorrect: false },
-        { math: wrong2, isCorrect: false },
-        { math: wrong3, isCorrect: false }
-    ];
-
-    return {
-        level: 2.5,
-        title: "Level 2 Boss: The Sine Wave! 🌊",
-        concept: "Trig Chain Rule",
-        question_latex: `f(x) = \\sin(${u})`,
-        choices: shuffle(choices),
-        steps: [
-            { instruction: "1. Identify the 'Inside' and 'Outside' functions.", math: `\\text{Inside } (u) = ${u} \\quad \\text{Outside} = \\sin(u)` },
-            { instruction: "2. Find the derivative of the Inside function (u').", math: `u' = ${uPrime}` },
-            { instruction: "3. Find the derivative of the Outside function. (The derivative of sin is cos).", math: `\\sin(u) \\rightarrow \\cos(u)` },
-            { instruction: "4. Multiply the Outside derivative by the Inside derivative (u').", math: `\\cos(u) \\cdot ${uPrime}` },
-            { instruction: "5. Re-insert your original 'u' to get the final answer!", math: `f'(x) = ${correctAnswer}` }
-        ]
-    };
-}
-
-// 1E. Level 3: The Dynamic Product Rule ✖️
-function generateProductRule() {
-    // Pull two completely random functions from our new generator!
-    const termU = getRandomTerm();
-    const termV = getRandomTerm();
-
-    const u = termU.math;
-    const uPrime = termU.deriv;
-    const v = termV.math;
-    const vPrime = termV.deriv;
-
-    const correctAnswer = `(${uPrime})(${v}) + (${u})(${vPrime})`;
-
-    // The structural traps still work flawlessly, regardless of the functions used!
-    const wrong1 = `(${uPrime})(${vPrime})`;                       
-    const wrong2 = `(${uPrime})(${v}) - (${u})(${vPrime})`;        
-    const wrong3 = `(${u})(${vPrime}) + (${u})(${vPrime})`;        
-
-    let choices = [
-        { math: correctAnswer, isCorrect: true },
-        { math: wrong1, isCorrect: false },
-        { math: wrong2, isCorrect: false },
-        { math: wrong3, isCorrect: false }
-    ];
-
-    return {
-        level: 3,
-        title: "Level 3: Product Rule ✖️",
-        concept: "Product Rule",
-        question_latex: `f(x) = (${u})(${v})`,
-        choices: shuffle(choices),
-        steps: [
-            { instruction: "1. Identify 'u' (left) and 'v' (right). Notice the different function types!", math: `u = ${u} \\quad v = ${v}` },
-            { instruction: "2. Find u' (Apply specific rules like Trig or Exponential Chain Rules).", math: `u' = ${uPrime}` },
-            { instruction: "3. Find v'.", math: `v' = ${vPrime}` },
-            { instruction: "4. Write out the Product Rule formula.", math: `\\text{Formula: } (u' \\cdot v) + (u \\cdot v')` },
-            { instruction: "5. Plug your pieces into the structure.", math: `f'(x) = ${correctAnswer}` }
-        ]
-    };
-}
-
-// 1F. Level 3 Boss: Product & Chain Combo! 👾
-function generateProductChainBoss() {
-    const a = Math.floor(Math.random() * 4) + 2; 
-    const b = Math.floor(Math.random() * 4) + 2; 
-
-    const u = `${a}x^2`;
-    const uPrime = `${a * 2}x`;
-    
-    const v = `\\sin(${b}x)`;
-    const vPrime = `${b}\\cos(${b}x)`; // Chain rule applied!
-
-    const correctAnswer = `(${uPrime})\\sin(${b}x) + (${u})(${vPrime})`;
-
-    const wrong1 = `(${uPrime})(${vPrime})`; // Trap: Just multiplied them
-    const wrong2 = `(${uPrime})\\sin(${b}x) + (${u})(\\cos(${b}x))`; // Trap: Forgot the inner derivative 'b' on the cosine
-    const wrong3 = `(${uPrime})\\sin(${b}x) - (${u})(${vPrime})`; // Trap: Used subtraction
-
-    let choices = [
-        { math: correctAnswer, isCorrect: true },
-        { math: wrong1, isCorrect: false },
-        { math: wrong2, isCorrect: false },
-        { math: wrong3, isCorrect: false }
-    ];
-
-    return {
-        level: 3.5,
-        title: "Level 3 Boss: The Ultimate Combo! 🐉",
-        concept: "Product + Chain Rule",
-        question_latex: `f(x) = ${u} \\sin(${b}x)`,
-        choices: shuffle(choices),
-        steps: [
-            { instruction: "1. Identify 'u' and 'v'. Note that 'v' is a trig function!", math: `u = ${u} \\quad v = \\sin(${b}x)` },
-            { instruction: "2. Find u'.", math: `u' = ${uPrime}` },
-            { instruction: "3. Find v'. (Don't forget the Chain Rule for the inside!)", math: `v' = ${vPrime}` },
-            { instruction: "4. Apply the Product Rule formula: (u' * v) + (u * v')", math: `(${uPrime}) \\cdot \\sin(${b}x) + (${u}) \\cdot (${vPrime})` },
-            { instruction: "5. Final structural answer:", math: `f'(x) = ${correctAnswer}` }
-        ]
-    };
-}
-
-// 1G. Level 3 Boss (Stage 2): The Transcendental Combo 🌌
-function generateTranscendentalBoss() {
-    const a = Math.floor(Math.random() * 4) + 2; 
-    const b = Math.floor(Math.random() * 5) + 2; 
-
-    const u = `e^{${a}x}`;
-    const uPrime = `${a}e^{${a}x}`; 
-    
-    const v = `\\ln(${b}x)`;
-    const vPrime = `\\frac{1}{x}`; 
-
-    const correctAnswer = `(${uPrime})\\ln(${b}x) + (${u})(\\frac{1}{x})`;
-
-    // Highly specific traps for logs and exponentials
-    const wrong1 = `(${uPrime})\\ln(${b}x) + (${u})(\\frac{1}{${b}x})`; // Trap 1: Forgot that 'b' cancels out in the log derivative
-    const wrong2 = `(e^{${a}x})\\ln(${b}x) + (${u})(\\frac{1}{x})`;     // Trap 2: Forgot the chain rule on the 'e'
-    const wrong3 = `(${uPrime})(\\frac{1}{x})`;                         // Trap 3: Just multiplied the derivatives
-
-    let choices = [
-        { math: correctAnswer, isCorrect: true },
-        { math: wrong1, isCorrect: false },
-        { math: wrong2, isCorrect: false },
-        { math: wrong3, isCorrect: false }
-    ];
-
-    return {
-        level: 3.75, // Boss Stage 2
-        title: "Level 3 Final Boss: Exponential Log! 🌌",
-        concept: "Transcendental Product Rule",
-        question_latex: `f(x) = ${u} \\ln(${b}x)`,
-        choices: shuffle(choices),
-        steps: [
-            { instruction: "1. Identify 'u' and 'v'.", math: `u = ${u} \\quad v = \\ln(${b}x)` },
-            { instruction: "2. Find u' (Remember the exponent's chain rule).", math: `u' = ${uPrime}` },
-            { instruction: "3. Find v' (In logs, the inner coefficient cancels out!).", math: `v' = \\frac{1}{x}` },
-            { instruction: "4. Apply the Product Rule formula: (u'v) + (uv')", math: `(${uPrime}) \\cdot \\ln(${b}x) + (${u}) \\cdot (\\frac{1}{x})` },
-            { instruction: "5. Final structural answer:", math: `f'(x) = ${correctAnswer}` }
-        ]
-    };
-}
-
-// 1G. Level 4: The Dynamic Quotient Rule ➗
-function generateQuotientRule() {
-    // Pull two completely random transcendental functions!
-    const termU = getRandomTerm();
-    const termV = getRandomTerm();
-
-    const u = termU.math;
-    const uPrime = termU.deriv;
-    const v = termV.math;
-    const vPrime = termV.deriv;
-
-    // The perfect structure: (u'v - uv') / v^2
-    const numeratorCorrect = `(${uPrime})(${v}) - (${u})(${vPrime})`;
-    const denomCorrect = `(${v})^2`;
-    
-    const correctAnswer = `\\frac{${numeratorCorrect}}{${denomCorrect}}`;
-
-    // The Teacher's Traps (Structural errors remain the same!)
-    const wrong1 = `\\frac{(${uPrime})(${v}) + (${u})(${vPrime})}{${denomCorrect}}`; // Trap 1: Used a plus sign
-    const wrong2 = `\\frac{(${u})(${vPrime}) - (${uPrime})(${v})}{${denomCorrect}}`; // Trap 2: Backwards numerator
-    const wrong3 = `\\frac{${numeratorCorrect}}{${v}}`;                            // Trap 3: Forgot to square the denominator
-
-    let choices = [
-        { math: correctAnswer, isCorrect: true },
-        { math: wrong1, isCorrect: false },
-        { math: wrong2, isCorrect: false },
-        { math: wrong3, isCorrect: false }
-    ];
-
-    return {
-        level: 4,
-        title: "Level 4: Quotient Rule ➗",
-        concept: "Quotient Rule",
-        question_latex: `f(x) = \\frac{${u}}{${v}}`,
-        choices: shuffle(choices),
-        steps: [
-            { instruction: "1. Identify 'u' (the top) and 'v' (the bottom). Notice the different function types!", math: `u = ${u} \\quad v = ${v}` },
-            { instruction: "2. Find the derivative of the top (u').", math: `u' = ${uPrime}` },
-            { instruction: "3. Find the derivative of the bottom (v').", math: `v' = ${vPrime}` },
-            { instruction: "4. Write out the Quotient Rule formula.", math: `\\text{Formula: } \\frac{(u' \\cdot v) - (u \\cdot v')}{v^2}` },
-            { instruction: "5. Plug your pieces into the formula. Order matters!", math: `f'(x) = ${correctAnswer}` }
-        ]
-    };
-}
-
-// 1H. Level 4 Boss: The Ultimate Transcendental Quotient! ⚡
-function generateQuotientBoss() {
-    const a = Math.floor(Math.random() * 3) + 2; // 2 to 4
-    const b = Math.floor(Math.random() * 4) + 2; // 2 to 5
-
-    // The Top (u) requires a Nested Trig + Power Chain Rule!
-    const u = `\\cos(${a}x^2)`;
-    const uPrime = `-${a * 2}x\\sin(${a}x^2)`; 
-
-    // The Bottom (v) requires an Exponential Chain Rule
-    const v = `e^{${b}x}`;
-    const vPrime = `${b}e^{${b}x}`;
-
-    const numeratorCorrect = `(${uPrime})(${v}) - (${u})(${vPrime})`;
-    const denomCorrect = `(${v})^2`;
-    
-    const correctAnswer = `\\frac{${numeratorCorrect}}{${denomCorrect}}`;
-
-    // The Traps
-    // Trap 1: Forgot the negative sign AND the inner '2ax' on the cosine derivative entirely
-    const wrong1 = `\\frac{(\\sin(${a}x^2))(${v}) - (${u})(${vPrime})}{${denomCorrect}}`;     
-    
-    // Trap 2: Forgot the negative sign on the cosine derivative (The #1 most common calculus error)
-    const wrong2 = `\\frac{(${a * 2}x\\sin(${a}x^2))(${v}) - (${u})(${vPrime})}{${denomCorrect}}`; 
-    
-    // Trap 3: Flipped the numerator order (uv' - u'v)
-    const wrong3 = `\\frac{(${u})(${vPrime}) - (${uPrime})(${v})}{${denomCorrect}}`;     
-
-    let choices = [
-        { math: correctAnswer, isCorrect: true },
-        { math: wrong1, isCorrect: false },
-        { math: wrong2, isCorrect: false },
-        { math: wrong3, isCorrect: false }
-    ];
-
-    return {
-        level: 4.5,
-        title: "Level 4 Boss: The Great Divide! ⚡",
-        concept: "Quotient + Nested Chain Rule",
-        question_latex: `f(x) = \\frac{\\cos(${a}x^2)}{e^{${b}x}}`,
-        choices: shuffle(choices),
-        steps: [
-            { instruction: "1. Identify 'u' (top) and 'v' (bottom).", math: `u = \\cos(${a}x^2) \\quad v = e^{${b}x}` },
-            { instruction: "2. Find u' (Watch out! Derivative of cos is negative, AND you need the Power Chain Rule for the inside!).", math: `u' = ${uPrime}` },
-            { instruction: "3. Find v' (Exponential Chain Rule).", math: `v' = ${vPrime}` },
-            { instruction: "4. Apply the Quotient Rule formula: (u'v - uv') / v^2.", math: `\\text{Formula: } \\frac{u'v - uv'}{v^2}` },
-            { instruction: "5. Final structural answer:", math: `f'(x) = ${correctAnswer}` }
-        ]
-    };
-}
-
-
-// ==========================================
-// 🎮 Core Game Loop
-// ==========================================
 
 function startRound() {
     hasAnswered = false;
+    currentQuestion = generateQuestion();
     
-    // Reset UI
-    mcqContainer.innerHTML = '';
-    actionButtons.style.display = 'none';
     stepsContainer.style.display = 'none';
     stepsContainer.innerHTML = '';
+    showStepsBtn.style.display = 'none';
+    nextQBtn.style.display = 'none';
     upgradeBtn.style.display = 'none';
-
-    // Route to the correct procedural engine
-    if (currentLevel === 1) {
-        if (currentStreak >= 3) {
-            currentQuestion = generateLinearRule(); 
-        } else {
-            currentQuestion = generatePowerRule();  
-        }
-    } else if (currentLevel === 2) {
-        if (currentStreak >= 3) {
-            currentQuestion = generateTrigChainRule(); 
-        } else {
-            currentQuestion = generateChainRule();     
-        }
-    } else if (currentLevel === 3) {
-        if (currentStreak === 3) {
-            currentQuestion = generateProductChainBoss(); // Boss Stage 1
-        } else if (currentStreak === 4) {
-            currentQuestion = generateTranscendentalBoss(); // Boss Stage 2
-        } else {
-            currentQuestion = generateProductRule(); // The new dynamic standard questions
-        }
-    } else if (currentLevel === 4) {
-        if (currentStreak >= 3) {
-            currentQuestion = generateQuotientBoss(); // <--- Level 4 Boss!
-        } else {
-            currentQuestion = generateQuotientRule();     
-        }
-    }
     
-    levelTitle.innerText = currentQuestion.title;
+    katex.render(currentQuestion.equation, mathContainer, { displayMode: true, throwOnError: false });
 
-    // Render main question
-    katex.render(currentQuestion.question_latex, mathContainer, { displayMode: true });
+    mcqContainer.innerHTML = '';
     
-    // Render MCQ Buttons
-    currentQuestion.choices.forEach((choice, index) => {
+    let options = [currentQuestion.correctAnswer, ...currentQuestion.wrongAnswers];
+    options.sort(() => Math.random() - 0.5); 
+
+    options.forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = 'mcq-btn';
-        katex.render(choice.math, btn, { throwOnError: false });
+        btn.className = 'btn-option';
+        const span = document.createElement('span');
+        katex.render(opt, span, { displayMode: false, throwOnError: false });
+        btn.appendChild(span);
         
-        btn.onclick = () => {
-            initializeAudio(); // Start BGM on first interaction if needed
-            handleAnswer(btn, choice.isCorrect);
-        };
+        btn.addEventListener('click', () => handleAnswer(opt === currentQuestion.correctAnswer, btn));
         mcqContainer.appendChild(btn);
     });
 }
 
-function handleAnswer(clickedBtn, isCorrect) {
+function handleAnswer(isCorrect, btn) {
     if (hasAnswered) return;
     hasAnswered = true;
+    initializeAudio();
 
-    const allBtns = mcqContainer.querySelectorAll('.mcq-btn');
-    allBtns.forEach((btn, index) => {
-        btn.disabled = true;
-        if (currentQuestion.choices[index].isCorrect) {
-            btn.classList.add('correct');
-        } else {
-            btn.classList.add('wrong');
-        }
-    });
-
-    actionButtons.style.display = 'flex';
-    upgradeBtn.style.display = 'none';
+    const buttons = mcqContainer.querySelectorAll('button');
+    buttons.forEach(b => b.disabled = true);
 
     if (isCorrect) {
-            // 🎵 Play Success Sound!
-            yaySound.currentTime = 0;
-            yaySound.play();
-    
-            currentStreak++;
-            streakDisplay.innerText = currentStreak;
-            confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
-            
-            showStepsBtn.style.display = 'none';
-            
-            // Check for Boss Victories (Notice 3.75 replaces 3.5 here!)
-            if (currentQuestion.level === 1.5 || currentQuestion.level === 2.5 || currentQuestion.level === 3.75 || currentQuestion.level === 4.5) {
-                
-                if (currentQuestion.level === 1.5) {
-                    upgradeBtn.innerText = "🚀 Level Up: Unlock Chain Rule!";
-                } else if (currentQuestion.level === 2.5) {
-                    upgradeBtn.innerText = "🚀 Level Up: Unlock Product Rule!";
-                } else if (currentQuestion.level === 3.75) {
-                    upgradeBtn.innerText = "🚀 Level Up: Unlock Quotient Rule!";
-                } else if (currentQuestion.level === 4.5) {
-                    upgradeBtn.innerText = "🏆 Victory! Claim Your Badge!";
-                }
-    
-                upgradeBtn.style.display = 'block';
-                nextQBtn.style.display = 'none';
-    
-            } else {
-                nextQBtn.style.display = 'block';
-            }
-        } else {
-    // 🎵 Play Error Sound!
-        wrongSound.currentTime = 0;
-        wrongSound.play();
+        btn.classList.add('btn-correct');
+        if(yaySound) { yaySound.currentTime = 0; yaySound.play(); }
+        
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }, zIndex: 9999 });
+        
+        currentStreak++;
+        streakDisplay.innerText = currentStreak;
 
+        // Boss progression UI & Achievements
+        if (currentQuestion.level % 1 !== 0) { 
+            let nextLevelText = "Next Level";
+            if (currentQuestion.level === 1.5) {
+                nextLevelText = "Level Up: Unlock Sum Rule!";
+                if(!sessionAchievements.has('calc_chain')) { sessionAchievements.add('calc_chain'); triggerAchievement('calc_chain', 100); }
+            } else if (currentQuestion.level === 2.5) {
+                nextLevelText = "Level Up: Unlock Product Rule!";
+                if(!sessionAchievements.has('calc_product')) { sessionAchievements.add('calc_product'); triggerAchievement('calc_product', 150); }
+            }
+            
+            upgradeBtn.innerText = `🚀 Boss Defeated: ${nextLevelText}`;
+            upgradeBtn.style.display = 'block';
+        } else {
+            nextQBtn.style.display = 'block';
+        }
+        
+        // General streak achievement
+        if (currentStreak === 5 && !sessionAchievements.has('calc_streak')) {
+            sessionAchievements.add('calc_streak');
+            triggerAchievement('calc_streak', 50);
+        }
+
+    } else {
+        btn.classList.add('btn-wrong');
+        if(wrongSound) { wrongSound.currentTime = 0; wrongSound.play(); }
+        
         currentStreak = 0;
         streakDisplay.innerText = currentStreak;
+        
+        // Show correct answer
+        buttons.forEach(b => {
+            if (b.innerHTML.includes(currentQuestion.correctAnswer.replace(/\\/g, '\\\\'))) {
+                b.classList.add('btn-correct');
+                b.style.opacity = '1'; 
+            }
+        });
         
         showStepsBtn.style.display = 'block';
         nextQBtn.style.display = 'block';
@@ -568,8 +277,8 @@ function handleAnswer(clickedBtn, isCorrect) {
 
 function showSteps() {
     stepsContainer.style.display = 'block';
-    stepsContainer.innerHTML = '<h3>Step-by-Step Magic:</h3>';
-
+    stepsContainer.innerHTML = '<h3 style="color: var(--brand); margin-top: 0;">Step-by-Step Solution</h3>';
+    
     currentQuestion.steps.forEach((step, index) => {
         const stepDiv = document.createElement('div');
         stepDiv.className = 'step';
@@ -595,26 +304,14 @@ function showSteps() {
 nextQBtn.addEventListener('click', startRound);
 showStepsBtn.addEventListener('click', showSteps);
 upgradeBtn.addEventListener('click', () => {
-    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-    yaySound.currentTime = 0;
-    yaySound.play(); // Extra celebration for boss defeat!
+    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, zIndex: 9999 });
+    if(yaySound) { yaySound.currentTime = 0; yaySound.play(); }
 
-    // Level Progression Logic
     if (currentQuestion.level === 1.5) {
         currentLevel = 2;
     } else if (currentQuestion.level === 2.5) {
         currentLevel = 3; 
-    } else if (currentQuestion.level === 3.75) { // <--- Triggers only after Boss Stage 2!
-        currentLevel = 4;
-    } else if (currentQuestion.level === 4.5) {
-        alert("🎉 Congratulations! You have conquered Calculus Junior!");
-        currentLevel = 1; // Loops back to the start
     }
 
-    currentStreak = 0; 
-    streakDisplay.innerText = currentStreak;
     startRound();
 });
-
-// Initialize
-window.onload = startRound;
