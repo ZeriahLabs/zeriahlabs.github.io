@@ -1,114 +1,134 @@
 /* ============================================================================= 
-ZERIAH LABS ENGINE: Progressive Calculus Trainer
+ZERIAH LABS ENGINE: Calculus Junior (MCQ Edition)
 ============================================================================= 
 */
 
 let currentQuestion = null;
 let currentStreak = 0;
+let hasAnswered = false;
 
 // DOM Elements
 const mathContainer = document.getElementById('math-container');
-const answerInput = document.getElementById('answer-input');
-const submitBtn = document.getElementById('submit-btn');
+const mcqContainer = document.getElementById('mcq-container');
+const actionButtons = document.getElementById('action-buttons');
 const showStepsBtn = document.getElementById('show-steps-btn');
+const nextQBtn = document.getElementById('next-q-btn');
+const upgradeBtn = document.getElementById('upgrade-btn');
 const stepsContainer = document.getElementById('steps-container');
 const streakDisplay = document.getElementById('streak');
 
-// 1. The Procedural "Math-Libs" Engine
+// Helper: Shuffle Array
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// 1. Procedural Engine with Plausible Distractors
 function generatePowerRule() {
-    // Pick random coefficient (a) and exponent (b)
     const a = Math.floor(Math.random() * 8) + 2; // 2 to 9
     const b = Math.floor(Math.random() * 4) + 2; // 2 to 5
     
-    const finalAnswer = `${a * b}x^${b - 1}`;
+    const correctAnswer = `${a * b}x^{${b - 1}}`;
     
-    // Return the full JSON schema containing the steps
+    // Generate common mistakes for distractors
+    const wrong1 = `${a * b}x^{${b}}`;       // Forgot to subtract 1
+    const wrong2 = `${a * b}x^{${b + 1}}`;   // Added 1 instead of subtracting
+    const wrong3 = `${b}x^{${b - 1}}`;       // Forgot to multiply by coefficient 'a'
+    
+    let choices = [
+        { math: correctAnswer, isCorrect: true },
+        { math: wrong1, isCorrect: false },
+        { math: wrong2, isCorrect: false },
+        { math: wrong3, isCorrect: false }
+    ];
+
     return {
         level: 1,
         concept: "Power Rule",
         question_latex: `f(x) = ${a}x^{${b}}`,
-        final_answer: finalAnswer,
+        choices: shuffle(choices),
         steps: [
-            {
-                instruction: "1. Identify the coefficient and the exponent.",
-                math: `a = ${a}, \\quad n = ${b}`
-            },
-            {
-                instruction: "2. Multiply the exponent by the coefficient.",
-                math: `${a} \\times ${b} = ${a * b}`
-            },
-            {
-                instruction: "3. Subtract 1 from the original exponent.",
-                math: `${b} - 1 = ${b - 1}`
-            },
-            {
-                instruction: "4. Combine them for your final derivative.",
-                math: `f'(x) = ${finalAnswer}`
-            }
+            { instruction: "1. Identify the coefficient and the exponent.", math: `a = ${a}, \\quad n = ${b}` },
+            { instruction: "2. Multiply the exponent by the coefficient.", math: `${a} \\times ${b} = ${a * b}` },
+            { instruction: "3. Subtract 1 from the original exponent.", math: `${b} - 1 = ${b - 1}` },
+            { instruction: "4. Combine them for your final derivative.", math: `f'(x) = ${correctAnswer}` }
         ]
     };
 }
 
 // 2. The Game Loop
 function startRound() {
+    hasAnswered = false;
+    
     // Reset UI
-    answerInput.value = '';
-    answerInput.style.borderColor = '#475569';
+    mcqContainer.innerHTML = '';
+    actionButtons.style.display = 'none';
     stepsContainer.style.display = 'none';
     stepsContainer.innerHTML = '';
-    showStepsBtn.style.display = 'none';
+    upgradeBtn.style.display = 'none';
 
     // Generate new data
     currentQuestion = generatePowerRule();
 
-    // Render the question beautifully using KaTeX
-    katex.render(currentQuestion.question_latex, mathContainer, {
-        throwOnError: false,
-        displayMode: true
-    });
+    // Render main question
+    katex.render(currentQuestion.question_latex, mathContainer, { displayMode: true });
     
-    answerInput.focus();
+    // Render MCQ Buttons
+    currentQuestion.choices.forEach((choice, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'mcq-btn';
+        // Render KaTeX directly inside the button!
+        katex.render(choice.math, btn, { throwOnError: false });
+        
+        btn.onclick = () => handleAnswer(btn, choice.isCorrect);
+        mcqContainer.appendChild(btn);
+    });
 }
 
 // 3. Answer Checking Logic
-function checkAnswer() {
-    // Clean up user input (remove spaces, standardize lowercase x)
-    const userGuess = answerInput.value.replace(/\s+/g, '').toLowerCase();
-    
-    if (userGuess === currentQuestion.final_answer) {
-        // Correct!
-        answerInput.style.borderColor = '#34d399'; // Green
+function handleAnswer(clickedBtn, isCorrect) {
+    if (hasAnswered) return; // Prevent multiple clicks
+    hasAnswered = true;
+
+    // Disable all buttons and reveal the right answer
+    const allBtns = mcqContainer.querySelectorAll('.mcq-btn');
+    allBtns.forEach((btn, index) => {
+        btn.disabled = true;
+        if (currentQuestion.choices[index].isCorrect) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('wrong');
+        }
+    });
+
+    if (isCorrect) {
         currentStreak++;
         streakDisplay.innerText = currentStreak;
-        
-        if (currentStreak === 3) {
-            triggerLevelUp();
-        } else {
-            // Little celebration and next round
-            confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
-            setTimeout(startRound, 1200);
-        }
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
     } else {
-        // Wrong!
-        answerInput.style.borderColor = '#ef4444'; // Red
-        currentStreak = 0; // Reset streak
+        currentStreak = 0;
         streakDisplay.innerText = currentStreak;
-        
-        // Show the lifeline button
-        showStepsBtn.style.display = 'inline-block';
-        // Shake animation could go here
+        // Optional: play a soft 'bonk' sound here
+    }
+
+    // Show Post-Answer Actions
+    actionButtons.style.display = 'flex';
+    
+    // If they are on a hot streak, show the Upgrade button!
+    if (currentStreak >= 3) {
+        upgradeBtn.style.display = 'block';
     }
 }
 
-// 4. The Step-by-Step Renderer
+// 4. Show Steps
 function showSteps() {
-    showStepsBtn.style.display = 'none';
     stepsContainer.style.display = 'block';
-    stepsContainer.innerHTML = '<h3>Step-by-Step Solution:</h3>';
+    stepsContainer.innerHTML = '<h3>Step-by-Step Magic:</h3>';
 
-    // Loop through our JSON array and render each step
     currentQuestion.steps.forEach((step, index) => {
-        // Create the container with a staggered animation delay
         const stepDiv = document.createElement('div');
         stepDiv.className = 'step';
         stepDiv.style.animationDelay = `${index * 0.4}s`; 
@@ -119,48 +139,24 @@ function showSteps() {
 
         const mathRenderDiv = document.createElement('div');
         mathRenderDiv.className = 'step-math';
-        
-        // Render the math part via KaTeX
-        katex.render(step.math, mathRenderDiv, { throwOnError: false });
+        katex.render(step.math, mathRenderDiv);
 
         stepDiv.appendChild(instructionText);
         stepDiv.appendChild(mathRenderDiv);
         stepsContainer.appendChild(stepDiv);
     });
-
-    // Provide a "Next Question" button after they read the steps
-    setTimeout(() => {
-        const nextBtn = document.createElement('button');
-        nextBtn.innerText = "Got it! Next Question";
-        nextBtn.style.marginTop = "20px";
-        nextBtn.onclick = startRound;
-        stepsContainer.appendChild(nextBtn);
-    }, currentQuestion.steps.length * 400 + 500);
-}
-
-// 5. Zeriah Labs D1 Integration Placeholder
-function triggerLevelUp() {
-    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
     
-    // Note: This is where you would hook into your existing triggerAchievement() function
-    // triggerAchievement('calculus_power_rule_master', 50);
-    
-    setTimeout(() => {
-        alert("🎉 Achievement Unlocked! You've mastered the Power Rule! (In production, this moves you to Level 2: Chain Rule)");
-        currentStreak = 0;
-        streakDisplay.innerText = currentStreak;
-        startRound();
-    }, 2000);
+    // Hide the show steps button once it's clicked
+    showStepsBtn.style.display = 'none';
 }
 
 // Event Listeners
-submitBtn.addEventListener('click', checkAnswer);
+nextQBtn.addEventListener('click', startRound);
 showStepsBtn.addEventListener('click', showSteps);
-
-answerInput.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') checkAnswer();
+upgradeBtn.addEventListener('click', () => {
+    alert("🚀 Zeriah Labs Backend Hook: Update D1 Database to Level 2 (Chain Rule) and load new templates!");
+    // In production, this would trigger an achievement and load generateChainRule()
 });
 
-// Initialize the first game
-// Wait for KaTeX and all assets to load before starting the first game
+// Start the first round when everything loads
 window.onload = startRound;
