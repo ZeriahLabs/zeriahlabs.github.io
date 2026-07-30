@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculus Trainer | Zeriah Labs</title>
+    <title>Calculus Junior | Zeriah Labs</title>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
@@ -19,16 +19,26 @@
         
         #math-container { font-size: 2.5rem; margin: 30px 0; min-height: 80px; }
         
-        .input-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        input[type="text"] { background: #334155; border: 2px solid #475569; color: white; padding: 10px 15px; font-size: 1.2rem; border-radius: 10px; outline: none; text-align: center; width: 150px; }
-        input[type="text"]:focus { border-color: #00d0ff; }
-        button { background: #00d0ff; color: #0f172a; border: none; padding: 12px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #22e3b1; }
-        button.secondary { background: #475569; color: white; }
-        button.secondary:hover { background: #64748b; }
+        /* New MCQ Grid */
+        .mcq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .mcq-btn { background: #334155; border: 2px solid #475569; color: white; padding: 15px; font-size: 1.5rem; border-radius: 12px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; }
+        .mcq-btn:hover { background: #475569; border-color: #00d0ff; transform: translateY(-2px); }
+        .mcq-btn:disabled { cursor: default; transform: none; }
+        .mcq-btn.correct { background: #10b981; border-color: #059669; color: #fff; }
+        .mcq-btn.wrong { background: #ef4444; border-color: #b91c1c; color: #fff; opacity: 0.7; }
         
+        /* Post-Answer Action Buttons */
+        #action-buttons { display: none; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .action-btn { padding: 12px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 10px; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-primary { background: #00d0ff; color: #0f172a; }
+        .btn-primary:hover { background: #22e3b1; }
+        .btn-secondary { background: #475569; color: white; }
+        .btn-secondary:hover { background: #64748b; }
+        .btn-upgrade { background: #a855f7; color: white; }
+        .btn-upgrade:hover { background: #c084fc; box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); }
+
         /* Steps UI */
-        #steps-container { margin-top: 20px; text-align: left; display: none; background: #0f172a; padding: 20px; border-radius: 10px; border-left: 4px solid #a855f7; }
+        #steps-container { margin-top: 25px; text-align: left; display: none; background: #0f172a; padding: 20px; border-radius: 10px; border-left: 4px solid #00d0ff; }
         .step { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.5s forwards; }
         .step-instruction { font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px; }
         .step-math { font-size: 1.3rem; }
@@ -40,17 +50,21 @@
 
     <div class="game-card">
         <div class="header-stats">
-            <span>Level 1: Power Rule</span>
-            <span class="streak-counter">Streak: <span id="streak">0</span>/3</span>
+            <span id="level-title">Level 1: Power Rule</span>
+            <span class="streak-counter">Streak: <span id="streak">0</span></span>
         </div>
 
         <p>Find the derivative, f'(x), of:</p>
-        <div id="math-container"></div> <div class="input-group">
-            <input type="text" id="answer-input" placeholder="e.g. 12x^3" autocomplete="off">
-            <button id="submit-btn">Submit</button>
-        </div>
+        <div id="math-container"></div> 
 
-        <button id="show-steps-btn" class="secondary" style="display: none;">I'm Stuck (Show Steps)</button>
+        <div id="mcq-container" class="mcq-grid">
+            </div>
+
+        <div id="action-buttons">
+            <button id="show-steps-btn" class="action-btn btn-secondary">🔍 Show Me How</button>
+            <button id="next-q-btn" class="action-btn btn-primary">Try Another One 🎲</button>
+            <button id="upgrade-btn" class="action-btn btn-upgrade" style="display: none;">🚀 Level Up: Unlock Chain Rule!</button>
+        </div>
 
         <div id="steps-container"></div>
     </div>
