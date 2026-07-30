@@ -206,28 +206,29 @@ function generateTrigChainRule() {
     };
 }
 
-// 1E. Level 3: The Product Rule ✖️
+// 1E. Level 3: The Product Rule ✖️ (Now with Subtraction!)
 function generateProductRule() {
-    // Generate random coefficients and constants
     const a = Math.floor(Math.random() * 4) + 2; 
     const b = Math.floor(Math.random() * 5) + 1; 
     const c = Math.floor(Math.random() * 4) + 2; 
     const d = Math.floor(Math.random() * 5) + 1; 
 
+    // 50/50 chance to be a plus or minus
+    const sign1 = Math.random() > 0.5 ? '+' : '-';
+    const sign2 = Math.random() > 0.5 ? '+' : '-';
+
     // The Left Piece (u) and Right Piece (v)
-    const u = `${a}x^2 + ${b}`;
+    const u = `${a}x^2 ${sign1} ${b}`;
     const uPrime = `${a * 2}x`;
 
-    const v = `${c}x + ${d}`;
+    const v = `${c}x ${sign2} ${d}`;
     const vPrime = `${c}`;
 
-    // The perfect structure: u'v + uv'
     const correctAnswer = `(${uPrime})(${v}) + (${u})(${vPrime})`;
 
-    // The Teacher's Traps!
-    const wrong1 = `(${uPrime})(${vPrime})`;                       // Trap 1: Just multiplied the derivatives together
-    const wrong2 = `(${uPrime})(${v}) - (${u})(${vPrime})`;        // Trap 2: Used subtraction (Quotient Rule confusion)
-    const wrong3 = `(${u})(${vPrime}) + (${u})(${vPrime})`;        // Trap 3: Messed up the pattern (used 'u' twice)
+    const wrong1 = `(${uPrime})(${vPrime})`;                       
+    const wrong2 = `(${uPrime})(${v}) - (${u})(${vPrime})`;        
+    const wrong3 = `(${u})(${vPrime}) + (${u})(${vPrime})`;        
 
     let choices = [
         { math: correctAnswer, isCorrect: true },
