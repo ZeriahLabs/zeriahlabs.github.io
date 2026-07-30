@@ -162,4 +162,5 @@ answerInput.addEventListener('keypress', function (e) {
 });
 
 // Initialize the first game
-startRound();
+// Wait for KaTeX and all assets to load before starting the first game
+window.onload = startRound;
