@@ -321,24 +321,35 @@ function handleAnswer(clickedBtn, isCorrect) {
     upgradeBtn.style.display = 'none';
 
     if (isCorrect) {
-        // 🎵 Play Success Sound!
-        yaySound.currentTime = 0;
-        yaySound.play();
-
-        currentStreak++;
-        streakDisplay.innerText = currentStreak;
-        confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
-        
-        showStepsBtn.style.display = 'none';
-        
-        if (currentQuestion.level === 1.5 || currentQuestion.level === 2.5) {
-            upgradeBtn.style.display = 'block';
-            nextQBtn.style.display = 'none'; 
+            // 🎵 Play Success Sound!
+            yaySound.currentTime = 0;
+            yaySound.play();
+    
+            currentStreak++;
+            streakDisplay.innerText = currentStreak;
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+            
+            showStepsBtn.style.display = 'none';
+            
+            // --- THE FIX IS HERE ---
+            if (currentQuestion.level === 1.5 || currentQuestion.level === 2.5) {
+                
+                // 1. Change the text dynamically based on the level!
+                if (currentQuestion.level === 1.5) {
+                    upgradeBtn.innerText = "🚀 Level Up: Unlock Chain Rule!";
+                } else if (currentQuestion.level === 2.5) {
+                    upgradeBtn.innerText = "🚀 Level Up: Unlock Product Rule!";
+                }
+    
+                // 2. Show the button
+                upgradeBtn.style.display = 'block';
+                nextQBtn.style.display = 'none'; 
+    
+            } else {
+                nextQBtn.style.display = 'block';
+            }
         } else {
-            nextQBtn.style.display = 'block';
-        }
-    } else {
-        // 🎵 Play Error Sound!
+    // 🎵 Play Error Sound!
         wrongSound.currentTime = 0;
         wrongSound.play();
 
