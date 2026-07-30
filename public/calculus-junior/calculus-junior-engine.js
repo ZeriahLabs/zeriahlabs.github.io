@@ -253,6 +253,46 @@ function generateProductRule() {
     };
 }
 
+// 1F. Level 3 Boss: Product & Chain Combo! 👾
+function generateProductChainBoss() {
+    const a = Math.floor(Math.random() * 4) + 2; 
+    const b = Math.floor(Math.random() * 4) + 2; 
+
+    const u = `${a}x^2`;
+    const uPrime = `${a * 2}x`;
+    
+    const v = `\\sin(${b}x)`;
+    const vPrime = `${b}\\cos(${b}x)`; // Chain rule applied!
+
+    const correctAnswer = `(${uPrime})\\sin(${b}x) + (${u})(${vPrime})`;
+
+    const wrong1 = `(${uPrime})(${vPrime})`; // Trap: Just multiplied them
+    const wrong2 = `(${uPrime})\\sin(${b}x) + (${u})(\\cos(${b}x))`; // Trap: Forgot the inner derivative 'b' on the cosine
+    const wrong3 = `(${uPrime})\\sin(${b}x) - (${u})(${vPrime})`; // Trap: Used subtraction
+
+    let choices = [
+        { math: correctAnswer, isCorrect: true },
+        { math: wrong1, isCorrect: false },
+        { math: wrong2, isCorrect: false },
+        { math: wrong3, isCorrect: false }
+    ];
+
+    return {
+        level: 3.5,
+        title: "Level 3 Boss: The Ultimate Combo! 🐉",
+        concept: "Product + Chain Rule",
+        question_latex: `f(x) = ${u} \\sin(${b}x)`,
+        choices: shuffle(choices),
+        steps: [
+            { instruction: "1. Identify 'u' and 'v'. Note that 'v' is a trig function!", math: `u = ${u} \\quad v = \\sin(${b}x)` },
+            { instruction: "2. Find u'.", math: `u' = ${uPrime}` },
+            { instruction: "3. Find v'. (Don't forget the Chain Rule for the inside!)", math: `v' = ${vPrime}` },
+            { instruction: "4. Apply the Product Rule formula: (u' * v) + (u * v')", math: `(${uPrime}) \\cdot \\sin(${b}x) + (${u}) \\cdot (${vPrime})` },
+            { instruction: "5. Final structural answer:", math: `f'(x) = ${correctAnswer}` }
+        ]
+    };
+}
+
 
 // ==========================================
 // 🎮 Core Game Loop
