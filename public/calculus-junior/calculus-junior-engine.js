@@ -206,6 +206,52 @@ function generateTrigChainRule() {
     };
 }
 
+// 1E. Level 3: The Product Rule ✖️
+function generateProductRule() {
+    // Generate random coefficients and constants
+    const a = Math.floor(Math.random() * 4) + 2; 
+    const b = Math.floor(Math.random() * 5) + 1; 
+    const c = Math.floor(Math.random() * 4) + 2; 
+    const d = Math.floor(Math.random() * 5) + 1; 
+
+    // The Left Piece (u) and Right Piece (v)
+    const u = `${a}x^2 + ${b}`;
+    const uPrime = `${a * 2}x`;
+
+    const v = `${c}x + ${d}`;
+    const vPrime = `${c}`;
+
+    // The perfect structure: u'v + uv'
+    const correctAnswer = `(${uPrime})(${v}) + (${u})(${vPrime})`;
+
+    // The Teacher's Traps!
+    const wrong1 = `(${uPrime})(${vPrime})`;                       // Trap 1: Just multiplied the derivatives together
+    const wrong2 = `(${uPrime})(${v}) - (${u})(${vPrime})`;        // Trap 2: Used subtraction (Quotient Rule confusion)
+    const wrong3 = `(${u})(${vPrime}) + (${u})(${vPrime})`;        // Trap 3: Messed up the pattern (used 'u' twice)
+
+    let choices = [
+        { math: correctAnswer, isCorrect: true },
+        { math: wrong1, isCorrect: false },
+        { math: wrong2, isCorrect: false },
+        { math: wrong3, isCorrect: false }
+    ];
+
+    return {
+        level: 3,
+        title: "Level 3: Product Rule ✖️",
+        concept: "Product Rule",
+        question_latex: `f(x) = (${u})(${v})`,
+        choices: shuffle(choices),
+        steps: [
+            { instruction: "1. Identify your two main pieces: 'u' (the left part) and 'v' (the right part).", math: `u = ${u} \\quad v = ${v}` },
+            { instruction: "2. Find the derivative of 'u' (u').", math: `u' = ${uPrime}` },
+            { instruction: "3. Find the derivative of 'v' (v').", math: `v' = ${vPrime}` },
+            { instruction: "4. Write out the Product Rule formula.", math: `\\text{Formula: } (u' \\cdot v) + (u \\cdot v')` },
+            { instruction: "5. Plug your pieces into the formula to get the final structure!", math: `f'(x) = ${correctAnswer}` }
+        ]
+    };
+}
+
 
 // ==========================================
 // 🎮 Core Game Loop
@@ -234,6 +280,8 @@ function startRound() {
         } else {
             currentQuestion = generateChainRule();     
         }
+    } else if (currentLevel === 3) {
+        currentQuestion = generateProductRule(); // <--- Level 3 unlocked!
     }
     
     levelTitle.innerText = currentQuestion.title;
@@ -335,13 +383,13 @@ upgradeBtn.addEventListener('click', () => {
     yaySound.currentTime = 0;
     yaySound.play(); // Extra celebration for boss defeat!
 
-    // Note: We need the logic for Level 3 here eventually
-    currentLevel = 2; // Temporary: keep them on level 2 until level 3 is built
+    // Level Progression Logic
     if (currentQuestion.level === 1.5) {
         currentLevel = 2;
     } else if (currentQuestion.level === 2.5) {
-        // currentLevel = 3; 
-        alert("Level 3 coming soon!");
+        currentLevel = 3; 
+    } else if (currentQuestion.level === 3.5) {
+        alert("You beat the current game! More levels coming soon.");
     }
 
     currentStreak = 0; 
