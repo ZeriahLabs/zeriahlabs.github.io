@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculus Trainer | Zeriah Labs</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* Baseline Zeriah Labs Arcade UI styling */
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .game-card { background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 18px 70px rgba(0,0,0,.55); width: 90%; max-width: 600px; text-align: center; }
+        .header-stats { display: flex; justify-content: space-between; margin-bottom: 20px; color: #94a3b8; font-weight: bold; }
+        .streak-counter { color: #34d399; }
+        
+        #math-container { font-size: 2.5rem; margin: 30px 0; min-height: 80px; }
+        
+        .input-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        input[type="text"] { background: #334155; border: 2px solid #475569; color: white; padding: 10px 15px; font-size: 1.2rem; border-radius: 10px; outline: none; text-align: center; width: 150px; }
+        input[type="text"]:focus { border-color: #00d0ff; }
+        button { background: #00d0ff; color: #0f172a; border: none; padding: 12px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #22e3b1; }
+        button.secondary { background: #475569; color: white; }
+        button.secondary:hover { background: #64748b; }
+        
+        /* Steps UI */
+        #steps-container { margin-top: 20px; text-align: left; display: none; background: #0f172a; padding: 20px; border-radius: 10px; border-left: 4px solid #a855f7; }
+        .step { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.5s forwards; }
+        .step-instruction { font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px; }
+        .step-math { font-size: 1.3rem; }
+        
+        @keyframes fadeIn { to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="game-card">
+        <div class="header-stats">
+            <span>Level 1: Power Rule</span>
+            <span class="streak-counter">Streak: <span id="streak">0</span>/3</span>
+        </div>
+
+        <p>Find the derivative, f'(x), of:</p>
+        <div id="math-container"></div> <div class="input-group">
+            <input type="text" id="answer-input" placeholder="e.g. 12x^3" autocomplete="off">
+            <button id="submit-btn">Submit</button>
+        </div>
+
+        <button id="show-steps-btn" class="secondary" style="display: none;">I'm Stuck (Show Steps)</button>
+
+        <div id="steps-container"></div>
+    </div>
+
+    <script src="calculus-engine.js"></script>
+</body>
+</html>
