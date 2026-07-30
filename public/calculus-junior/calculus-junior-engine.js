@@ -1,12 +1,36 @@
 /* ============================================================================= 
-ZERIAH LABS ENGINE: Calculus Junior (MCQ + Boss Stage Edition)
+ZERIAH LABS ENGINE: Calculus Junior (Audio + Boss Stage Edition)
 ============================================================================= 
 */
 
 let currentQuestion = null;
 let currentStreak = 0;
 let hasAnswered = false;
-let currentLevel = 1; // <--- Add this!
+let currentLevel = 1; 
+
+// ==========================================
+// 🎵 Audio Engine
+// ==========================================
+// Assuming the sounds are hosted at your global domain structure
+const bgm = new Audio('https://zeriahlabs.github.io/public/sounds/bgm.mp3');
+bgm.loop = true;
+bgm.volume = 0.3; // Keep the background music subtle
+
+const yaySound = new Audio('https://zeriahlabs.github.io/public/sounds/yay.mp3');
+yaySound.volume = 0.6;
+
+const wrongSound = new Audio('https://zeriahlabs.github.io/public/sounds/wrong.mp3');
+wrongSound.volume = 0.5;
+
+let bgmStarted = false;
+
+// Helper to start BGM on first interaction (Browser Autoplay Policy Fix)
+function initializeAudio() {
+    if (!bgmStarted) {
+        bgm.play().catch(e => console.log("BGM playback prevented by browser:", e));
+        bgmStarted = true;
+    }
+}
 
 // DOM Elements
 const mathContainer = document.getElementById('math-container');
@@ -28,22 +52,24 @@ function shuffle(array) {
     return array;
 }
 
-// NEW HELPER: Formats terms cleanly so x^1 becomes x, and x^0 becomes just the number
+// Helper: Formats terms cleanly
 function formatTerm(coeff, exponent) {
     if (exponent === 1) return `${coeff}x`;
-    if (exponent === 0) return `${coeff}`; // Safety catch
+    if (exponent === 0) return `${coeff}`; 
     return `${coeff}x^{${exponent}}`;
 }
 
-// 1A. Standard Procedural Engine (Updated with Formatter)
+// ==========================================
+// ⚙️ Procedural Engines
+// ==========================================
+
+// 1A. Standard Power Rule
 function generatePowerRule() {
-    const a = Math.floor(Math.random() * 8) + 2; // 2 to 9
-    const b = Math.floor(Math.random() * 4) + 2; // 2 to 5
+    const a = Math.floor(Math.random() * 8) + 2; 
+    const b = Math.floor(Math.random() * 4) + 2; 
     
-    // Pass the math through our new formatter!
     const correctAnswer = formatTerm(a * b, b - 1);
     
-    // Distractors
     const wrong1 = formatTerm(a * b, b);       
     const wrong2 = formatTerm(a * b, b + 1);   
     const wrong3 = formatTerm(b, b - 1);       
@@ -70,16 +96,15 @@ function generatePowerRule() {
     };
 }
 
-// 1B. The "Boss Stage" Engine (The Invisible Exponent)
+// 1B. Level 1 Boss (Invisible Exponent)
 function generateLinearRule() {
-    const a = Math.floor(Math.random() * 8) + 2; // 2 to 9
+    const a = Math.floor(Math.random() * 8) + 2; 
     
-    const correctAnswer = `${a}`; // The x drops entirely
+    const correctAnswer = `${a}`; 
     
-    // Plausible mistakes for ax
-    const wrong1 = `${a}x`; // Forgot to drop the x entirely
-    const wrong2 = `x`;     // Dropped the coefficient instead
-    const wrong3 = `0`;     // Confused it with a constant
+    const wrong1 = `${a}x`; 
+    const wrong2 = `x`;     
+    const wrong3 = `0`;     
     
     let choices = [
         { math: correctAnswer, isCorrect: true },
@@ -103,68 +128,22 @@ function generateLinearRule() {
     };
 }
 
-// 2. The Game Loop (Updated with Level Routing)
-function startRound() {
-    hasAnswered = false;
-    
-    // Reset UI
-    mcqContainer.innerHTML = '';
-    actionButtons.style.display = 'none';
-    stepsContainer.style.display = 'none';
-    stepsContainer.innerHTML = '';
-    upgradeBtn.style.display = 'none';
-
-    // Route to the correct procedural engine!
-    if (currentLevel === 1) {
-        if (currentStreak >= 3) {
-            currentQuestion = generateLinearRule(); // Level 1 Boss
-        } else {
-            currentQuestion = generatePowerRule();  // Level 1 Standard
-        }
-    } else if (currentLevel === 2) {
-        if (currentStreak >= 3) {
-            currentQuestion = generateTrigChainRule(); // Level 2 Boss!
-        } else {
-            currentQuestion = generateChainRule();     // Level 2 Standard
-        }
-    }
-    
-    levelTitle.innerText = currentQuestion.title;
-
-    // Render main question
-    katex.render(currentQuestion.question_latex, mathContainer, { displayMode: true });
-    
-    // Render MCQ Buttons
-    currentQuestion.choices.forEach((choice, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'mcq-btn';
-        katex.render(choice.math, btn, { throwOnError: false });
-        
-        btn.onclick = () => handleAnswer(btn, choice.isCorrect);
-        mcqContainer.appendChild(btn);
-    });
-}
-
-// 1C. Level 2: The Chain Rule 🔗
+// 1C. Level 2: Chain Rule
 function generateChainRule() {
-    // Generate our random variables
-    const a = Math.floor(Math.random() * 4) + 2; // Inside coefficient (2 to 5)
-    const b = Math.floor(Math.random() * 8) + 1; // Inside constant (1 to 8)
-    const n = Math.floor(Math.random() * 4) + 3; // Outside exponent (3 to 6)
+    const a = Math.floor(Math.random() * 4) + 2; 
+    const b = Math.floor(Math.random() * 8) + 1; 
+    const n = Math.floor(Math.random() * 4) + 3; 
 
-    // Build the equation parts
     const u = `${a}x^2 + ${b}`;
-    const uPrime = `${a * 2}x`; // Derivative of the inside
+    const uPrime = `${a * 2}x`; 
     const outerDeriv = `${n}(${u})^{${n - 1}}`;
 
-    // The perfect final answer
     const finalCoeff = n * a * 2;
     const correctAnswer = `${finalCoeff}x(${u})^{${n - 1}}`;
 
-    // Plausible Distractors (The Teacher's Trap)
-    const wrong1 = `${n}(${u})^{${n - 1}}`;       // Trap 1: Forgot the inner derivative entirely!
-    const wrong2 = `${finalCoeff}x(${u})^{${n}}`; // Trap 2: Forgot to subtract 1 from the outside exponent
-    const wrong3 = `${n * a}x(${u})^{${n - 1}}`;  // Trap 3: Messed up the inner derivative (ax instead of 2ax)
+    const wrong1 = `${n}(${u})^{${n - 1}}`;       
+    const wrong2 = `${finalCoeff}x(${u})^{${n}}`; 
+    const wrong3 = `${n * a}x(${u})^{${n - 1}}`;  
 
     let choices = [
         { math: correctAnswer, isCorrect: true },
@@ -189,7 +168,7 @@ function generateChainRule() {
     };
 }
 
-// 1D. Level 2 Boss: The Trigonometric Chain Rule! 👾
+// 1D. Level 2 Boss: Trig Chain Rule
 function generateTrigChainRule() {
     const a = Math.floor(Math.random() * 4) + 2; 
     const b = Math.floor(Math.random() * 8) + 1; 
@@ -197,13 +176,11 @@ function generateTrigChainRule() {
     const u = `${a}x^2 + ${b}`;
     const uPrime = `${a * 2}x`; 
     
-    // We are differentiating sin(u), so outer derivative is cos(u)
     const correctAnswer = `${uPrime} \\cos(${u})`;
 
-    // The Traps
-    const wrong1 = `\\cos(${u})`;                   // Trap: Forgot the inside derivative
-    const wrong2 = `-${uPrime} \\cos(${u})`;        // Trap: Added a negative (confused with cos -> -sin)
-    const wrong3 = `${uPrime} \\cos(${uPrime})`;    // Trap: Put the derivative inside the cos() instead of the original 'u'
+    const wrong1 = `\\cos(${u})`;                   
+    const wrong2 = `-${uPrime} \\cos(${u})`;        
+    const wrong3 = `${uPrime} \\cos(${uPrime})`;    
 
     let choices = [
         { math: correctAnswer, isCorrect: true },
@@ -228,7 +205,55 @@ function generateTrigChainRule() {
     };
 }
 
-// 3. Answer Checking Logic (Updated Visibility)
+
+// ==========================================
+// 🎮 Core Game Loop
+// ==========================================
+
+function startRound() {
+    hasAnswered = false;
+    
+    // Reset UI
+    mcqContainer.innerHTML = '';
+    actionButtons.style.display = 'none';
+    stepsContainer.style.display = 'none';
+    stepsContainer.innerHTML = '';
+    upgradeBtn.style.display = 'none';
+
+    // Route to the correct procedural engine
+    if (currentLevel === 1) {
+        if (currentStreak >= 3) {
+            currentQuestion = generateLinearRule(); 
+        } else {
+            currentQuestion = generatePowerRule();  
+        }
+    } else if (currentLevel === 2) {
+        if (currentStreak >= 3) {
+            currentQuestion = generateTrigChainRule(); 
+        } else {
+            currentQuestion = generateChainRule();     
+        }
+    }
+    
+    levelTitle.innerText = currentQuestion.title;
+
+    // Render main question
+    katex.render(currentQuestion.question_latex, mathContainer, { displayMode: true });
+    
+    // Render MCQ Buttons
+    currentQuestion.choices.forEach((choice, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'mcq-btn';
+        katex.render(choice.math, btn, { throwOnError: false });
+        
+        btn.onclick = () => {
+            initializeAudio(); // Start BGM on first interaction if needed
+            handleAnswer(btn, choice.isCorrect);
+        };
+        mcqContainer.appendChild(btn);
+    });
+}
+
 function handleAnswer(clickedBtn, isCorrect) {
     if (hasAnswered) return;
     hasAnswered = true;
@@ -243,19 +268,20 @@ function handleAnswer(clickedBtn, isCorrect) {
         }
     });
 
-    // Always reveal the action container
     actionButtons.style.display = 'flex';
     upgradeBtn.style.display = 'none';
 
     if (isCorrect) {
+        // 🎵 Play Success Sound!
+        yaySound.currentTime = 0;
+        yaySound.play();
+
         currentStreak++;
         streakDisplay.innerText = currentStreak;
         confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
         
-        // HIDE the steps button to keep them moving fast!
         showStepsBtn.style.display = 'none';
         
-        // Check if they beat a Boss Stage (Level 1.5 or 2.5)
         if (currentQuestion.level === 1.5 || currentQuestion.level === 2.5) {
             upgradeBtn.style.display = 'block';
             nextQBtn.style.display = 'none'; 
@@ -263,19 +289,18 @@ function handleAnswer(clickedBtn, isCorrect) {
             nextQBtn.style.display = 'block';
         }
     } else {
+        // 🎵 Play Error Sound!
+        wrongSound.currentTime = 0;
+        wrongSound.play();
+
         currentStreak = 0;
         streakDisplay.innerText = currentStreak;
         
-        // EXPLICITLY SHOW the "Show Me How" button because they missed it
         showStepsBtn.style.display = 'block';
         nextQBtn.style.display = 'block';
     }
 }
 
-    //actionButtons.style.display = 'flex';
-
-
-// 4. Show Steps
 function showSteps() {
     stepsContainer.style.display = 'block';
     stepsContainer.innerHTML = '<h3>Step-by-Step Magic:</h3>';
@@ -305,15 +330,21 @@ function showSteps() {
 nextQBtn.addEventListener('click', startRound);
 showStepsBtn.addEventListener('click', showSteps);
 upgradeBtn.addEventListener('click', () => {
-    // Blast some extra confetti!
     confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-    
-    // Upgrade the state
-    currentLevel = 2;
-    currentStreak = 0; // Reset streak for the new level
+    yaySound.currentTime = 0;
+    yaySound.play(); // Extra celebration for boss defeat!
+
+    // Note: We need the logic for Level 3 here eventually
+    currentLevel = 2; // Temporary: keep them on level 2 until level 3 is built
+    if (currentQuestion.level === 1.5) {
+        currentLevel = 2;
+    } else if (currentQuestion.level === 2.5) {
+        // currentLevel = 3; 
+        alert("Level 3 coming soon!");
+    }
+
+    currentStreak = 0; 
     streakDisplay.innerText = currentStreak;
-    
-    // Start the Level 2 flow
     startRound();
 });
 
