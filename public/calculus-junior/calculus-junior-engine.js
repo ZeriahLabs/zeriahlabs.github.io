@@ -27,16 +27,25 @@ function shuffle(array) {
     return array;
 }
 
-// 1A. Standard Procedural Engine
+// NEW HELPER: Formats terms cleanly so x^1 becomes x, and x^0 becomes just the number
+function formatTerm(coeff, exponent) {
+    if (exponent === 1) return `${coeff}x`;
+    if (exponent === 0) return `${coeff}`; // Safety catch
+    return `${coeff}x^{${exponent}}`;
+}
+
+// 1A. Standard Procedural Engine (Updated with Formatter)
 function generatePowerRule() {
     const a = Math.floor(Math.random() * 8) + 2; // 2 to 9
     const b = Math.floor(Math.random() * 4) + 2; // 2 to 5
     
-    const correctAnswer = `${a * b}x^{${b - 1}}`;
+    // Pass the math through our new formatter!
+    const correctAnswer = formatTerm(a * b, b - 1);
     
-    const wrong1 = `${a * b}x^{${b}}`;       
-    const wrong2 = `${a * b}x^{${b + 1}}`;   
-    const wrong3 = `${b}x^{${b - 1}}`;       
+    // Distractors
+    const wrong1 = formatTerm(a * b, b);       
+    const wrong2 = formatTerm(a * b, b + 1);   
+    const wrong3 = formatTerm(b, b - 1);       
     
     let choices = [
         { math: correctAnswer, isCorrect: true },
