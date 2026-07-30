@@ -347,34 +347,26 @@ function generateTranscendentalBoss() {
     };
 }
 
-// 1G. Level 4: The Quotient Rule ➗
+// 1G. Level 4: The Dynamic Quotient Rule ➗
 function generateQuotientRule() {
-    const a = Math.floor(Math.random() * 4) + 2; 
-    const b = Math.floor(Math.random() * 5) + 1; 
-    const c = Math.floor(Math.random() * 4) + 2; 
-    const d = Math.floor(Math.random() * 5) + 1; 
+    // Pull two completely random transcendental functions!
+    const termU = getRandomTerm();
+    const termV = getRandomTerm();
 
-    // Randomize plus or minus for variety
-    const sign1 = Math.random() > 0.5 ? '+' : '-';
-    const sign2 = Math.random() > 0.5 ? '+' : '-';
-
-    // Top Piece (u) and Bottom Piece (v)
-    const u = `${a}x ${sign1} ${b}`;
-    const uPrime = `${a}`;
-
-    const v = `${c}x ${sign2} ${d}`;
-    const vPrime = `${c}`;
+    const u = termU.math;
+    const uPrime = termU.deriv;
+    const v = termV.math;
+    const vPrime = termV.deriv;
 
     // The perfect structure: (u'v - uv') / v^2
     const numeratorCorrect = `(${uPrime})(${v}) - (${u})(${vPrime})`;
     const denomCorrect = `(${v})^2`;
     
-    // Note: \frac{top}{bottom} is the KaTeX command for a fraction
     const correctAnswer = `\\frac{${numeratorCorrect}}{${denomCorrect}}`;
 
-    // The Teacher's Traps!
-    const wrong1 = `\\frac{(${uPrime})(${v}) + (${u})(${vPrime})}{${denomCorrect}}`; // Trap 1: Used a plus sign (Product Rule confusion)
-    const wrong2 = `\\frac{(${u})(${vPrime}) - (${uPrime})(${v})}{${denomCorrect}}`; // Trap 2: Backwards numerator (uv' - u'v)
+    // The Teacher's Traps (Structural errors remain the same!)
+    const wrong1 = `\\frac{(${uPrime})(${v}) + (${u})(${vPrime})}{${denomCorrect}}`; // Trap 1: Used a plus sign
+    const wrong2 = `\\frac{(${u})(${vPrime}) - (${uPrime})(${v})}{${denomCorrect}}`; // Trap 2: Backwards numerator
     const wrong3 = `\\frac{${numeratorCorrect}}{${v}}`;                            // Trap 3: Forgot to square the denominator
 
     let choices = [
@@ -391,7 +383,7 @@ function generateQuotientRule() {
         question_latex: `f(x) = \\frac{${u}}{${v}}`,
         choices: shuffle(choices),
         steps: [
-            { instruction: "1. Identify 'u' (the top) and 'v' (the bottom).", math: `u = ${u} \\quad v = ${v}` },
+            { instruction: "1. Identify 'u' (the top) and 'v' (the bottom). Notice the different function types!", math: `u = ${u} \\quad v = ${v}` },
             { instruction: "2. Find the derivative of the top (u').", math: `u' = ${uPrime}` },
             { instruction: "3. Find the derivative of the bottom (v').", math: `v' = ${vPrime}` },
             { instruction: "4. Write out the Quotient Rule formula.", math: `\\text{Formula: } \\frac{(u' \\cdot v) - (u \\cdot v')}{v^2}` },
@@ -400,18 +392,18 @@ function generateQuotientRule() {
     };
 }
 
-// 1H. Level 4 Boss: Quotient + Trig Combo! ⚡
+// 1H. Level 4 Boss: The Ultimate Transcendental Quotient! ⚡
 function generateQuotientBoss() {
-    const a = Math.floor(Math.random() * 4) + 2; 
-    const b = Math.floor(Math.random() * 4) + 2; 
+    const a = Math.floor(Math.random() * 3) + 2; // 2 to 4
+    const b = Math.floor(Math.random() * 4) + 2; // 2 to 5
 
-    // The Top (u) requires the Chain Rule!
-    const u = `\\sin(${a}x)`;
-    const uPrime = `${a}\\cos(${a}x)`; 
+    // The Top (u) requires a Nested Trig + Power Chain Rule!
+    const u = `\\cos(${a}x^2)`;
+    const uPrime = `-${a * 2}x\\sin(${a}x^2)`; 
 
-    // The Bottom (v) is a standard power rule
-    const v = `${b}x^2`;
-    const vPrime = `${b * 2}x`;
+    // The Bottom (v) requires an Exponential Chain Rule
+    const v = `e^{${b}x}`;
+    const vPrime = `${b}e^{${b}x}`;
 
     const numeratorCorrect = `(${uPrime})(${v}) - (${u})(${vPrime})`;
     const denomCorrect = `(${v})^2`;
@@ -419,9 +411,14 @@ function generateQuotientBoss() {
     const correctAnswer = `\\frac{${numeratorCorrect}}{${denomCorrect}}`;
 
     // The Traps
-    const wrong1 = `\\frac{(${uPrime})(${v}) + (${u})(${vPrime})}{${denomCorrect}}`;     // Trap 1: Plus sign instead of minus
-    const wrong2 = `\\frac{(\\cos(${a}x))(${v}) - (${u})(${vPrime})}{${denomCorrect}}`; // Trap 2: Forgot the inner derivative 'a' on the cosine
-    const wrong3 = `\\frac{(${u})(${vPrime}) - (${uPrime})(${v})}{${denomCorrect}}`;     // Trap 3: Flipped numerator order
+    // Trap 1: Forgot the negative sign AND the inner '2ax' on the cosine derivative entirely
+    const wrong1 = `\\frac{(\\sin(${a}x^2))(${v}) - (${u})(${vPrime})}{${denomCorrect}}`;     
+    
+    // Trap 2: Forgot the negative sign on the cosine derivative (The #1 most common calculus error)
+    const wrong2 = `\\frac{(${a * 2}x\\sin(${a}x^2))(${v}) - (${u})(${vPrime})}{${denomCorrect}}`; 
+    
+    // Trap 3: Flipped the numerator order (uv' - u'v)
+    const wrong3 = `\\frac{(${u})(${vPrime}) - (${uPrime})(${v})}{${denomCorrect}}`;     
 
     let choices = [
         { math: correctAnswer, isCorrect: true },
@@ -433,13 +430,13 @@ function generateQuotientBoss() {
     return {
         level: 4.5,
         title: "Level 4 Boss: The Great Divide! ⚡",
-        concept: "Quotient + Chain Rule",
-        question_latex: `f(x) = \\frac{\\sin(${a}x)}{${b}x^2}`,
+        concept: "Quotient + Nested Chain Rule",
+        question_latex: `f(x) = \\frac{\\cos(${a}x^2)}{e^{${b}x}}`,
         choices: shuffle(choices),
         steps: [
-            { instruction: "1. Identify 'u' (top) and 'v' (bottom).", math: `u = \\sin(${a}x) \\quad v = ${b}x^2` },
-            { instruction: "2. Find u' (Watch out for the Trig Chain Rule!).", math: `u' = ${uPrime}` },
-            { instruction: "3. Find v'.", math: `v' = ${vPrime}` },
+            { instruction: "1. Identify 'u' (top) and 'v' (bottom).", math: `u = \\cos(${a}x^2) \\quad v = e^{${b}x}` },
+            { instruction: "2. Find u' (Watch out! Derivative of cos is negative, AND you need the Power Chain Rule for the inside!).", math: `u' = ${uPrime}` },
+            { instruction: "3. Find v' (Exponential Chain Rule).", math: `v' = ${vPrime}` },
             { instruction: "4. Apply the Quotient Rule formula: (u'v - uv') / v^2.", math: `\\text{Formula: } \\frac{u'v - uv'}{v^2}` },
             { instruction: "5. Final structural answer:", math: `f'(x) = ${correctAnswer}` }
         ]
