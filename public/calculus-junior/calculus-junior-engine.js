@@ -9,17 +9,18 @@ let hasAnswered = false;
 let currentLevel = 1; 
 
 // ==========================================
-// 🎵 Audio Engine
+// 🎵 Audio Engine (Updated Paths)
 // ==========================================
-// Assuming the sounds are hosted at your global domain structure
-const bgm = new Audio('https://zeriahlabs.github.io/public/sounds/bgm.mp3');
-bgm.loop = true;
-bgm.volume = 0.3; // Keep the background music subtle
 
-const yaySound = new Audio('https://zeriahlabs.github.io/public/sounds/yay.mp3');
+// Use relative root paths so Cloudflare/GitHub maps them correctly
+const bgm = new Audio('/sounds/bgm.mp3');
+bgm.loop = true;
+bgm.volume = 0.3; 
+
+const yaySound = new Audio('/sounds/yay.mp3');
 yaySound.volume = 0.6;
 
-const wrongSound = new Audio('https://zeriahlabs.github.io/public/sounds/wrong.mp3');
+const wrongSound = new Audio('/sounds/wrong.mp3');
 wrongSound.volume = 0.5;
 
 let bgmStarted = false;
