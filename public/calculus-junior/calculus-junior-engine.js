@@ -61,6 +61,25 @@ function formatTerm(coeff, exponent) {
 }
 
 // ==========================================
+// 🧩 The Transcendental Term Generator
+// ==========================================
+function getRandomTerm() {
+    const a = Math.floor(Math.random() * 4) + 2; 
+    const types = ['poly', 'exp', 'log', 'cos', 'tan'];
+    const type = types[Math.floor(Math.random() * types.length)];
+
+    switch(type) {
+        case 'poly': return { math: `${a}x^2`, deriv: `${a * 2}x` };
+        case 'exp':  return { math: `e^{${a}x}`, deriv: `${a}e^{${a}x}` };
+        case 'log':  
+            // The derivative of ln(ax) is (1/ax)*a, which simplifies perfectly to 1/x!
+            return { math: `\\ln(${a}x)`, deriv: `\\frac{1}{x}` };
+        case 'cos':  return { math: `\\cos(${a}x)`, deriv: `-${a}\\sin(${a}x)` };
+        case 'tan':  return { math: `\\tan(${a}x)`, deriv: `${a}\\sec^2(${a}x)` };
+    }
+}
+
+// ==========================================
 // ⚙️ Procedural Engines
 // ==========================================
 
@@ -206,26 +225,20 @@ function generateTrigChainRule() {
     };
 }
 
-// 1E. Level 3: The Product Rule ✖️ (Now with Subtraction!)
+// 1E. Level 3: The Dynamic Product Rule ✖️
 function generateProductRule() {
-    const a = Math.floor(Math.random() * 4) + 2; 
-    const b = Math.floor(Math.random() * 5) + 1; 
-    const c = Math.floor(Math.random() * 4) + 2; 
-    const d = Math.floor(Math.random() * 5) + 1; 
+    // Pull two completely random functions from our new generator!
+    const termU = getRandomTerm();
+    const termV = getRandomTerm();
 
-    // 50/50 chance to be a plus or minus
-    const sign1 = Math.random() > 0.5 ? '+' : '-';
-    const sign2 = Math.random() > 0.5 ? '+' : '-';
-
-    // The Left Piece (u) and Right Piece (v)
-    const u = `${a}x^2 ${sign1} ${b}`;
-    const uPrime = `${a * 2}x`;
-
-    const v = `${c}x ${sign2} ${d}`;
-    const vPrime = `${c}`;
+    const u = termU.math;
+    const uPrime = termU.deriv;
+    const v = termV.math;
+    const vPrime = termV.deriv;
 
     const correctAnswer = `(${uPrime})(${v}) + (${u})(${vPrime})`;
 
+    // The structural traps still work flawlessly, regardless of the functions used!
     const wrong1 = `(${uPrime})(${vPrime})`;                       
     const wrong2 = `(${uPrime})(${v}) - (${u})(${vPrime})`;        
     const wrong3 = `(${u})(${vPrime}) + (${u})(${vPrime})`;        
@@ -244,11 +257,11 @@ function generateProductRule() {
         question_latex: `f(x) = (${u})(${v})`,
         choices: shuffle(choices),
         steps: [
-            { instruction: "1. Identify your two main pieces: 'u' (the left part) and 'v' (the right part).", math: `u = ${u} \\quad v = ${v}` },
-            { instruction: "2. Find the derivative of 'u' (u').", math: `u' = ${uPrime}` },
-            { instruction: "3. Find the derivative of 'v' (v').", math: `v' = ${vPrime}` },
+            { instruction: "1. Identify 'u' (left) and 'v' (right). Notice the different function types!", math: `u = ${u} \\quad v = ${v}` },
+            { instruction: "2. Find u' (Apply specific rules like Trig or Exponential Chain Rules).", math: `u' = ${uPrime}` },
+            { instruction: "3. Find v'.", math: `v' = ${vPrime}` },
             { instruction: "4. Write out the Product Rule formula.", math: `\\text{Formula: } (u' \\cdot v) + (u \\cdot v')` },
-            { instruction: "5. Plug your pieces into the formula to get the final structure!", math: `f'(x) = ${correctAnswer}` }
+            { instruction: "5. Plug your pieces into the structure.", math: `f'(x) = ${correctAnswer}` }
         ]
     };
 }
@@ -288,6 +301,47 @@ function generateProductChainBoss() {
             { instruction: "2. Find u'.", math: `u' = ${uPrime}` },
             { instruction: "3. Find v'. (Don't forget the Chain Rule for the inside!)", math: `v' = ${vPrime}` },
             { instruction: "4. Apply the Product Rule formula: (u' * v) + (u * v')", math: `(${uPrime}) \\cdot \\sin(${b}x) + (${u}) \\cdot (${vPrime})` },
+            { instruction: "5. Final structural answer:", math: `f'(x) = ${correctAnswer}` }
+        ]
+    };
+}
+
+// 1G. Level 3 Boss (Stage 2): The Transcendental Combo 🌌
+function generateTranscendentalBoss() {
+    const a = Math.floor(Math.random() * 4) + 2; 
+    const b = Math.floor(Math.random() * 5) + 2; 
+
+    const u = `e^{${a}x}`;
+    const uPrime = `${a}e^{${a}x}`; 
+    
+    const v = `\\ln(${b}x)`;
+    const vPrime = `\\frac{1}{x}`; 
+
+    const correctAnswer = `(${uPrime})\\ln(${b}x) + (${u})(\\frac{1}{x})`;
+
+    // Highly specific traps for logs and exponentials
+    const wrong1 = `(${uPrime})\\ln(${b}x) + (${u})(\\frac{1}{${b}x})`; // Trap 1: Forgot that 'b' cancels out in the log derivative
+    const wrong2 = `(e^{${a}x})\\ln(${b}x) + (${u})(\\frac{1}{x})`;     // Trap 2: Forgot the chain rule on the 'e'
+    const wrong3 = `(${uPrime})(\\frac{1}{x})`;                         // Trap 3: Just multiplied the derivatives
+
+    let choices = [
+        { math: correctAnswer, isCorrect: true },
+        { math: wrong1, isCorrect: false },
+        { math: wrong2, isCorrect: false },
+        { math: wrong3, isCorrect: false }
+    ];
+
+    return {
+        level: 3.75, // Boss Stage 2
+        title: "Level 3 Final Boss: Exponential Log! 🌌",
+        concept: "Transcendental Product Rule",
+        question_latex: `f(x) = ${u} \\ln(${b}x)`,
+        choices: shuffle(choices),
+        steps: [
+            { instruction: "1. Identify 'u' and 'v'.", math: `u = ${u} \\quad v = \\ln(${b}x)` },
+            { instruction: "2. Find u' (Remember the exponent's chain rule).", math: `u' = ${uPrime}` },
+            { instruction: "3. Find v' (In logs, the inner coefficient cancels out!).", math: `v' = \\frac{1}{x}` },
+            { instruction: "4. Apply the Product Rule formula: (u'v) + (uv')", math: `(${uPrime}) \\cdot \\ln(${b}x) + (${u}) \\cdot (\\frac{1}{x})` },
             { instruction: "5. Final structural answer:", math: `f'(x) = ${correctAnswer}` }
         ]
     };
@@ -346,6 +400,52 @@ function generateQuotientRule() {
     };
 }
 
+// 1H. Level 4 Boss: Quotient + Trig Combo! ⚡
+function generateQuotientBoss() {
+    const a = Math.floor(Math.random() * 4) + 2; 
+    const b = Math.floor(Math.random() * 4) + 2; 
+
+    // The Top (u) requires the Chain Rule!
+    const u = `\\sin(${a}x)`;
+    const uPrime = `${a}\\cos(${a}x)`; 
+
+    // The Bottom (v) is a standard power rule
+    const v = `${b}x^2`;
+    const vPrime = `${b * 2}x`;
+
+    const numeratorCorrect = `(${uPrime})(${v}) - (${u})(${vPrime})`;
+    const denomCorrect = `(${v})^2`;
+    
+    const correctAnswer = `\\frac{${numeratorCorrect}}{${denomCorrect}}`;
+
+    // The Traps
+    const wrong1 = `\\frac{(${uPrime})(${v}) + (${u})(${vPrime})}{${denomCorrect}}`;     // Trap 1: Plus sign instead of minus
+    const wrong2 = `\\frac{(\\cos(${a}x))(${v}) - (${u})(${vPrime})}{${denomCorrect}}`; // Trap 2: Forgot the inner derivative 'a' on the cosine
+    const wrong3 = `\\frac{(${u})(${vPrime}) - (${uPrime})(${v})}{${denomCorrect}}`;     // Trap 3: Flipped numerator order
+
+    let choices = [
+        { math: correctAnswer, isCorrect: true },
+        { math: wrong1, isCorrect: false },
+        { math: wrong2, isCorrect: false },
+        { math: wrong3, isCorrect: false }
+    ];
+
+    return {
+        level: 4.5,
+        title: "Level 4 Boss: The Great Divide! ⚡",
+        concept: "Quotient + Chain Rule",
+        question_latex: `f(x) = \\frac{\\sin(${a}x)}{${b}x^2}`,
+        choices: shuffle(choices),
+        steps: [
+            { instruction: "1. Identify 'u' (top) and 'v' (bottom).", math: `u = \\sin(${a}x) \\quad v = ${b}x^2` },
+            { instruction: "2. Find u' (Watch out for the Trig Chain Rule!).", math: `u' = ${uPrime}` },
+            { instruction: "3. Find v'.", math: `v' = ${vPrime}` },
+            { instruction: "4. Apply the Quotient Rule formula: (u'v - uv') / v^2.", math: `\\text{Formula: } \\frac{u'v - uv'}{v^2}` },
+            { instruction: "5. Final structural answer:", math: `f'(x) = ${correctAnswer}` }
+        ]
+    };
+}
+
 
 // ==========================================
 // 🎮 Core Game Loop
@@ -375,13 +475,19 @@ function startRound() {
             currentQuestion = generateChainRule();     
         }
     } else if (currentLevel === 3) {
-        if (currentStreak >= 3) {
-            currentQuestion = generateProductChainBoss(); 
+        if (currentStreak === 3) {
+            currentQuestion = generateProductChainBoss(); // Boss Stage 1
+        } else if (currentStreak === 4) {
+            currentQuestion = generateTranscendentalBoss(); // Boss Stage 2
         } else {
-            currentQuestion = generateProductRule();     
+            currentQuestion = generateProductRule(); // The new dynamic standard questions
         }
     } else if (currentLevel === 4) {
-        currentQuestion = generateQuotientRule(); // <--- Level 4 unlocked!
+        if (currentStreak >= 3) {
+            currentQuestion = generateQuotientBoss(); // <--- Level 4 Boss!
+        } else {
+            currentQuestion = generateQuotientRule();     
+        }
     }
     
     levelTitle.innerText = currentQuestion.title;
@@ -431,16 +537,17 @@ function handleAnswer(clickedBtn, isCorrect) {
             
             showStepsBtn.style.display = 'none';
             
-            // --- THE FIX IS HERE ---
-            // Add 3.5 to the boss check
-            if (currentQuestion.level === 1.5 || currentQuestion.level === 2.5 || currentQuestion.level === 3.5) {
+            // Check for Boss Victories (Notice 3.75 replaces 3.5 here!)
+            if (currentQuestion.level === 1.5 || currentQuestion.level === 2.5 || currentQuestion.level === 3.75 || currentQuestion.level === 4.5) {
                 
                 if (currentQuestion.level === 1.5) {
                     upgradeBtn.innerText = "🚀 Level Up: Unlock Chain Rule!";
                 } else if (currentQuestion.level === 2.5) {
                     upgradeBtn.innerText = "🚀 Level Up: Unlock Product Rule!";
-                } else if (currentQuestion.level === 3.5) {
-                    upgradeBtn.innerText = "🚀 Level Up: Unlock Quotient Rule!"; // <--- Add this!
+                } else if (currentQuestion.level === 3.75) {
+                    upgradeBtn.innerText = "🚀 Level Up: Unlock Quotient Rule!";
+                } else if (currentQuestion.level === 4.5) {
+                    upgradeBtn.innerText = "🏆 Victory! Claim Your Badge!";
                 }
     
                 upgradeBtn.style.display = 'block';
@@ -496,13 +603,15 @@ upgradeBtn.addEventListener('click', () => {
     yaySound.play(); // Extra celebration for boss defeat!
 
     // Level Progression Logic
-    // Update the progression logic
     if (currentQuestion.level === 1.5) {
         currentLevel = 2;
     } else if (currentQuestion.level === 2.5) {
         currentLevel = 3; 
-    } else if (currentQuestion.level === 3.5) {
-        currentLevel = 4; // <--- Pushes to Level 4
+    } else if (currentQuestion.level === 3.75) { // <--- Triggers only after Boss Stage 2!
+        currentLevel = 4;
+    } else if (currentQuestion.level === 4.5) {
+        alert("🎉 Congratulations! You have conquered Calculus Junior!");
+        currentLevel = 1; // Loops back to the start
     }
 
     currentStreak = 0; 
