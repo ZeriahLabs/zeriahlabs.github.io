@@ -6,6 +6,7 @@ ZERIAH LABS ENGINE: Calculus Junior (MCQ + Boss Stage Edition)
 let currentQuestion = null;
 let currentStreak = 0;
 let hasAnswered = false;
+let currentLevel = 1; // <--- Add this!
 
 // DOM Elements
 const mathContainer = document.getElementById('math-container');
@@ -102,7 +103,7 @@ function generateLinearRule() {
     };
 }
 
-// 2. The Game Loop
+// 2. The Game Loop (Updated with Level Routing)
 function startRound() {
     hasAnswered = false;
     
@@ -113,11 +114,15 @@ function startRound() {
     stepsContainer.innerHTML = '';
     upgradeBtn.style.display = 'none';
 
-    // Boss Stage Logic!
-    if (currentStreak >= 3) {
-        currentQuestion = generateLinearRule();
-    } else {
-        currentQuestion = generatePowerRule();
+    // Route to the correct procedural engine!
+    if (currentLevel === 1) {
+        if (currentStreak >= 3) {
+            currentQuestion = generateLinearRule(); // Level 1 Boss
+        } else {
+            currentQuestion = generatePowerRule();  // Level 1 Standard
+        }
+    } else if (currentLevel === 2) {
+        currentQuestion = generateChainRule();      // Level 2 Standard
     }
     
     levelTitle.innerText = currentQuestion.title;
@@ -134,6 +139,50 @@ function startRound() {
         btn.onclick = () => handleAnswer(btn, choice.isCorrect);
         mcqContainer.appendChild(btn);
     });
+}
+
+// 1C. Level 2: The Chain Rule 🔗
+function generateChainRule() {
+    // Generate our random variables
+    const a = Math.floor(Math.random() * 4) + 2; // Inside coefficient (2 to 5)
+    const b = Math.floor(Math.random() * 8) + 1; // Inside constant (1 to 8)
+    const n = Math.floor(Math.random() * 4) + 3; // Outside exponent (3 to 6)
+
+    // Build the equation parts
+    const u = `${a}x^2 + ${b}`;
+    const uPrime = `${a * 2}x`; // Derivative of the inside
+    const outerDeriv = `${n}(${u})^{${n - 1}}`;
+
+    // The perfect final answer
+    const finalCoeff = n * a * 2;
+    const correctAnswer = `${finalCoeff}x(${u})^{${n - 1}}`;
+
+    // Plausible Distractors (The Teacher's Trap)
+    const wrong1 = `${n}(${u})^{${n - 1}}`;       // Trap 1: Forgot the inner derivative entirely!
+    const wrong2 = `${finalCoeff}x(${u})^{${n}}`; // Trap 2: Forgot to subtract 1 from the outside exponent
+    const wrong3 = `${n * a}x(${u})^{${n - 1}}`;  // Trap 3: Messed up the inner derivative (ax instead of 2ax)
+
+    let choices = [
+        { math: correctAnswer, isCorrect: true },
+        { math: wrong1, isCorrect: false },
+        { math: wrong2, isCorrect: false },
+        { math: wrong3, isCorrect: false }
+    ];
+
+    return {
+        level: 2,
+        title: "Level 2: Chain Rule 🔗",
+        concept: "Chain Rule",
+        question_latex: `f(x) = (${u})^{${n}}`,
+        choices: shuffle(choices),
+        steps: [
+            { instruction: "1. Identify the 'Inside' and 'Outside' functions.", math: `\\text{Inside } (u) = ${u} \\quad \\text{Outside} = u^{${n}}` },
+            { instruction: "2. Find the derivative of the Inside function (u').", math: `u' = ${uPrime}` },
+            { instruction: "3. Find the derivative of the Outside function, leaving 'u' untouched.", math: `${n}(u)^{${n - 1}} \\rightarrow ${outerDeriv}` },
+            { instruction: "4. Multiply the Outside derivative by the Inside derivative (u').", math: `${outerDeriv} \\cdot ${uPrime}` },
+            { instruction: "5. Combine the coefficients for your final answer!", math: `f'(x) = ${correctAnswer}` }
+        ]
+    };
 }
 
 // 3. Answer Checking Logic
@@ -202,8 +251,16 @@ function showSteps() {
 nextQBtn.addEventListener('click', startRound);
 showStepsBtn.addEventListener('click', showSteps);
 upgradeBtn.addEventListener('click', () => {
-    alert("🚀 Zeriah Labs Backend Hook: Moving to Level 2 (Chain Rule)!");
-    // You would load generateChainRule() here
+    // Blast some extra confetti!
+    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+    
+    // Upgrade the state
+    currentLevel = 2;
+    currentStreak = 0; // Reset streak for the new level
+    streakDisplay.innerText = currentStreak;
+    
+    // Start the Level 2 flow
+    startRound();
 });
 
 // Initialize
