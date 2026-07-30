@@ -310,15 +310,19 @@ button.choice-btn:hover {
     font-size: 1.5rem;
 }
 
-/* Container for the buttons - Now completely responsive! */
+/* Container for the buttons - Now Centered & Responsive! */
 .mcq-grid { 
     display: grid; 
-    /* This automatically stacks buttons into 1 column on small screens, and 2 columns on big screens */
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
     gap: 20px; 
     margin-top: 25px; 
     width: 100%;
-    max-width: 100%; /* Let it breathe and use the full width of the game card */
+    
+    /* The Centering Magic */
+    max-width: 800px; /* Keeps the grid from getting too wildly wide on 4K monitors */
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center; /* Forces the columns to sit in the dead center */
 }
 
 /* The chunky arcade button - Updated for massive equations */
