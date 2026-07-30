@@ -293,6 +293,59 @@ function generateProductChainBoss() {
     };
 }
 
+// 1G. Level 4: The Quotient Rule ➗
+function generateQuotientRule() {
+    const a = Math.floor(Math.random() * 4) + 2; 
+    const b = Math.floor(Math.random() * 5) + 1; 
+    const c = Math.floor(Math.random() * 4) + 2; 
+    const d = Math.floor(Math.random() * 5) + 1; 
+
+    // Randomize plus or minus for variety
+    const sign1 = Math.random() > 0.5 ? '+' : '-';
+    const sign2 = Math.random() > 0.5 ? '+' : '-';
+
+    // Top Piece (u) and Bottom Piece (v)
+    const u = `${a}x ${sign1} ${b}`;
+    const uPrime = `${a}`;
+
+    const v = `${c}x ${sign2} ${d}`;
+    const vPrime = `${c}`;
+
+    // The perfect structure: (u'v - uv') / v^2
+    const numeratorCorrect = `(${uPrime})(${v}) - (${u})(${vPrime})`;
+    const denomCorrect = `(${v})^2`;
+    
+    // Note: \frac{top}{bottom} is the KaTeX command for a fraction
+    const correctAnswer = `\\frac{${numeratorCorrect}}{${denomCorrect}}`;
+
+    // The Teacher's Traps!
+    const wrong1 = `\\frac{(${uPrime})(${v}) + (${u})(${vPrime})}{${denomCorrect}}`; // Trap 1: Used a plus sign (Product Rule confusion)
+    const wrong2 = `\\frac{(${u})(${vPrime}) - (${uPrime})(${v})}{${denomCorrect}}`; // Trap 2: Backwards numerator (uv' - u'v)
+    const wrong3 = `\\frac{${numeratorCorrect}}{${v}}`;                            // Trap 3: Forgot to square the denominator
+
+    let choices = [
+        { math: correctAnswer, isCorrect: true },
+        { math: wrong1, isCorrect: false },
+        { math: wrong2, isCorrect: false },
+        { math: wrong3, isCorrect: false }
+    ];
+
+    return {
+        level: 4,
+        title: "Level 4: Quotient Rule ➗",
+        concept: "Quotient Rule",
+        question_latex: `f(x) = \\frac{${u}}{${v}}`,
+        choices: shuffle(choices),
+        steps: [
+            { instruction: "1. Identify 'u' (the top) and 'v' (the bottom).", math: `u = ${u} \\quad v = ${v}` },
+            { instruction: "2. Find the derivative of the top (u').", math: `u' = ${uPrime}` },
+            { instruction: "3. Find the derivative of the bottom (v').", math: `v' = ${vPrime}` },
+            { instruction: "4. Write out the Quotient Rule formula.", math: `\\text{Formula: } \\frac{(u' \\cdot v) - (u \\cdot v')}{v^2}` },
+            { instruction: "5. Plug your pieces into the formula. Order matters!", math: `f'(x) = ${correctAnswer}` }
+        ]
+    };
+}
+
 
 // ==========================================
 // 🎮 Core Game Loop
@@ -327,6 +380,8 @@ function startRound() {
         } else {
             currentQuestion = generateProductRule();     
         }
+    } else if (currentLevel === 4) {
+        currentQuestion = generateQuotientRule(); // <--- Level 4 unlocked!
     }
     
     levelTitle.innerText = currentQuestion.title;
@@ -377,18 +432,19 @@ function handleAnswer(clickedBtn, isCorrect) {
             showStepsBtn.style.display = 'none';
             
             // --- THE FIX IS HERE ---
+            // Add 3.5 to the boss check
             if (currentQuestion.level === 1.5 || currentQuestion.level === 2.5 || currentQuestion.level === 3.5) {
-            
+                
                 if (currentQuestion.level === 1.5) {
                     upgradeBtn.innerText = "🚀 Level Up: Unlock Chain Rule!";
                 } else if (currentQuestion.level === 2.5) {
                     upgradeBtn.innerText = "🚀 Level Up: Unlock Product Rule!";
                 } else if (currentQuestion.level === 3.5) {
-                    upgradeBtn.innerText = "🚀 Level Up: Unlock Quotient Rule!";
+                    upgradeBtn.innerText = "🚀 Level Up: Unlock Quotient Rule!"; // <--- Add this!
                 }
     
                 upgradeBtn.style.display = 'block';
-                nextQBtn.style.display = 'none'; 
+                nextQBtn.style.display = 'none';
     
             } else {
                 nextQBtn.style.display = 'block';
@@ -440,12 +496,13 @@ upgradeBtn.addEventListener('click', () => {
     yaySound.play(); // Extra celebration for boss defeat!
 
     // Level Progression Logic
+    // Update the progression logic
     if (currentQuestion.level === 1.5) {
         currentLevel = 2;
     } else if (currentQuestion.level === 2.5) {
         currentLevel = 3; 
     } else if (currentQuestion.level === 3.5) {
-        alert("You beat the current game! More levels coming soon.");
+        currentLevel = 4; // <--- Pushes to Level 4
     }
 
     currentStreak = 0; 
