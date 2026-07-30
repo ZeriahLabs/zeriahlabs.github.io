@@ -122,7 +122,11 @@ function startRound() {
             currentQuestion = generatePowerRule();  // Level 1 Standard
         }
     } else if (currentLevel === 2) {
-        currentQuestion = generateChainRule();      // Level 2 Standard
+        if (currentStreak >= 3) {
+            currentQuestion = generateTrigChainRule(); // Level 2 Boss!
+        } else {
+            currentQuestion = generateChainRule();     // Level 2 Standard
+        }
     }
     
     levelTitle.innerText = currentQuestion.title;
@@ -185,7 +189,46 @@ function generateChainRule() {
     };
 }
 
-// 3. Answer Checking Logic
+// 1D. Level 2 Boss: The Trigonometric Chain Rule! 👾
+function generateTrigChainRule() {
+    const a = Math.floor(Math.random() * 4) + 2; 
+    const b = Math.floor(Math.random() * 8) + 1; 
+
+    const u = `${a}x^2 + ${b}`;
+    const uPrime = `${a * 2}x`; 
+    
+    // We are differentiating sin(u), so outer derivative is cos(u)
+    const correctAnswer = `${uPrime} \\cos(${u})`;
+
+    // The Traps
+    const wrong1 = `\\cos(${u})`;                   // Trap: Forgot the inside derivative
+    const wrong2 = `-${uPrime} \\cos(${u})`;        // Trap: Added a negative (confused with cos -> -sin)
+    const wrong3 = `${uPrime} \\cos(${uPrime})`;    // Trap: Put the derivative inside the cos() instead of the original 'u'
+
+    let choices = [
+        { math: correctAnswer, isCorrect: true },
+        { math: wrong1, isCorrect: false },
+        { math: wrong2, isCorrect: false },
+        { math: wrong3, isCorrect: false }
+    ];
+
+    return {
+        level: 2.5,
+        title: "Level 2 Boss: The Sine Wave! 🌊",
+        concept: "Trig Chain Rule",
+        question_latex: `f(x) = \\sin(${u})`,
+        choices: shuffle(choices),
+        steps: [
+            { instruction: "1. Identify the 'Inside' and 'Outside' functions.", math: `\\text{Inside } (u) = ${u} \\quad \\text{Outside} = \\sin(u)` },
+            { instruction: "2. Find the derivative of the Inside function (u').", math: `u' = ${uPrime}` },
+            { instruction: "3. Find the derivative of the Outside function. (The derivative of sin is cos).", math: `\\sin(u) \\rightarrow \\cos(u)` },
+            { instruction: "4. Multiply the Outside derivative by the Inside derivative (u').", math: `\\cos(u) \\cdot ${uPrime}` },
+            { instruction: "5. Re-insert your original 'u' to get the final answer!", math: `f'(x) = ${correctAnswer}` }
+        ]
+    };
+}
+
+// 3. Answer Checking Logic (Updated Visibility)
 function handleAnswer(clickedBtn, isCorrect) {
     if (hasAnswered) return;
     hasAnswered = true;
@@ -200,26 +243,37 @@ function handleAnswer(clickedBtn, isCorrect) {
         }
     });
 
+    // Always reveal the action container
+    actionButtons.style.display = 'flex';
+    upgradeBtn.style.display = 'none';
+
     if (isCorrect) {
         currentStreak++;
         streakDisplay.innerText = currentStreak;
         confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
         
-        // Show Upgrade Button only if they beat the boss!
-        if (currentQuestion.level === 1.5) {
+        // HIDE the steps button to keep them moving fast!
+        showStepsBtn.style.display = 'none';
+        
+        // Check if they beat a Boss Stage (Level 1.5 or 2.5)
+        if (currentQuestion.level === 1.5 || currentQuestion.level === 2.5) {
             upgradeBtn.style.display = 'block';
-            nextQBtn.style.display = 'none'; // Hide next question to force upgrade or review
+            nextQBtn.style.display = 'none'; 
         } else {
             nextQBtn.style.display = 'block';
         }
     } else {
         currentStreak = 0;
         streakDisplay.innerText = currentStreak;
+        
+        // EXPLICITLY SHOW the "Show Me How" button because they missed it
+        showStepsBtn.style.display = 'block';
         nextQBtn.style.display = 'block';
     }
-
-    actionButtons.style.display = 'flex';
 }
+
+    //actionButtons.style.display = 'flex';
+
 
 // 4. Show Steps
 function showSteps() {
