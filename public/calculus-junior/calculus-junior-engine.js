@@ -322,7 +322,11 @@ function startRound() {
             currentQuestion = generateChainRule();     
         }
     } else if (currentLevel === 3) {
-        currentQuestion = generateProductRule(); // <--- Level 3 unlocked!
+        if (currentStreak >= 3) {
+            currentQuestion = generateProductChainBoss(); 
+        } else {
+            currentQuestion = generateProductRule();     
+        }
     }
     
     levelTitle.innerText = currentQuestion.title;
@@ -373,16 +377,16 @@ function handleAnswer(clickedBtn, isCorrect) {
             showStepsBtn.style.display = 'none';
             
             // --- THE FIX IS HERE ---
-            if (currentQuestion.level === 1.5 || currentQuestion.level === 2.5) {
-                
-                // 1. Change the text dynamically based on the level!
+            if (currentQuestion.level === 1.5 || currentQuestion.level === 2.5 || currentQuestion.level === 3.5) {
+            
                 if (currentQuestion.level === 1.5) {
                     upgradeBtn.innerText = "🚀 Level Up: Unlock Chain Rule!";
                 } else if (currentQuestion.level === 2.5) {
                     upgradeBtn.innerText = "🚀 Level Up: Unlock Product Rule!";
+                } else if (currentQuestion.level === 3.5) {
+                    upgradeBtn.innerText = "🚀 Level Up: Unlock Quotient Rule!";
                 }
     
-                // 2. Show the button
                 upgradeBtn.style.display = 'block';
                 nextQBtn.style.display = 'none'; 
     
