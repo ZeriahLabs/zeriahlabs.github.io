@@ -1,5 +1,5 @@
 /* ============================================================================= 
-ZERIAH LABS ENGINE: Calculus Junior (MCQ Edition)
+ZERIAH LABS ENGINE: Calculus Junior (MCQ + Boss Stage Edition)
 ============================================================================= 
 */
 
@@ -16,6 +16,7 @@ const nextQBtn = document.getElementById('next-q-btn');
 const upgradeBtn = document.getElementById('upgrade-btn');
 const stepsContainer = document.getElementById('steps-container');
 const streakDisplay = document.getElementById('streak');
+const levelTitle = document.getElementById('level-title');
 
 // Helper: Shuffle Array
 function shuffle(array) {
@@ -26,17 +27,16 @@ function shuffle(array) {
     return array;
 }
 
-// 1. Procedural Engine with Plausible Distractors
+// 1A. Standard Procedural Engine
 function generatePowerRule() {
     const a = Math.floor(Math.random() * 8) + 2; // 2 to 9
     const b = Math.floor(Math.random() * 4) + 2; // 2 to 5
     
     const correctAnswer = `${a * b}x^{${b - 1}}`;
     
-    // Generate common mistakes for distractors
-    const wrong1 = `${a * b}x^{${b}}`;       // Forgot to subtract 1
-    const wrong2 = `${a * b}x^{${b + 1}}`;   // Added 1 instead of subtracting
-    const wrong3 = `${b}x^{${b - 1}}`;       // Forgot to multiply by coefficient 'a'
+    const wrong1 = `${a * b}x^{${b}}`;       
+    const wrong2 = `${a * b}x^{${b + 1}}`;   
+    const wrong3 = `${b}x^{${b - 1}}`;       
     
     let choices = [
         { math: correctAnswer, isCorrect: true },
@@ -47,6 +47,7 @@ function generatePowerRule() {
 
     return {
         level: 1,
+        title: "Level 1: Power Rule",
         concept: "Power Rule",
         question_latex: `f(x) = ${a}x^{${b}}`,
         choices: shuffle(choices),
@@ -55,6 +56,39 @@ function generatePowerRule() {
             { instruction: "2. Multiply the exponent by the coefficient.", math: `${a} \\times ${b} = ${a * b}` },
             { instruction: "3. Subtract 1 from the original exponent.", math: `${b} - 1 = ${b - 1}` },
             { instruction: "4. Combine them for your final derivative.", math: `f'(x) = ${correctAnswer}` }
+        ]
+    };
+}
+
+// 1B. The "Boss Stage" Engine (The Invisible Exponent)
+function generateLinearRule() {
+    const a = Math.floor(Math.random() * 8) + 2; // 2 to 9
+    
+    const correctAnswer = `${a}`; // The x drops entirely
+    
+    // Plausible mistakes for ax
+    const wrong1 = `${a}x`; // Forgot to drop the x entirely
+    const wrong2 = `x`;     // Dropped the coefficient instead
+    const wrong3 = `0`;     // Confused it with a constant
+    
+    let choices = [
+        { math: correctAnswer, isCorrect: true },
+        { math: wrong1, isCorrect: false },
+        { math: wrong2, isCorrect: false },
+        { math: wrong3, isCorrect: false }
+    ];
+
+    return {
+        level: 1.5,
+        title: "Level 1 Boss: The Invisible Exponent! 👾",
+        concept: "Linear Power Rule",
+        question_latex: `f(x) = ${a}x`,
+        choices: shuffle(choices),
+        steps: [
+            { instruction: "1. Identify the hidden exponent! An 'x' by itself means x^1.", math: `a = ${a}, \\quad n = 1` },
+            { instruction: "2. Multiply the exponent by the coefficient.", math: `${a} \\times 1 = ${a}` },
+            { instruction: "3. Subtract 1 from the exponent. Remember: x^0 always equals 1!", math: `1 - 1 = 0 \\quad \\rightarrow \\quad x^0 = 1` },
+            { instruction: "4. The 'x' vanishes, leaving only the coefficient.", math: `f'(x) = ${correctAnswer}` }
         ]
     };
 }
@@ -70,8 +104,14 @@ function startRound() {
     stepsContainer.innerHTML = '';
     upgradeBtn.style.display = 'none';
 
-    // Generate new data
-    currentQuestion = generatePowerRule();
+    // Boss Stage Logic!
+    if (currentStreak >= 3) {
+        currentQuestion = generateLinearRule();
+    } else {
+        currentQuestion = generatePowerRule();
+    }
+    
+    levelTitle.innerText = currentQuestion.title;
 
     // Render main question
     katex.render(currentQuestion.question_latex, mathContainer, { displayMode: true });
@@ -80,7 +120,6 @@ function startRound() {
     currentQuestion.choices.forEach((choice, index) => {
         const btn = document.createElement('button');
         btn.className = 'mcq-btn';
-        // Render KaTeX directly inside the button!
         katex.render(choice.math, btn, { throwOnError: false });
         
         btn.onclick = () => handleAnswer(btn, choice.isCorrect);
@@ -90,10 +129,9 @@ function startRound() {
 
 // 3. Answer Checking Logic
 function handleAnswer(clickedBtn, isCorrect) {
-    if (hasAnswered) return; // Prevent multiple clicks
+    if (hasAnswered) return;
     hasAnswered = true;
 
-    // Disable all buttons and reveal the right answer
     const allBtns = mcqContainer.querySelectorAll('.mcq-btn');
     allBtns.forEach((btn, index) => {
         btn.disabled = true;
@@ -108,19 +146,21 @@ function handleAnswer(clickedBtn, isCorrect) {
         currentStreak++;
         streakDisplay.innerText = currentStreak;
         confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+        
+        // Show Upgrade Button only if they beat the boss!
+        if (currentQuestion.level === 1.5) {
+            upgradeBtn.style.display = 'block';
+            nextQBtn.style.display = 'none'; // Hide next question to force upgrade or review
+        } else {
+            nextQBtn.style.display = 'block';
+        }
     } else {
         currentStreak = 0;
         streakDisplay.innerText = currentStreak;
-        // Optional: play a soft 'bonk' sound here
+        nextQBtn.style.display = 'block';
     }
 
-    // Show Post-Answer Actions
     actionButtons.style.display = 'flex';
-    
-    // If they are on a hot streak, show the Upgrade button!
-    if (currentStreak >= 3) {
-        upgradeBtn.style.display = 'block';
-    }
 }
 
 // 4. Show Steps
@@ -146,7 +186,6 @@ function showSteps() {
         stepsContainer.appendChild(stepDiv);
     });
     
-    // Hide the show steps button once it's clicked
     showStepsBtn.style.display = 'none';
 }
 
@@ -154,9 +193,9 @@ function showSteps() {
 nextQBtn.addEventListener('click', startRound);
 showStepsBtn.addEventListener('click', showSteps);
 upgradeBtn.addEventListener('click', () => {
-    alert("🚀 Zeriah Labs Backend Hook: Update D1 Database to Level 2 (Chain Rule) and load new templates!");
-    // In production, this would trigger an achievement and load generateChainRule()
+    alert("🚀 Zeriah Labs Backend Hook: Moving to Level 2 (Chain Rule)!");
+    // You would load generateChainRule() here
 });
 
-// Start the first round when everything loads
+// Initialize
 window.onload = startRound;
