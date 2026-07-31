@@ -103,6 +103,9 @@ function spawnEnemy() {
     let randomX = Phaser.Math.Between(50, 750);
     let enemy = gameScene.enemies.create(randomX, -50, 'enemy1').setScale(0.4);
     enemy.hp = 20 + (currentWave * 5); // Enemies get tougher
+    
+    // THE FIX: Tell the engine that one less enemy is waiting to spawn!
+    enemiesRemainingToSpawn--; 
 }
 
 function fireBullet() {
