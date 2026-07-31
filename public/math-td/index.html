@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equation Defense - Zeriah Labs</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+    <style>
+        :root {
+            --brand: #00d0ff;
+            --brand2: #22e3b1;
+            --purple: #a855f7;
+            --danger: #ef4444;
+            --bg: #0f172a;       /* Zeriah Dark Baseline */
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --r: 24px;           /* Soft rounded corners */
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Nunito', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Baseline Dashboard Layout */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 800px 320px; /* Phaser Canvas Width + Side Panel */
+            gap: 24px;
+            max-width: 1144px;
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--r);
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* Phaser Container Override */
+        #game-container {
+            padding: 0; /* Let the canvas fill the box */
+            overflow: hidden;
+            border: 4px solid var(--card-bg);
+            border-radius: var(--r);
+            box-shadow: 0 0 20px rgba(0, 208, 255, 0.2);
+        }
+
+        /* Side Panel Styling */
+        .side-panel h2 {
+            margin-top: 0;
+            color: var(--brand);
+            font-weight: 900;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-box {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .stat-label { color: var(--text-muted); font-size: 1rem; }
+        .stat-value { color: var(--brand2); }
+        .stat-hp { color: var(--danger); }
+        
+        .wave-tracker {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--purple);
+            margin: 30px 0;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        /* Math Upgrade Modal (Hidden by Default) */
+        #math-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--r);
+            width: 600px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 2px solid var(--purple);
+        }
+
+        .modal-content h3 {
+            color: var(--brand);
+            font-size: 2rem;
+            margin-top: 0;
+        }
+
+        #math-question {
+            font-size: 2.5rem;
+            margin: 30px 0;
+            font-weight: 900;
+        }
+
+        .choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .choice-btn {
+            background: var(--bg);
+            color: var(--text-main);
+            border: 2px solid var(--brand);
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .choice-btn:hover {
+            background: var(--brand);
+            color: var(--bg);
+            transform: translateY(-2px);
+        }
+
+        /* Upgrade Selection (Shows after correct answer) */
+        #upgrade-options {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .upgrade-btn {
+            background: var(--brand2);
+            color: var(--bg);
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <script>window.currentAchievementFilter = "equation_defense";</script>
+
+    <div class="dashboard-layout">
+        <div id="game-container"></div>
+
+        <div class="side-panel card">
+            <h2>Tower Link</h2>
+            
+            <div class="wave-tracker">
+                WAVE <span id="ui-wave">1</span>
+            </div>
+
+            <div class="stat-box">
+                <span class="stat-label">Core Integrity (HP)</span>
+                <span class="stat-value stat-hp" id="ui-hp">100 / 100</span>
+            </div>
+
+            <div class="stat-box">
+                <span class="stat-label">Attack Power</span>
+                <span class="stat-value" id="ui-attack">10</span>
+            </div>
+
+            <div class="stat-box">
+                <span class="stat-label">Fire Rate</span>
+                <span class="stat-value" id="ui-firerate">1.5s</span>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-top: 40px;">
+                Survive the waves. Correct answers upgrade your defenses. Boss waves every 5 levels!
+            </p>
+        </div>
+    </div>
+
+    <div id="math-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Wave Complete!</h3>
+            <p id="modal-subtitle" style="color: var(--text-muted);">Answer correctly to upgrade your tower.</p>
+            
+            <div id="math-question">5 + 7 = ?</div>
+            
+            <div class="choices-grid" id="choices-container">
+                <button class="choice-btn" onclick="checkAnswer(12)">12</button>
+                <button class="choice-btn" onclick="checkAnswer(10)">10</button>
+                <button class="choice-btn" onclick="checkAnswer(14)">14</button>
+                <button class="choice-btn" onclick="checkAnswer(15)">15</button>
+            </div>
+
+            <div id="upgrade-options">
+                <h4 style="color: var(--brand2); font-size: 1.5rem;">System Overclocked! Choose an Upgrade:</h4>
+                <button class="upgrade-btn" onclick="applyUpgrade('hp')">+50 Max HP & Heal</button>
+                <button class="upgrade-btn" onclick="applyUpgrade('attack')">+5 Attack Damage</button>
+                <button class="upgrade-btn" onclick="applyUpgrade('firerate')">-0.2s Firing Cooldown</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="math-td-engine.js"></script>
+
+</body>
+</html>
