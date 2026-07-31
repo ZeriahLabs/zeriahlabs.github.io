@@ -6,7 +6,7 @@ ZERIAH LABS ENGINE: Equation Defense
 const ASSET_URL = "https://assets.zeriahlabs.com/microsoft-fluent-emoji/";
 
 // --- Game State ---
-let towerStats = { hp: 100, maxHp: 100, attack: 20, fireRate: 1500 }; 
+let towerStats = { hp: 100, maxHp: 100, attack: 20, fireRate: 1200 }; 
 let currentWave = 1;
 let enemiesRemainingToSpawn = 0;
 let activeEnemies = 0;
